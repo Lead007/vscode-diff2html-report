@@ -2,7 +2,10 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import {RefInfo} from './scmTypes';
-
+import { execFile } from 'child_process';
+import * as diff2html from 'diff2html';
+import { OutputFormatType } from 'diff2html/lib/types';
+import * as path from 'path';
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
@@ -43,7 +46,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 				// 获取分支、标签和提交
 				const localBranches = await Promise.all(refs
-					.filter((ref) => ref.type === 0 && ref.name !== 'HEAD') // type 1 是本地分支
+					.filter((ref) => ref.type === 0) // type 1 是本地分支
 					.map(getSelection));
 
 				// 获取远程分支
@@ -66,14 +69,50 @@ export function activate(context: vscode.ExtensionContext) {
 				}
 
 				const selectedCur = await vscode.window.showQuickPick(options, {
-                    placeHolder: '选择一个分支或标签作为基线'
+                    placeHolder: '选择一个分支或标签作为当前版本'
                 });
 
 				if (!selectedCur) {
 					return;
 				}
-				vscode.window.showInformationMessage(`你选择了: ${selectedBase.label} 和 ${selectedCur.label}`);
-				// 在这里可以执行相应的 Git 操作，例如 checkout
+
+				execFile('git', ['diff', selectedBase.label, selectedCur.label], { cwd: repo.rootUri.fsPath, maxBuffer: 64 * 1024 * 1024, encoding: 'utf8' }, (error, stdout, stderr) => {
+					if (error) {
+						vscode.window.showErrorMessage(`执行 git diff 失败: ${error.message}`);
+						return;
+					}
+					if (stderr && !stderr.includes('warning:')) {
+						vscode.window.showErrorMessage(`执行 git diff 失败: ${stderr}`);
+						return;
+					}
+
+					// 使用Diff2Html渲染
+					const configuration = {
+						drawFileList: true,
+						matching: 'lines',
+						outputFormat: OutputFormatType.SIDE_BY_SIDE,
+					} as diff2html.Diff2HtmlConfig;
+					const htmlContent = diff2html.html(stdout, configuration);
+
+					const panel = vscode.window.createWebviewPanel(
+						'diff2htmlPreview',
+						'Git Diff Preview',
+						vscode.ViewColumn.Beside,
+						{
+							enableScripts: true,
+							localResourceRoots: [vscode.Uri.joinPath(context.extensionUri, 'webview')]
+						}
+					);
+
+
+					const cssPath = vscode.Uri.joinPath(context.extensionUri, 'webview', 'diff2html.min.css');
+					const scriptPath = vscode.Uri.joinPath(context.extensionUri, 'webview', 'diff2html-ui.min.js');
+					const cssUri = panel.webview.asWebviewUri(cssPath);
+					const scriptUri = panel.webview.asWebviewUri(scriptPath);
+
+					panel.webview.html = getWebviewContent(htmlContent, cssUri, scriptUri);
+
+				});
             }
         })
     );
@@ -88,6 +127,29 @@ export function activate(context: vscode.ExtensionContext) {
 	// });
 
 	// context.subscriptions.push(disposable);
+}
+
+function getWebviewContent(htmlContent: string, cssUri: vscode.Uri, scriptUri: vscode.Uri): string {
+	return `
+		<!DOCTYPE html>
+		<html lang="en">
+		<head>
+			<meta charset="UTF-8">
+			<meta name="viewport" content="width=device-width, initial-scale=1.0">
+			<link rel="stylesheet" href="${cssUri}">
+			<title>Git Diff Preview</title>
+		</head>
+		<body>
+			<h2>Git Diff 报告 - ${new Date().toLocaleDateString()}</h2>
+			<div id="diffOutput">
+				${htmlContent}
+			</div>
+
+			<script src="${scriptUri}"></script>
+
+		</body>
+		</html>
+		`;
 }
 
 // This method is called when your extension is deactivated
