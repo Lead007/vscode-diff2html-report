@@ -9,15 +9,26 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onCommand:extension.showGitCommit"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "diff2html-report.helloWorld",
-        "title": "Hello World"
+        "command": "diff2html-report.generateDiffReport",
+        "title": "Generate Diff Report"
       }
-    ]
+    ],
+    "menus": {
+      "scm/title": [
+        {
+          "command": "diff2html-report.generateDiffReport",
+          "when": "scmProvider == git",
+          "group": "inline"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
