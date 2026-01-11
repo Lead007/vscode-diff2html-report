@@ -5,7 +5,7 @@ import {RefInfo} from './scmTypes';
 import { execFile } from 'child_process';
 import * as diff2html from 'diff2html';
 import { OutputFormatType } from 'diff2html/lib/types';
-import * as path from 'path';
+import { getExportContent, getWebviewContent } from './htmlTemplate';
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
@@ -76,7 +76,7 @@ export function activate(context: vscode.ExtensionContext) {
 					return;
 				}
 
-				execFile('git', ['diff', selectedBase.label, selectedCur.label], { cwd: repo.rootUri.fsPath, maxBuffer: 64 * 1024 * 1024, encoding: 'utf8' }, (error, stdout, stderr) => {
+				execFile('git', ['diff', selectedBase.label, selectedCur.label], { cwd: repo.rootUri.fsPath, maxBuffer: 64 * 1024 * 1024, encoding: 'utf8' }, async (error, stdout, stderr) => {
 					if (error) {
 						vscode.window.showErrorMessage(`执行 git diff 失败: ${error.message}`);
 						return;
@@ -100,17 +100,63 @@ export function activate(context: vscode.ExtensionContext) {
 						vscode.ViewColumn.Beside,
 						{
 							enableScripts: true,
-							localResourceRoots: [vscode.Uri.joinPath(context.extensionUri, 'webview')]
+							localResourceRoots: [
+								vscode.Uri.joinPath(context.extensionUri, 'webview'),
+							]
 						}
 					);
 
+					const cssUris = [
+						vscode.Uri.joinPath(context.extensionUri, 'webview', 'diff2html.min.css'),
+					];
+					const scriptUris = [
+						vscode.Uri.joinPath(context.extensionUri, 'webview', 'preview-page.js'),
+						vscode.Uri.joinPath(context.extensionUri, 'webview', 'diff2html-ui.min.js')
+					];
 
-					const cssPath = vscode.Uri.joinPath(context.extensionUri, 'webview', 'diff2html.min.css');
-					const scriptPath = vscode.Uri.joinPath(context.extensionUri, 'webview', 'diff2html-ui.min.js');
-					const cssUri = panel.webview.asWebviewUri(cssPath);
-					const scriptUri = panel.webview.asWebviewUri(scriptPath);
+					const resultHtml = await getWebviewContent(panel.webview, {
+						htmlPath: vscode.Uri.joinPath(context.extensionUri, 'webview', 'preview-page.html'),
+						cssUris,
+						scriptUris,
+						title: 'Git Diff Preview',
+						header: `Git Diff 报告`
+					}, {
+						htmlContent,
+					});
 
-					panel.webview.html = getWebviewContent(htmlContent, cssUri, scriptUri);
+					panel.webview.html = resultHtml;
+
+					panel.webview.onDidReceiveMessage(async (message) => {
+						if (message.type === 'saveHtml') {
+							const options = message.options;
+							const html = message.html;
+							// 保存文件对话框
+							const uri = await vscode.window.showSaveDialog({
+								filters: {
+									'HTML 文件': ['html', 'htm']
+								}
+							});
+							if (uri) {
+								// 进行资源内联
+								const diff2htmlCssBytes = await vscode.workspace.fs.readFile(vscode.Uri.joinPath(context.extensionUri, 'webview', 'diff2html.min.css'));
+								let diff2htmlCss = new TextDecoder().decode(diff2htmlCssBytes);
+
+								if (!options.generateFileList) {
+									diff2htmlCss += `
+										.d2h-hide {
+											display: none !important;
+										}
+										.d2h-file-collapse {
+											display: none !important;
+										}`;
+								}
+
+								let finalHtml = await getExportContent(vscode.Uri.joinPath(context.extensionUri, 'webview', 'export-page.html'), html, diff2htmlCss);
+								await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(finalHtml));
+								vscode.window.showInformationMessage(`Diff 报告已保存到 ${uri.fsPath}`);
+							}
+						}
+					});
 
 				});
             }
@@ -127,29 +173,6 @@ export function activate(context: vscode.ExtensionContext) {
 	// });
 
 	// context.subscriptions.push(disposable);
-}
-
-function getWebviewContent(htmlContent: string, cssUri: vscode.Uri, scriptUri: vscode.Uri): string {
-	return `
-		<!DOCTYPE html>
-		<html lang="en">
-		<head>
-			<meta charset="UTF-8">
-			<meta name="viewport" content="width=device-width, initial-scale=1.0">
-			<link rel="stylesheet" href="${cssUri}">
-			<title>Git Diff Preview</title>
-		</head>
-		<body>
-			<h2>Git Diff 报告 - ${new Date().toLocaleDateString()}</h2>
-			<div id="diffOutput">
-				${htmlContent}
-			</div>
-
-			<script src="${scriptUri}"></script>
-
-		</body>
-		</html>
-		`;
 }
 
 // This method is called when your extension is deactivated
