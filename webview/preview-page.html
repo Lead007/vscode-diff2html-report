@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/bulma/1.0.4/css/bulma.min.css"
+>
+    {{{styleSheetUris}}}
+    <style>
+        body.vscode-dark {
+            background: white;
+            color: black;
+        }
+    </style>
+    <title>{{title}}</title>
+</head>
+<body>
+    <form class="box m-4" id="optionForm">
+        <label class="label is-medium">HTML导出选项</label>
+        <div class="field">
+            <div class="control">
+                <label class="checkbox">
+                    <input type="checkbox" name="generateFileList" checked/>
+                    生成文件列表
+                </label>
+            </div>
+        </div>
+
+        <button type="submit" class="button is-info">另存为HTML文件</button>
+    </form>
+
+    <h2 class="is-size-3 m-2">{{header}}</h2>
+    <div id="diffOutput" class="m-2">
+        {{{htmlContent}}}
+    </div>
+
+    {{{scriptUris}}}}
+
+</body>
+</html>
