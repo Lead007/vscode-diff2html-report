@@ -107,11 +107,12 @@ export function activate(context: vscode.ExtensionContext) {
 					);
 
 					const cssUris = [
-						vscode.Uri.joinPath(context.extensionUri, 'webview', 'diff2html.min.css'),
+						vscode.Uri.joinPath(context.extensionUri, 'webview', 'diff2html-3.4.55.min.css'),
+						vscode.Uri.joinPath(context.extensionUri, 'webview', 'bulma-1.0.4.min.css'),
 					];
 					const scriptUris = [
 						vscode.Uri.joinPath(context.extensionUri, 'webview', 'preview-page.js'),
-						vscode.Uri.joinPath(context.extensionUri, 'webview', 'diff2html-ui.min.js')
+						vscode.Uri.joinPath(context.extensionUri, 'webview', 'diff2html-ui-3.4.55.min.js')
 					];
 
 					const resultHtml = await getWebviewContent(panel.webview, {
