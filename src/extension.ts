@@ -100,10 +100,11 @@ export function activate(context: vscode.ExtensionContext) {
 			} as diff2html.Diff2HtmlConfig;
 			const htmlContent = diff2html.html(stdout, configuration);
 
+			const targetColumn = vscode.window.activeTextEditor?.viewColumn ?? vscode.ViewColumn.Beside;
 			const panel = vscode.window.createWebviewPanel(
 				'diff2htmlPreview',
 				'Git Diff Preview',
-				vscode.ViewColumn.Beside,
+				targetColumn,
 				{
 					enableScripts: true,
 					localResourceRoots: [
@@ -154,6 +155,7 @@ export function activate(context: vscode.ExtensionContext) {
 					const html = message.html;
 					// 保存文件对话框
 					const uri = await vscode.window.showSaveDialog({
+						defaultUri: vscode.Uri.joinPath(vscode.workspace.workspaceFolders?.[0].uri || vscode.Uri.file('/'), `diff-report-${new Date().toLocaleDateString().replace(/\//g, '-')}.html`),
 						filters: {
 							'HTML 文件': ['html', 'htm']
 						}
