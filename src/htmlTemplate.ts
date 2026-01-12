@@ -28,14 +28,8 @@ export async function getExportContent(htmlPath: vscode.Uri, htmlContent: string
     const tplBytes = await vscode.workspace.fs.readFile(htmlPath);
     const tpl = new TextDecoder().decode(tplBytes);
 
-    const cssContentString = `
-        <style>
-        ${cssContent}
-        </style>
-    `;
-
     const contentStrings = {
-        cssContent: cssContentString,
+        cssContent,
         htmlContent
     };
 
