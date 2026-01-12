@@ -14,6 +14,23 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "configuration":{
+      "type":"object",
+      "title": "Diff2html Report Configuration",
+      "properties": {
+        "diff2html-report.useOnlineResources": {
+          "type": "boolean",
+          "default": false,
+          "description": "Use online resources (CDN) for diff reports instead of local files"
+        },
+        "diff2html-report.defaultViewType": {
+          "type": "string",
+          "enum": ["side-by-side", "line-by-line"],
+          "default": "side-by-side",
+          "description": "Default view type for diff reports"
+        }
+      }
+    },
     "commands": [
       {
         "command": "diff2html-report.generateDiffReport",
