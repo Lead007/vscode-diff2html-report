@@ -15,8 +15,9 @@ This extension adds a "Genetate Diff Report" menu in the "Change" menu of Git pa
 
 This extension contributes the following settings:
 
-* `diff2html-report.useOnlineResources`: Set whether to use online resources for `diff2html` and `Bulma`. The default setting is `false`, which means using stylesheets and scripts inside this extension.
+* `diff2html-report.filter`: Set the filter string to include only specific files in the diff report.
 * `diff2html-report.defaultViewType`: Set the diff2html default view type. The default setting is side-by-side.
+* `diff2html-report.useOnlineResources`: Set whether to use online resources for `diff2html` and `Bulma`. The default setting is `false`, which means using stylesheets and scripts inside this extension.
 
 
 ## Release Notes
