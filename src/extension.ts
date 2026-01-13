@@ -50,6 +50,13 @@ export function activate(context: vscode.ExtensionContext) {
 				detail: '当前工作区'
 			};
 
+			const input = {
+				label: "手动输入分支名/标签名/提交哈希",
+				description: '手动输入',
+				detail: '👉手动输入分支名/标签名/提交哈希',
+				isCustom: true
+			};
+
 			// 获取分支、标签和提交
 			const localBranches = await Promise.all(refs
 				.filter((ref) => ref.type === 0) // type 1 是本地分支
@@ -64,33 +71,65 @@ export function activate(context: vscode.ExtensionContext) {
 				.filter((ref) => ref.type === 2) // type 3 是Tag
 				.map(getSelection));
 
-			const options = [head, ...localBranches, ...remoteBranches, ...tags];
-			// 让用户选择
-			const selectedBase = await vscode.window.showQuickPick(options, {
-				placeHolder: '选择一个分支或标签作为基线'
-			});
+			const commits = [head, input, ...localBranches, ...remoteBranches, ...tags];
+			// 选择基线版本
+			let selectedBase = await selectCommit(commits, '选择一个分支或标签作为基线');
 
 			if (!selectedBase) {
 				return;
 			}
 
-			const selectedCur = await vscode.window.showQuickPick(options, {
-				placeHolder: '选择一个分支或标签作为当前版本'
+			// 选择当前版本时，插入暂存区选项
+			commits.splice(1, 0, {
+				label: '--staged',
+				description: '暂存区',
+				detail: `已暂存的更改`
 			});
+
+			let selectedCur = await selectCommit(commits, '选择一个分支或标签作为当前版本');
 
 			if (!selectedCur) {
 				return;
 			}
 
 			const extensionConfig = vscode.workspace.getConfiguration('diff2html-report');
+			// 选择git diff参数
+			const options = [
+				{ label: '-b', description: '忽略行尾空格', picked: false },
+				{ label: '-w', description: '忽略所有空白', picked: false },
+				{ label: '-M', description: '重命名检测', picked: false },
+				{ label: '-C', description: '移动检测', picked: false },
+				{ label: '--submodule', description: '递归子模块', picked: false },
+			];
 
-			const execFileAsync =promisify(execFile);
+			const enabledOptions = await vscode.window.showQuickPick(options, {
+				canPickMany: true,
+				placeHolder: '选择git diff的参数 (可多选)',
+				ignoreFocusOut: true,
+			});
 
-			const { stdout, stderr } = await execFileAsync('git', ['diff', selectedBase.label, selectedCur.label], { cwd: repo.rootUri.fsPath, maxBuffer: 64 * 1024 * 1024, encoding: 'utf8' });
-			if (stderr && !stderr.includes('warning:')) {
-				vscode.window.showErrorMessage(`执行 git diff 失败: ${stderr}`);
+			const enableOptionsStr = enabledOptions?.map(p => p.label) || [];
+			const filter = extensionConfig.get<string>('filter');
+			if(filter && filter.trim().length > 0) {
+				enableOptionsStr.push(filter);
+			}
+
+			const execFileAsync = promisify(execFile);
+
+			let diffContent = '';
+			try {
+				const { stdout, stderr } = await execFileAsync('git', ['diff', selectedBase.label, selectedCur.label, ...enableOptionsStr], { cwd: repo.rootUri.fsPath, maxBuffer: 64 * 1024 * 1024, encoding: 'utf8' });
+				if (stderr && !stderr.includes('warning:')) {
+					vscode.window.showErrorMessage(`执行 git diff 失败: ${stderr}`);
+					return;
+				}
+				diffContent = stdout;
+			} catch (error) {
+				vscode.window.showErrorMessage(`执行 git diff 失败: ${error}`);
 				return;
 			}
+
+
 
 			// 使用Diff2Html渲染
 			const configuration = {
@@ -98,7 +137,7 @@ export function activate(context: vscode.ExtensionContext) {
 				matching: 'lines',
 				outputFormat: extensionConfig.get<string>('outputFormat') as OutputFormatType,
 			} as diff2html.Diff2HtmlConfig;
-			const htmlContent = diff2html.html(stdout, configuration);
+			const htmlContent = diff2html.html(diffContent, configuration);
 
 			const targetColumn = vscode.window.activeTextEditor?.viewColumn ?? vscode.ViewColumn.Beside;
 			const panel = vscode.window.createWebviewPanel(
@@ -113,6 +152,7 @@ export function activate(context: vscode.ExtensionContext) {
 				}
 			);
 
+			// 准备webview css和js资源
 			let cssUris: vscode.Uri[] = [];
 			let scriptUris: vscode.Uri[] = [];
 			if (extensionConfig.get<boolean>('useOnlineResources')) {
@@ -137,6 +177,7 @@ export function activate(context: vscode.ExtensionContext) {
 				];
 			}
 
+			// 生成最终的webview html内容
 			const resultHtml = await getWebviewContent(panel.webview, {
 				htmlPath: vscode.Uri.joinPath(context.extensionUri, 'webview', 'preview-page.html'),
 				cssUris,
@@ -220,3 +261,34 @@ export function activate(context: vscode.ExtensionContext) {
 
 // This method is called when your extension is deactivated
 export function deactivate() {}
+
+/**
+ * 弹出列表让用户选择一个提交
+ * @param commits 选项列表
+ * @param placeHolder 提示信息
+ * @returns 用户选择的提交
+ */
+async function selectCommit(commits: vscode.QuickPickItem[], placeHolder: string): Promise<vscode.QuickPickItem | undefined> {
+	let selected = await vscode.window.showQuickPick(commits, {
+		placeHolder: placeHolder,
+		ignoreFocusOut: true,
+	});
+
+	if (!selected) {
+		return;
+	}
+
+	if ((selected as any).isCustom) {
+		const userInput = await vscode.window.showInputBox({
+			placeHolder: '请输入分支名/标签名/提交哈希',
+			prompt: '请输入分支名/标签名/提交哈希'
+		});
+		if (!userInput) {
+			return;
+		}
+		selected = {
+			label: userInput,
+		};
+	}
+	return selected;
+}
