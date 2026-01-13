@@ -3,6 +3,8 @@
   "displayName": "diff2html-report",
   "description": "A Git diff report generator",
   "version": "0.0.1",
+  "license": "MIT",
+  "publisher": "Bo-Pang",
   "engines": {
     "vscode": "^1.68.0"
   },
