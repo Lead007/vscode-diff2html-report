@@ -25,6 +25,11 @@
           "default": "",
           "description": "Filter string to include only specific files in the diff report."
         },
+        "diff2html-report.drawLineCount": {
+          "type": "boolean",
+          "default": true,
+          "description": "Display line count statistics in the diff report."
+        },
         "diff2html-report.defaultViewType": {
           "type": "string",
           "enum": ["side-by-side", "line-by-line"],
