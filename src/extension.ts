@@ -177,6 +177,38 @@ export function activate(context: vscode.ExtensionContext) {
 				];
 			}
 
+			// 计算行数
+			let lineCountContent = '';
+			if (extensionConfig.get<boolean>('drawLineCount')) {
+				try {
+					const { stdout, stderr } = await execFileAsync('git', ['diff', selectedBase.label, selectedCur.label, '--numstat', ...enableOptionsStr], { cwd: repo.rootUri.fsPath, maxBuffer: 64 * 1024 * 1024, encoding: 'utf8' });
+					if (stderr && !stderr.includes('warning:')) {
+						vscode.window.showErrorMessage(`执行 git diff 失败: ${stderr}`);
+						return;
+					}
+					const lineCountForFile = stdout.trim().split('\n').map(line => {
+						const parts = line.split('\t');
+						if (parts.length >= 3) {
+							return {
+								added: parts[0] === '-' ? 0 : parseInt(parts[0], 10),
+								deleted: parts[1] === '-' ? 0 : parseInt(parts[1], 10),
+								file: parts[2],
+							};
+						}
+						return null;
+					}).filter(item => item !== null) as { added: number, deleted: number, file: string }[];
+
+					const totalAdded = lineCountForFile.reduce((sum, item) => sum + item.added, 0);
+					const totalDeleted = lineCountForFile.reduce((sum, item) => sum + item.deleted, 0);
+
+					lineCountContent = `总计：新增 ${totalAdded} 行，删除 ${totalDeleted} 行`;
+				} catch (error) {
+					vscode.window.showErrorMessage(`执行 git diff 失败: ${error}`);
+					return;
+				}
+			}
+
+
 			// 生成最终的webview html内容
 			const resultHtml = await getWebviewContent(panel.webview, {
 				htmlPath: vscode.Uri.joinPath(context.extensionUri, 'webview', 'preview-page.html'),
@@ -186,6 +218,7 @@ export function activate(context: vscode.ExtensionContext) {
 				header: `Git Diff 报告`
 			}, {
 				htmlContent,
+				lineCountContent
 			});
 
 			panel.webview.html = resultHtml;
@@ -206,7 +239,7 @@ export function activate(context: vscode.ExtensionContext) {
 						const extensionConfig = vscode.workspace.getConfiguration('diff2html-report');
 						if (!extensionConfig.get<boolean>('useOnlineResources')) {
 							// 进行资源内联
-							const diff2htmlCssBytes = await vscode.workspace.fs.readFile(vscode.Uri.joinPath(context.extensionUri, 'webview', 'diff2html.min.css'));
+							const diff2htmlCssBytes = await vscode.workspace.fs.readFile(vscode.Uri.joinPath(context.extensionUri, 'webview', 'diff2html-3.4.55.min.css'));
 							diff2htmlCss = new TextDecoder().decode(diff2htmlCssBytes);
 
 							if (!options.generateFileList) {
@@ -237,7 +270,7 @@ export function activate(context: vscode.ExtensionContext) {
 						}
 
 
-						let finalHtml = await getExportContent(vscode.Uri.joinPath(context.extensionUri, 'webview', 'export-page.html'), html, diff2htmlCss);
+						let finalHtml = await getExportContent(vscode.Uri.joinPath(context.extensionUri, 'webview', 'export-page.html'), { htmlContent: html, cssContent: diff2htmlCss, lineCountContent });
 						await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(finalHtml));
 						vscode.window.showInformationMessage(`Diff 报告已保存到 ${uri.fsPath}`);
 					}

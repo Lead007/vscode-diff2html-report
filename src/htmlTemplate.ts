@@ -24,16 +24,17 @@ export async function getWebviewContent(webView: vscode.Webview, contentData: We
     return result;
 }
 
-export async function getExportContent(htmlPath: vscode.Uri, htmlContent: string, cssContent: string): Promise<string> {
+export interface ExportContentData {
+    htmlContent: string;
+    cssContent: string;
+    lineCountContent: string;
+}
+
+export async function getExportContent(htmlPath: vscode.Uri, contentData: ExportContentData): Promise<string> {
     const tplBytes = await vscode.workspace.fs.readFile(htmlPath);
     const tpl = new TextDecoder().decode(tplBytes);
 
-    const contentStrings = {
-        cssContent,
-        htmlContent
-    };
-
-    const result = mustache.render(tpl, contentStrings);
+    const result = mustache.render(tpl, contentData);
 
     return result;
 }
