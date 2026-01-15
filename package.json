@@ -16,37 +16,40 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
-    "configuration":{
-      "type":"object",
-      "title": "Diff2html Report Configuration",
+    "configuration": {
+      "type": "object",
+      "title": "%diff2html-report.configuration.title%",
       "properties": {
         "diff2html-report.filter": {
           "type": "string",
           "default": "",
-          "description": "Filter string to include only specific files in the diff report."
+          "description": "%diff2html-report.configuration.filter%"
         },
         "diff2html-report.drawLineCount": {
           "type": "boolean",
           "default": true,
-          "description": "Display line count statistics in the diff report."
+          "description": "%diff2html-report.configuration.drawLineCount%"
         },
         "diff2html-report.defaultViewType": {
           "type": "string",
-          "enum": ["side-by-side", "line-by-line"],
+          "enum": [
+            "side-by-side",
+            "line-by-line"
+          ],
           "default": "side-by-side",
-          "description": "Default view type for diff reports."
+          "description": "%diff2html-report.configuration.defaultViewType%"
         },
         "diff2html-report.useOnlineResources": {
           "type": "boolean",
           "default": false,
-          "description": "Use online resources (CDN) for diff reports instead of local files."
+          "description": "%diff2html-report.configuration.useOnlineResources%"
         }
       }
     },
     "commands": [
       {
         "command": "diff2html-report.generateDiffReport",
-        "title": "Generate Diff Report"
+        "title": "%diff2html-report.command.generateDiffReport%"
       }
     ],
     "menus": {
@@ -81,6 +84,7 @@
   },
   "dependencies": {
     "diff2html": "^3.4.55",
-    "mustache": "^4.2.0"
+    "mustache": "^4.2.0",
+    "vscode-nls-i18n": "^0.2.4"
   }
 }

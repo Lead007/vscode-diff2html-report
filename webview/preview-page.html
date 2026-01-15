@@ -16,17 +16,17 @@
 </head>
 <body>
     <form class="box m-4" id="optionForm">
-        <label class="label is-medium">HTML导出选项</label>
+        <label class="label is-medium">{{exportOptionsLabel}}</label>
         <div class="field">
             <div class="control">
                 <label class="checkbox">
                     <input type="checkbox" name="generateFileList" checked/>
-                    生成文件列表
+                    {{generateFileListLabel}}
                 </label>
             </div>
         </div>
 
-        <button type="submit" class="button is-info">另存为HTML文件</button>
+        <button type="submit" class="button is-info">{{exportButtonLabel}}</button>
     </form>
 
     <hr>

@@ -7,13 +7,11 @@ import * as diff2html from 'diff2html';
 import { OutputFormatType } from 'diff2html/lib/types';
 import { getExportContent, getWebviewContent } from './htmlTemplate';
 import { promisify } from 'util';
+import { init, localize } from 'vscode-nls-i18n';
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "diff2html-report" is now active!');
+	init(context.extensionPath);
 
 	// 获取 Git 扩展
     const gitExtension = vscode.extensions.getExtension('vscode.git');
@@ -31,7 +29,7 @@ export function activate(context: vscode.ExtensionContext) {
 			if (!repo) { return; }
 			const refs: RefInfo[] = await repo.getRefs();
 
-			async function getSelection(ref: RefInfo): Promise<vscode.QuickPickItem> {
+			async function getSelection(ref: RefInfo, description: string): Promise<vscode.QuickPickItem> {
 				var detail: string = '';
 				if (ref.commit) {
 					const commit = await repo.getCommit(ref.commit);
@@ -39,41 +37,41 @@ export function activate(context: vscode.ExtensionContext) {
 				}
 				return {
 					label: ref.name,
-					description: '本地分支',
+					description,
 					detail
 				};
 			};
 
 			const head = {
 				label: "HEAD",
-				description: '当前提交',
-				detail: '当前工作区'
+				description: localize('diff2html-report.commitOption.description.head'),
+				detail: localize('diff2html-report.commitOption.detail.head')
 			};
 
 			const input = {
-				label: "手动输入分支名/标签名/提交哈希",
-				description: '手动输入',
-				detail: '👉手动输入分支名/标签名/提交哈希',
+				label: localize('diff2html-report.commitOption.label.inputPrompt'),
+				description: localize('diff2html-report.commitOption.description.inputPrompt'),
+				detail: localize('diff2html-report.commitOption.detail.inputPrompt'),
 				isCustom: true
 			};
 
 			// 获取分支、标签和提交
 			const localBranches = await Promise.all(refs
-				.filter((ref) => ref.type === 0) // type 1 是本地分支
-				.map(getSelection));
+				.filter(ref => ref.type === 0) // type 1 是本地分支
+				.map(ref => getSelection(ref, localize('diff2html-report.commitOption.description.local'))));
 
 			// 获取远程分支
 			const remoteBranches = await Promise.all(refs
-				.filter((ref) => ref.type === 1) // type 2 是远程分支
-				.map(getSelection));
+				.filter(ref => ref.type === 1) // type 2 是远程分支
+				.map(ref => getSelection(ref, localize('diff2html-report.commitOption.description.remote'))));
 
 			const tags = await Promise.all(refs
-				.filter((ref) => ref.type === 2) // type 3 是Tag
-				.map(getSelection));
+				.filter(ref => ref.type === 2) // type 3 是Tag
+				.map(ref => getSelection(ref, localize('diff2html-report.commitOption.description.tag'))));
 
 			const commits = [head, input, ...localBranches, ...remoteBranches, ...tags];
 			// 选择基线版本
-			let selectedBase = await selectCommit(commits, '选择一个分支或标签作为基线');
+			let selectedBase = await selectCommit(commits, localize('diff2html-report.commitOption.placeHolder.base'));
 
 			if (!selectedBase) {
 				return;
@@ -82,11 +80,11 @@ export function activate(context: vscode.ExtensionContext) {
 			// 选择当前版本时，插入暂存区选项
 			commits.splice(1, 0, {
 				label: '--staged',
-				description: '暂存区',
-				detail: `已暂存的更改`
+				description: localize('diff2html-report.commitOption.description.staged'),
+				detail: localize('diff2html-report.commitOption.detail.staged')
 			});
 
-			let selectedCur = await selectCommit(commits, '选择一个分支或标签作为当前版本');
+			let selectedCur = await selectCommit(commits, localize('diff2html-report.commitOption.placeHolder.current'));
 
 			if (!selectedCur) {
 				return;
@@ -95,16 +93,16 @@ export function activate(context: vscode.ExtensionContext) {
 			const extensionConfig = vscode.workspace.getConfiguration('diff2html-report');
 			// 选择git diff参数
 			const options = [
-				{ label: '-b', description: '忽略行尾空格', picked: false },
-				{ label: '-w', description: '忽略所有空白', picked: false },
-				{ label: '-M', description: '重命名检测', picked: false },
-				{ label: '-C', description: '移动检测', picked: false },
-				{ label: '--submodule', description: '递归子模块', picked: false },
+				{ label: '-b', description: localize('diff2html-report.commandOption.b'), picked: false },
+				{ label: '-w', description: localize('diff2html-report.commandOption.w'), picked: false },
+				{ label: '-M', description: localize('diff2html-report.commandOption.M'), picked: false },
+				{ label: '-C', description: localize('diff2html-report.commandOption.C'), picked: false },
+				{ label: '--submodule', description: localize('diff2html-report.commandOption.--submodule'), picked: false },
 			];
 
 			const enabledOptions = await vscode.window.showQuickPick(options, {
 				canPickMany: true,
-				placeHolder: '选择git diff的参数 (可多选)',
+				placeHolder: localize('diff2html-report.commandOption.placeHolder'),
 				ignoreFocusOut: true,
 			});
 
@@ -120,12 +118,12 @@ export function activate(context: vscode.ExtensionContext) {
 			try {
 				const { stdout, stderr } = await execFileAsync('git', ['diff', selectedBase.label, selectedCur.label, ...enableOptionsStr], { cwd: repo.rootUri.fsPath, maxBuffer: 64 * 1024 * 1024, encoding: 'utf8' });
 				if (stderr && !stderr.includes('warning:')) {
-					vscode.window.showErrorMessage(`执行 git diff 失败: ${stderr}`);
+					vscode.window.showErrorMessage(localize('diff2html-report.commandErrorText', stderr));
 					return;
 				}
 				diffContent = stdout;
 			} catch (error) {
-				vscode.window.showErrorMessage(`执行 git diff 失败: ${error}`);
+				vscode.window.showErrorMessage(localize('diff2html-report.commandErrorText', String(error)));
 				return;
 			}
 
@@ -142,7 +140,7 @@ export function activate(context: vscode.ExtensionContext) {
 			const targetColumn = vscode.window.activeTextEditor?.viewColumn ?? vscode.ViewColumn.Beside;
 			const panel = vscode.window.createWebviewPanel(
 				'diff2htmlPreview',
-				'Git Diff Preview',
+				localize('diff2html-report.webview.title'),
 				targetColumn,
 				{
 					enableScripts: true,
@@ -158,22 +156,22 @@ export function activate(context: vscode.ExtensionContext) {
 			if (extensionConfig.get<boolean>('useOnlineResources')) {
 				// 使用在线资源
 				cssUris = [
-					vscode.Uri.parse('https://cdn.jsdelivr.net/npm/diff2html/bundles/css/diff2html.min.css'),
-					vscode.Uri.parse('https://cdnjs.cloudflare.com/ajax/libs/bulma/1.0.4/css/bulma.min.css'),
+					vscode.Uri.parse(localize('diff2html-report.webview.css.diff2html.online')),
+					vscode.Uri.parse(localize('diff2html-report.webview.css.bulma.online')),
 				];
 				scriptUris = [
 					vscode.Uri.joinPath(context.extensionUri, 'webview', 'preview-page.js'),
-					vscode.Uri.parse('https://cdn.jsdelivr.net/npm/diff2html/bundles/js/diff2html-ui.min.js'),
+					vscode.Uri.parse(localize('diff2html-report.webview.js.diff2html.online')),
 				];
 			} else {
 				// 使用本地资源
 				cssUris = [
-					vscode.Uri.joinPath(context.extensionUri, 'webview', 'diff2html-3.4.55.min.css'),
-					vscode.Uri.joinPath(context.extensionUri, 'webview', 'bulma-1.0.4.min.css'),
+					vscode.Uri.joinPath(context.extensionUri, 'webview', localize('diff2html-report.webview.css.diff2html.local')),
+					vscode.Uri.joinPath(context.extensionUri, 'webview', localize('diff2html-report.webview.css.bulma.local')),
 				];
 				scriptUris = [
 					vscode.Uri.joinPath(context.extensionUri, 'webview', 'preview-page.js'),
-					vscode.Uri.joinPath(context.extensionUri, 'webview', 'diff2html-ui-3.4.55.min.js')
+					vscode.Uri.joinPath(context.extensionUri, 'webview', localize('diff2html-report.webview.js.diff2html.local'))
 				];
 			}
 
@@ -183,7 +181,7 @@ export function activate(context: vscode.ExtensionContext) {
 				try {
 					const { stdout, stderr } = await execFileAsync('git', ['diff', selectedBase.label, selectedCur.label, '--numstat', ...enableOptionsStr], { cwd: repo.rootUri.fsPath, maxBuffer: 64 * 1024 * 1024, encoding: 'utf8' });
 					if (stderr && !stderr.includes('warning:')) {
-						vscode.window.showErrorMessage(`执行 git diff 失败: ${stderr}`);
+						vscode.window.showErrorMessage(localize('diff2html-report.commandErrorText', stderr));
 						return;
 					}
 					const lineCountForFile = stdout.trim().split('\n').map(line => {
@@ -201,9 +199,9 @@ export function activate(context: vscode.ExtensionContext) {
 					const totalAdded = lineCountForFile.reduce((sum, item) => sum + item.added, 0);
 					const totalDeleted = lineCountForFile.reduce((sum, item) => sum + item.deleted, 0);
 
-					lineCountContent = `总计：新增 ${totalAdded} 行，删除 ${totalDeleted} 行`;
+					lineCountContent = localize('diff2html-report.webview.lineCountContent', String(totalAdded), String(totalDeleted));
 				} catch (error) {
-					vscode.window.showErrorMessage(`执行 git diff 失败: ${error}`);
+					vscode.window.showErrorMessage(localize('diff2html-report.commandErrorText', String(error)));
 					return;
 				}
 			}
@@ -214,9 +212,12 @@ export function activate(context: vscode.ExtensionContext) {
 				htmlPath: vscode.Uri.joinPath(context.extensionUri, 'webview', 'preview-page.html'),
 				cssUris,
 				scriptUris,
-				title: 'Git Diff Preview',
-				header: `Git Diff 报告`
+				title: localize('diff2html-report.webview.title'),
+				header: localize('diff2html-report.webview.header'),
 			}, {
+				exportOptionsLabel: localize('diff2html-report.webview.exportOptionsLabel'),
+				generateFileListLabel: localize('diff2html-report.webview.generateFileListLabel'),
+				exportButtonLabel: localize('diff2html-report.webview.exportButtonLabel'),
 				htmlContent,
 				lineCountContent
 			});
@@ -231,7 +232,7 @@ export function activate(context: vscode.ExtensionContext) {
 					const uri = await vscode.window.showSaveDialog({
 						defaultUri: vscode.Uri.joinPath(vscode.workspace.workspaceFolders?.[0].uri || vscode.Uri.file('/'), `diff-report-${new Date().toLocaleDateString().replace(/\//g, '-')}.html`),
 						filters: {
-							'HTML 文件': ['html', 'htm']
+							'HTML file': ['html', 'htm']
 						}
 					});
 					if (uri) {
@@ -239,7 +240,7 @@ export function activate(context: vscode.ExtensionContext) {
 						const extensionConfig = vscode.workspace.getConfiguration('diff2html-report');
 						if (!extensionConfig.get<boolean>('useOnlineResources')) {
 							// 进行资源内联
-							const diff2htmlCssBytes = await vscode.workspace.fs.readFile(vscode.Uri.joinPath(context.extensionUri, 'webview', 'diff2html-3.4.55.min.css'));
+							const diff2htmlCssBytes = await vscode.workspace.fs.readFile(vscode.Uri.joinPath(context.extensionUri, 'webview', localize('diff2html-report.webview.css.diff2html.local')));
 							diff2htmlCss = new TextDecoder().decode(diff2htmlCssBytes);
 
 							if (!options.generateFileList) {
@@ -257,7 +258,7 @@ export function activate(context: vscode.ExtensionContext) {
 						} else {
 							// 使用在线资源链接
 							diff2htmlCss = `
-								<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/diff2html/bundles/css/diff2html.min.css">
+								<link rel="stylesheet" href="${localize('diff2html-report.webview.css.diff2html.online')}">
 							`;
 							if (!options.generateFileList) {
 								diff2htmlCss += `
@@ -270,26 +271,16 @@ export function activate(context: vscode.ExtensionContext) {
 						}
 
 
-						let finalHtml = await getExportContent(vscode.Uri.joinPath(context.extensionUri, 'webview', 'export-page.html'), { htmlContent: html, cssContent: diff2htmlCss, lineCountContent });
+						let finalHtml = await getExportContent(vscode.Uri.joinPath(context.extensionUri, 'webview', 'export-page.html'),
+							{ title: localize('diff2html-report.webview.header'), htmlContent: html, cssContent: diff2htmlCss, lineCountContent });
 						await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(finalHtml));
-						vscode.window.showInformationMessage(`Diff 报告已保存到 ${uri.fsPath}`);
+						vscode.window.showInformationMessage(localize('diff2html-report.export.information', uri.fsPath));
 					}
 				}
 			});
 
         })
     );
-
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	// const disposable = vscode.commands.registerCommand('diff2html-report.helloWorld', () => {
-	// 	// The code you place here will be executed every time your command is executed
-	// 	// Display a message box to the user
-	// 	vscode.window.showInformationMessage('Hello World from diff2html-report!');
-	// });
-
-	// context.subscriptions.push(disposable);
 }
 
 // This method is called when your extension is deactivated
@@ -313,8 +304,8 @@ async function selectCommit(commits: vscode.QuickPickItem[], placeHolder: string
 
 	if ((selected as any).isCustom) {
 		const userInput = await vscode.window.showInputBox({
-			placeHolder: '请输入分支名/标签名/提交哈希',
-			prompt: '请输入分支名/标签名/提交哈希'
+			placeHolder: localize('diff2html-report.commitOption.label.inputPrompt'),
+			prompt: localize('diff2html-report.commitOption.label.inputPrompt')
 		});
 		if (!userInput) {
 			return;
