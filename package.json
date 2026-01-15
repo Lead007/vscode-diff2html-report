@@ -25,6 +25,11 @@
           "default": "",
           "description": "%diff2html-report.configuration.filter%"
         },
+        "diff2html-report.encoding":{
+          "type": "string",
+          "default": "utf8",
+          "markdownDescription": "%diff2html-report.configuration.encoding%"
+        },
         "diff2html-report.drawLineCount": {
           "type": "boolean",
           "default": true,

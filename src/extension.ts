@@ -2,7 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import {RefInfo} from './scmTypes';
-import { execFile } from 'child_process';
+import { execFile, ExecFileOptionsWithBufferEncoding, ExecFileOptionsWithStringEncoding } from 'child_process';
 import * as diff2html from 'diff2html';
 import { OutputFormatType } from 'diff2html/lib/types';
 import { getExportContent, getWebviewContent } from './htmlTemplate';
@@ -108,26 +108,16 @@ export function activate(context: vscode.ExtensionContext) {
 
 			const enableOptionsStr = enabledOptions?.map(p => p.label) || [];
 			const filter = extensionConfig.get<string>('filter');
-			if(filter && filter.trim().length > 0) {
+			if (filter && filter.trim().length > 0) {
 				enableOptionsStr.push(filter);
 			}
 
-			const execFileAsync = promisify(execFile);
+			const encoding = extensionConfig.get<string>('encoding') || 'utf8';
 
-			let diffContent = '';
-			try {
-				const { stdout, stderr } = await execFileAsync('git', ['diff', selectedBase.label, selectedCur.label, ...enableOptionsStr], { cwd: repo.rootUri.fsPath, maxBuffer: 64 * 1024 * 1024, encoding: 'utf8' });
-				if (stderr && !stderr.includes('warning:')) {
-					vscode.window.showErrorMessage(localize('diff2html-report.commandErrorText', stderr));
-					return;
-				}
-				diffContent = stdout;
-			} catch (error) {
-				vscode.window.showErrorMessage(localize('diff2html-report.commandErrorText', String(error)));
+			const diffContent = await runGitDiffCommand(repo.rootUri.fsPath, encoding, [selectedBase.label, selectedCur.label, ...enableOptionsStr]);
+			if (!diffContent) {
 				return;
 			}
-
-
 
 			// 使用Diff2Html渲染
 			const configuration = {
@@ -178,34 +168,11 @@ export function activate(context: vscode.ExtensionContext) {
 			// 计算行数
 			let lineCountContent = '';
 			if (extensionConfig.get<boolean>('drawLineCount')) {
-				try {
-					const { stdout, stderr } = await execFileAsync('git', ['diff', selectedBase.label, selectedCur.label, '--numstat', ...enableOptionsStr], { cwd: repo.rootUri.fsPath, maxBuffer: 64 * 1024 * 1024, encoding: 'utf8' });
-					if (stderr && !stderr.includes('warning:')) {
-						vscode.window.showErrorMessage(localize('diff2html-report.commandErrorText', stderr));
-						return;
-					}
-					const lineCountForFile = stdout.trim().split('\n').map(line => {
-						const parts = line.split('\t');
-						if (parts.length >= 3) {
-							return {
-								added: parts[0] === '-' ? 0 : parseInt(parts[0], 10),
-								deleted: parts[1] === '-' ? 0 : parseInt(parts[1], 10),
-								file: parts[2],
-							};
-						}
-						return null;
-					}).filter(item => item !== null) as { added: number, deleted: number, file: string }[];
-
-					const totalAdded = lineCountForFile.reduce((sum, item) => sum + item.added, 0);
-					const totalDeleted = lineCountForFile.reduce((sum, item) => sum + item.deleted, 0);
-
-					lineCountContent = localize('diff2html-report.webview.lineCountContent', String(totalAdded), String(totalDeleted));
-				} catch (error) {
-					vscode.window.showErrorMessage(localize('diff2html-report.commandErrorText', String(error)));
+				lineCountContent = await runGitDiffCommand(repo.rootUri.fsPath, encoding, [selectedBase.label, selectedCur.label, '--numstat', ...enableOptionsStr]);
+				if (!lineCountContent) {
 					return;
 				}
 			}
-
 
 			// 生成最终的webview html内容
 			const resultHtml = await getWebviewContent(panel.webview, {
@@ -315,4 +282,40 @@ async function selectCommit(commits: vscode.QuickPickItem[], placeHolder: string
 		};
 	}
 	return selected;
+}
+
+/**
+ * 指定编码运行 git diff 命令并返回输出
+ * @param path 运行目录
+ * @param encoding 编码
+ * @param paras git diff后的参数列表
+ * @returns stdout，若有错误返回空字符串
+ */
+async function runGitDiffCommand(path: string, encoding: string, paras: string[]): Promise<string> {
+	try {
+		const execFileAsync = promisify(execFile);
+		const execOption: ExecFileOptionsWithBufferEncoding = { cwd: path, maxBuffer: 64 * 1024 * 1024, encoding: 'buffer' };
+		const { stdout, stderr } = await execFileAsync(
+			'git',
+			['diff', ...paras],
+			execOption
+		);
+
+		const decoder = new TextDecoder(encoding);
+		if (stderr.buffer.byteLength && !decoder.decode(stderr.buffer).includes('warning:')) {
+			const errString = decoder.decode(stderr.buffer);
+			if (!errString.includes('warning:')) {
+				vscode.window.showErrorMessage(localize('diff2html-report.commandErrorText', errString));
+				return '';
+			}
+		}
+		if (stdout.buffer.byteLength === 0) {
+			vscode.window.showInformationMessage(localize('diff2html-report.commandNoDiffText'));
+			return '';
+		}
+		return decoder.decode(stdout);
+	} catch (error) {
+		vscode.window.showErrorMessage(localize('diff2html-report.commandErrorText', String(error)));
+		return '';
+	}
 }
