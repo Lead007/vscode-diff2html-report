@@ -1,4 +1,4 @@
-import * as mustache from 'mustache';
+import mustache from 'mustache';
 import * as vscode from 'vscode';
 
 export interface WebviewContentData {
