@@ -25,6 +25,7 @@ export async function getWebviewContent(webView: vscode.Webview, contentData: We
 }
 
 export interface ExportContentData {
+    title: string;
     htmlContent: string;
     cssContent: string;
     lineCountContent: string;
