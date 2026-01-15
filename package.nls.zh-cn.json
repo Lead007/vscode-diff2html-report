@@ -1,6 +1,7 @@
 {
     "diff2html-report.configuration.title": "Diff2html Report配置",
     "diff2html-report.configuration.filter": "筛选字符串，以仅在差异报告中包含特定文件。",
+    "diff2html-report.configuration.encoding": "用于检索存储库文件特定版本时的字符集编码（例如在差异视图中）。所有支持的编码列表可以在[这里](https://github.com/ashtuchkin/iconv-lite/wiki/Supported-Encodings)找到。",
     "diff2html-report.configuration.drawLineCount": "在差异报告中显示行数统计信息。",
     "diff2html-report.configuration.defaultViewType": "差异报告的默认视图类型。",
     "diff2html-report.configuration.useOnlineResources": "使用在线资源（CDN）而不是本地文件来生成差异报告。",
@@ -24,6 +25,7 @@
     "diff2html-report.commandOption.--submodule": "递归子模块",
     "diff2html-report.commandOption.placeHolder": "选择git diff的参数 (可多选)",
     "diff2html-report.commandErrorText": "执行 git diff 失败: {0}",
+    "diff2html-report.commandNoDiffText": "所选提交之间未发现差异。",
     "diff2html-report.webview.title": "Git Diff 预览",
     "diff2html-report.webview.header": "Git Diff 报告",
     "diff2html-report.webview.lineCountContent": "总计：新增 {0} 行，删除 {1} 行",

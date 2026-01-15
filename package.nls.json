@@ -1,6 +1,7 @@
 {
     "diff2html-report.configuration.title": "Diff2html Report Configuration",
     "diff2html-report.configuration.filter": "Filter string to include only specific files in the diff report.",
+    "diff2html-report.configuration.encoding": "The character set encoding used when retrieving a specific version of repository files (e.g. in the Diff View). A list of all supported encodings can be found [here](https://github.com/ashtuchkin/iconv-lite/wiki/Supported-Encodings).",
     "diff2html-report.configuration.drawLineCount": "Display line count statistics in the diff report.",
     "diff2html-report.configuration.defaultViewType": "Default view type for diff reports.",
     "diff2html-report.configuration.useOnlineResources": "Use online resources (CDN) for diff reports instead of local files.",
@@ -24,6 +25,7 @@
     "diff2html-report.commandOption.--submodule": "Recurse into submodules",
     "diff2html-report.commandOption.placeHolder": "Select git diff options (multiple selections allowed)",
     "diff2html-report.commandErrorText": "Failed to execute git diff: {0}",
+    "diff2html-report.commandNoDiffText": "No differences found for the selected commits.",
     "diff2html-report.webview.title": "Git Diff Preview",
     "diff2html-report.webview.header": "Git Diff Report",
     "diff2html-report.webview.lineCountContent": "Total : Added: {0} | Deleted: {1}",
