@@ -1,13 +1,27 @@
 {
   "name": "diff2html-report",
   "displayName": "diff2html-report",
-  "description": "A Git diff report generator",
-  "version": "0.0.1",
+  "icon": "assets/icon.png",
+  "description": "A Git diff report generator For VSCode using Diff2Html.",
+  "version": "0.1.0",
   "license": "MIT",
-  "publisher": "Bo-Pang",
+  "publisher": "Lead007",
   "engines": {
     "vscode": "^1.68.0"
   },
+  "homepage": "https://github.com/Lead007/vscode-diff2html-report/blob/main/README.md",
+  "bugs": {
+    "url": "https://github.com/Lead007/vscode-diff2html-report/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Lead007/vscode-diff2html-report"
+  },
+  "keywords": [
+    "git",
+    "diff",
+    "report"
+  ],
   "categories": [
     "Other"
   ],
