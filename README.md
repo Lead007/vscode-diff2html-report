@@ -16,6 +16,8 @@ This extension adds a "Genetate Diff Report" menu in the "Change" menu of Git pa
 This extension contributes the following settings:
 
 * `diff2html-report.filter`: Set the filter string to include only specific files in the diff report.
+* `diff2html-report.encoding`: The character set encoding used when retrieving a specific version of repository files (e.g. in the Diff View). A list of all supported encodings can be found [here](https://github.com/ashtuchkin/iconv-lite/wiki/Supported-Encodings).
+* `diff2html-report.drawLineCount`: Display line count statistics in the diff report.
 * `diff2html-report.defaultViewType`: Set the diff2html default view type. The default setting is side-by-side.
 * `diff2html-report.useOnlineResources`: Set whether to use online resources for `diff2html` and `Bulma`. The default setting is `false`, which means using stylesheets and scripts inside this extension.
 
