@@ -166,13 +166,30 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 
 			// 计算行数
-			let lineCountContent = '';
+			let lineCountResult = '';
 			if (extensionConfig.get<boolean>('drawLineCount')) {
-				lineCountContent = await runGitDiffCommand(repo.rootUri.fsPath, encoding, [selectedBase.label, selectedCur.label, '--numstat', ...enableOptionsStr]);
-				if (!lineCountContent) {
+				lineCountResult = await runGitDiffCommand(repo.rootUri.fsPath, encoding, [selectedBase.label, selectedCur.label, '--numstat', ...enableOptionsStr]);
+				if (!lineCountResult) {
 					return;
 				}
 			}
+
+			const lineCountForFile = lineCountResult.trim().split('\n').map(line => {
+				const parts = line.split('\t');
+				if (parts.length >= 3) {
+					return {
+						added: parts[0] === '-' ? 0 : parseInt(parts[0], 10),
+						deleted: parts[1] === '-' ? 0 : parseInt(parts[1], 10),
+						file: parts[2],
+					};
+				}
+				return null;
+			}).filter(item => item !== null) as { added: number, deleted: number, file: string }[];
+
+			const totalAdded = lineCountForFile.reduce((sum, item) => sum + item.added, 0);
+			const totalDeleted = lineCountForFile.reduce((sum, item) => sum + item.deleted, 0);
+
+			const lineCountContent = localize('diff2html-report.webview.lineCountContent', String(totalAdded), String(totalDeleted));
 
 			// 生成最终的webview html内容
 			const resultHtml = await getWebviewContent(panel.webview, {
