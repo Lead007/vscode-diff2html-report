@@ -33,5 +33,7 @@
     "diff2html-report.webview.exportOptionsLabel": "HTML导出选项",
     "diff2html-report.webview.generateFileListLabel": "生成文件列表",
     "diff2html-report.webview.exportButtonLabel": "另存为HTML文件",
-    "diff2html-report.export.information": "Diff 报告已保存到: {0}"
+    "diff2html-report.export.information": "Diff 报告已保存到: {0}",
+    "diff2html-report.export.openFile": "打开文件",
+    "diff2html-report.export.openFolder": "打开文件夹"
 }
