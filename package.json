@@ -3,7 +3,7 @@
   "displayName": "diff2html-report",
   "icon": "assets/icon.png",
   "description": "A Git diff report generator For VSCode using Diff2Html.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "MIT",
   "publisher": "Lead007",
   "engines": {
@@ -28,7 +28,7 @@
   "activationEvents": [
     "onCommand:extension.showGitCommit"
   ],
-  "main": "./out/extension.js",
+  "main": "./dist/extension.js",
   "contributes": {
     "configuration": {
       "type": "object",
@@ -90,7 +90,7 @@
     "vscode:prepublish": "npm run build",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "build": "esbuild src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node --minify",
+    "build": "tsc -p ./ && esbuild out/**/*.js --bundle --outdir=dist --external:vscode --format=cjs --platform=node --minify",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src",
     "test": "vscode-test"
