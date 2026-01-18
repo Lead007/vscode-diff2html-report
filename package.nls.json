@@ -2,6 +2,7 @@
     "diff2html-report.configuration.title": "Diff2html Report Configuration",
     "diff2html-report.configuration.filter": "Filter string to include only specific files in the diff report.",
     "diff2html-report.configuration.encoding": "The character set encoding used when retrieving a specific version of repository files (e.g. in the Diff View). A list of all supported encodings can be found [here](https://github.com/ashtuchkin/iconv-lite/wiki/Supported-Encodings).",
+    "diff2html-report.configuration.maxGitDiffFileSize": "Maximum file size (in bytes) for the git diff output. The default value is 64MB.",
     "diff2html-report.configuration.drawLineCount": "Display line count statistics in the diff report.",
     "diff2html-report.configuration.defaultViewType": "Default view type for diff reports.",
     "diff2html-report.configuration.useOnlineResources": "Use online resources (CDN) for diff reports instead of local files.",

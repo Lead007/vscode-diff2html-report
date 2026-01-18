@@ -44,6 +44,11 @@
           "default": "utf8",
           "markdownDescription": "%diff2html-report.configuration.encoding%"
         },
+        "diff2html-report.maxGitDiffFileSize": {
+          "type": "number",
+          "default": 67108864,
+          "description": "%diff2html-report.configuration.maxGitDiffFileSize%"
+        },
         "diff2html-report.drawLineCount": {
           "type": "boolean",
           "default": true,

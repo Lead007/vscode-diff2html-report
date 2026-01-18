@@ -113,8 +113,9 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 
 			const encoding = extensionConfig.get<string>('encoding') || 'utf8';
+			const maxGitDiffFileSize = extensionConfig.get<number>('maxGitDiffFileSize') || 67108864;
 
-			const diffContent = await runGitDiffCommand(repo.rootUri.fsPath, encoding, [selectedBase.label, selectedCur.label, ...enableOptionsStr]);
+			const diffContent = await runGitDiffCommand(repo.rootUri.fsPath, encoding, maxGitDiffFileSize, [selectedBase.label, selectedCur.label, ...enableOptionsStr]);
 			if (!diffContent) {
 				return;
 			}
@@ -168,7 +169,7 @@ export function activate(context: vscode.ExtensionContext) {
 			// 计算行数
 			let lineCountResult = '';
 			if (extensionConfig.get<boolean>('drawLineCount')) {
-				lineCountResult = await runGitDiffCommand(repo.rootUri.fsPath, encoding, [selectedBase.label, selectedCur.label, '--numstat', ...enableOptionsStr]);
+				lineCountResult = await runGitDiffCommand(repo.rootUri.fsPath, encoding, maxGitDiffFileSize, [selectedBase.label, selectedCur.label, '--numstat', ...enableOptionsStr]);
 				if (!lineCountResult) {
 					return;
 				}
@@ -308,10 +309,10 @@ async function selectCommit(commits: vscode.QuickPickItem[], placeHolder: string
  * @param paras git diff后的参数列表
  * @returns stdout，若有错误返回空字符串
  */
-async function runGitDiffCommand(path: string, encoding: string, paras: string[]): Promise<string> {
+async function runGitDiffCommand(path: string, encoding: string, maxBuffer: number, paras: string[]): Promise<string> {
 	try {
 		const execFileAsync = promisify(execFile);
-		const execOption: ExecFileOptionsWithBufferEncoding = { cwd: path, maxBuffer: 64 * 1024 * 1024, encoding: 'buffer' };
+		const execOption: ExecFileOptionsWithBufferEncoding = { cwd: path, maxBuffer: maxBuffer, encoding: 'buffer' };
 		const { stdout, stderr } = await execFileAsync(
 			'git',
 			['diff', ...paras],
