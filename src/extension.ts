@@ -259,7 +259,16 @@ export function activate(context: vscode.ExtensionContext) {
 						let finalHtml = await getExportContent(vscode.Uri.joinPath(context.extensionUri, 'webview', 'export-page.html'),
 							{ title: localize('diff2html-report.webview.header'), htmlContent: html, cssContent: diff2htmlCss, lineCountContent });
 						await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(finalHtml));
-						vscode.window.showInformationMessage(localize('diff2html-report.export.information', uri.fsPath));
+						const action = await vscode.window.showInformationMessage(
+							localize('diff2html-report.export.information', uri.fsPath),
+							localize('diff2html-report.export.openFile'),
+							localize('diff2html-report.export.openFolder')
+						);
+						if (action === localize('diff2html-report.export.openFile')) {
+							vscode.env.openExternal(vscode.Uri.file(uri.fsPath));
+						} else if (action === localize('diff2html-report.export.openFolder')) {
+							vscode.commands.executeCommand('revealFileInOS', uri);
+						}
 					}
 				}
 			});
