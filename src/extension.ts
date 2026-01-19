@@ -124,7 +124,7 @@ export function activate(context: vscode.ExtensionContext) {
 			const configuration = {
 				drawFileList: true,
 				matching: 'lines',
-				outputFormat: extensionConfig.get<string>('outputFormat') as OutputFormatType,
+				outputFormat: extensionConfig.get<string>('defaultViewType') as OutputFormatType,
 			} as diff2html.Diff2HtmlConfig;
 			const htmlContent = diff2html.html(diffContent, configuration);
 
