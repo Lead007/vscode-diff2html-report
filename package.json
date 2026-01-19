@@ -88,9 +88,9 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run build",
-    "compile": "tsc -p ./",
+    "compile": "tsc -p ./ && esbuild out/**/*.js --bundle --outdir=dist --external:vscode --format=cjs --platform=node --minify --sourcemap",
     "watch": "tsc -watch -p ./",
-    "build": "tsc -p ./ && esbuild out/**/*.js --bundle --outdir=dist --external:vscode --format=cjs --platform=node --minify",
+    "build": "npm run compile",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src",
     "test": "vscode-test"
