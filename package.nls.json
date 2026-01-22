@@ -43,8 +43,5 @@
     "diff2html-report.progress.exportingReport": "Exporting diff report...",
     "diff2html-report.webview.css.diff2html.online": "https://cdn.jsdelivr.net/npm/diff2html/bundles/css/diff2html.min.css",
     "diff2html-report.webview.css.bulma.online": "https://cdnjs.cloudflare.com/ajax/libs/bulma/1.0.4/css/bulma.min.css",
-    "diff2html-report.webview.js.diff2html.online": "https://cdn.jsdelivr.net/npm/diff2html/bundles/js/diff2html.min.js",
-    "diff2html-report.webview.css.diff2html.local": "diff2html-3.4.55.min.css",
-    "diff2html-report.webview.css.bulma.local": "bulma-1.0.4.min.css",
-    "diff2html-report.webview.js.diff2html.local": "diff2html-3.4.55.min.js"
+    "diff2html-report.webview.js.diff2html.online": "https://cdn.jsdelivr.net/npm/diff2html/bundles/js/diff2html.min.js"
 }
