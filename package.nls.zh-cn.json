@@ -35,5 +35,10 @@
     "diff2html-report.webview.exportButtonLabel": "另存为HTML文件",
     "diff2html-report.export.information": "Diff 报告已保存到: {0}",
     "diff2html-report.export.openFile": "打开文件",
-    "diff2html-report.export.openFolder": "打开文件夹"
+    "diff2html-report.export.openFolder": "打开文件夹",
+    "diff2html-report.progress.loadingRefs": "正在加载仓库引用...",
+    "diff2html-report.progress.loadingRefsMessage": "正在获取分支、标签和提交信息...",
+    "diff2html-report.progress.executingDiff": "正在执行 git diff...",
+    "diff2html-report.progress.generatingReport": "正在生成差异报告...",
+    "diff2html-report.progress.exportingReport": "正在导出差异报告..."
 }
