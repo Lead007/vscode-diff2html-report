@@ -2,13 +2,14 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import { RefInfo } from './scmTypes';
+import { getSelection, selectCommit, selectDiffOptions } from './selection';
 import { execFile, ExecFileOptionsWithBufferEncoding, ExecFileOptionsWithStringEncoding } from 'child_process';
 import * as diff2html from 'diff2html';
 import { OutputFormatType } from 'diff2html/lib/types';
 import { getExportContent, getWebviewContent } from './htmlTemplate';
 import { promisify } from 'util';
 import { init, localize } from 'vscode-nls-i18n';
-// This method is called when your extension is activated
+// This method is called when your extension is activateds
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 	init(context.extensionPath);
@@ -35,18 +36,6 @@ export function activate(context: vscode.ExtensionContext) {
 			}, async (progress) => {
 				progress.report({ message: localize('diff2html-report.progress.loadingRefs') });
 				const refs: RefInfo[] = await repo.getRefs();
-				async function getSelection(ref: RefInfo, description: string): Promise<vscode.QuickPickItem> {
-					var detail: string = '';
-					if (ref.commit) {
-						const commit = await repo.getCommit(ref.commit);
-						detail = `${commit.message} (${ref.commit.slice(0, 8)})`;
-					}
-					return {
-						label: ref.name,
-						description,
-						detail
-					};
-				};
 
 				progress.report({ message: localize('diff2html-report.progress.loadingRefsMessage') });
 				const head = {
@@ -65,17 +54,15 @@ export function activate(context: vscode.ExtensionContext) {
 				// 获取分支、标签和提交
 				const localBranches = await Promise.all(refs
 					.filter(ref => ref.type === 0) // type 1 是本地分支
-					.map(ref => getSelection(ref, localize('diff2html-report.commitOption.description.local'))));
+					.map(ref => getSelection(ref, localize('diff2html-report.commitOption.description.local'), repo)));
 
-				// 获取远程分支
 				const remoteBranches = await Promise.all(refs
 					.filter(ref => ref.type === 1) // type 2 是远程分支
-					.map(ref => getSelection(ref, localize('diff2html-report.commitOption.description.remote'))));
+					.map(ref => getSelection(ref, localize('diff2html-report.commitOption.description.remote'), repo)));
 
 				const tags = await Promise.all(refs
 					.filter(ref => ref.type === 2) // type 3 是Tag
-					.map(ref => getSelection(ref, localize('diff2html-report.commitOption.description.tag'))));
-
+					.map(ref => getSelection(ref, localize('diff2html-report.commitOption.description.tag'), repo)));
 				return [head, input, ...localBranches, ...remoteBranches, ...tags];
 			});
 
@@ -101,26 +88,9 @@ export function activate(context: vscode.ExtensionContext) {
 
 			const extensionConfig = vscode.workspace.getConfiguration('diff2html-report');
 			// 选择git diff参数
-			const options = [
-				{ label: '-b', description: localize('diff2html-report.commandOption.b'), picked: false },
-				{ label: '-w', description: localize('diff2html-report.commandOption.w'), picked: false },
-				{ label: '-M', description: localize('diff2html-report.commandOption.M'), picked: false },
-				{ label: '-C', description: localize('diff2html-report.commandOption.C'), picked: false },
-				{ label: '--submodule', description: localize('diff2html-report.commandOption.--submodule'), picked: false },
-			];
+			const enableOptionsStr = await selectDiffOptions(extensionConfig);
 
-			const enabledOptions = await vscode.window.showQuickPick(options, {
-				canPickMany: true,
-				placeHolder: localize('diff2html-report.commandOption.placeHolder'),
-				ignoreFocusOut: true,
-			});
-
-			const enableOptionsStr = enabledOptions?.map(p => p.label) || [];
-			const filter = extensionConfig.get<string>('filter');
-			if (filter && filter.trim().length > 0) {
-				enableOptionsStr.push(filter);
-			}
-
+			// 获取编码和文件大小限制配置
 			const encoding = extensionConfig.get<string>('encoding') || 'utf8';
 			const maxGitDiffFileSize = extensionConfig.get<number>('maxGitDiffFileSize') || 67108864;
 
@@ -145,11 +115,11 @@ export function activate(context: vscode.ExtensionContext) {
 				return diff2html.html(diffContent, configuration);
 			});
 
-			const targetColumn = vscode.window.activeTextEditor?.viewColumn ?? vscode.ViewColumn.Beside;
+			// 创建Webview
 			const panel = vscode.window.createWebviewPanel(
 				'diff2htmlPreview',
 				localize('diff2html-report.webview.title'),
-				targetColumn,
+				vscode.ViewColumn.Active,
 				{
 					enableScripts: true,
 					localResourceRoots: [
@@ -304,37 +274,6 @@ export function activate(context: vscode.ExtensionContext) {
 
 // This method is called when your extension is deactivated
 export function deactivate() { }
-
-/**
- * 弹出列表让用户选择一个提交
- * @param commits 选项列表
- * @param placeHolder 提示信息
- * @returns 用户选择的提交
- */
-async function selectCommit(commits: vscode.QuickPickItem[], placeHolder: string): Promise<vscode.QuickPickItem | undefined> {
-	let selected = await vscode.window.showQuickPick(commits, {
-		placeHolder: placeHolder,
-		ignoreFocusOut: true,
-	});
-
-	if (!selected) {
-		return;
-	}
-
-	if ((selected as any).isCustom) {
-		const userInput = await vscode.window.showInputBox({
-			placeHolder: localize('diff2html-report.commitOption.label.inputPrompt'),
-			prompt: localize('diff2html-report.commitOption.label.inputPrompt')
-		});
-		if (!userInput) {
-			return;
-		}
-		selected = {
-			label: userInput,
-		};
-	}
-	return selected;
-}
 
 /**
  * 指定编码运行 git diff 命令并返回输出
