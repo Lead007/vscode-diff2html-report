@@ -22,6 +22,11 @@ export function activate(context: vscode.ExtensionContext) {
 
 	const git = gitExtension.exports.getAPI(1);
 
+	// npm包中的样式和脚本
+	const uri_diff2html_ui_css = vscode.Uri.joinPath(context.extensionUri, 'node_modules', 'diff2html', 'bundles', 'css', 'diff2html.min.css');
+	const uri_diff2html_ui_js = vscode.Uri.joinPath(context.extensionUri, 'node_modules', 'diff2html', 'bundles', 'js', 'diff2html-ui.min.js');
+	const uri_bulma_css = vscode.Uri.joinPath(context.extensionUri, 'node_modules', 'bulma', 'css', 'bulma.css');
+
 	// 在 SCM 提供者上注册命令
 	context.subscriptions.push(
 		vscode.commands.registerCommand('diff2html-report.generateDiffReport', async (uri?) => {
@@ -124,6 +129,7 @@ export function activate(context: vscode.ExtensionContext) {
 					enableScripts: true,
 					localResourceRoots: [
 						vscode.Uri.joinPath(context.extensionUri, 'webview'),
+						vscode.Uri.joinPath(context.extensionUri, 'node_modules'),
 					]
 				}
 			);
@@ -144,12 +150,12 @@ export function activate(context: vscode.ExtensionContext) {
 			} else {
 				// 使用本地资源
 				cssUris = [
-					vscode.Uri.joinPath(context.extensionUri, 'webview', localize('diff2html-report.webview.css.diff2html.local')),
-					vscode.Uri.joinPath(context.extensionUri, 'webview', localize('diff2html-report.webview.css.bulma.local')),
+					uri_diff2html_ui_css,
+					uri_bulma_css,
 				];
 				scriptUris = [
 					vscode.Uri.joinPath(context.extensionUri, 'webview', 'preview-page.js'),
-					vscode.Uri.joinPath(context.extensionUri, 'webview', localize('diff2html-report.webview.js.diff2html.local'))
+					uri_diff2html_ui_js
 				];
 			}
 
@@ -218,7 +224,7 @@ export function activate(context: vscode.ExtensionContext) {
 							const extensionConfig = vscode.workspace.getConfiguration('diff2html-report');
 							if (!extensionConfig.get<boolean>('useOnlineResources')) {
 								// 进行资源内联
-								const diff2htmlCssBytes = await vscode.workspace.fs.readFile(vscode.Uri.joinPath(context.extensionUri, 'webview', localize('diff2html-report.webview.css.diff2html.local')));
+								const diff2htmlCssBytes = await vscode.workspace.fs.readFile(uri_diff2html_ui_css);
 								diff2htmlCss = new TextDecoder().decode(diff2htmlCssBytes);
 
 								if (!options.generateFileList) {

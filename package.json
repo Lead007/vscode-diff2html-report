@@ -93,7 +93,8 @@
     "build": "npm run compile",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src",
-    "test": "vscode-test"
+    "test": "vscode-test",
+    "release": "vsce package"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
@@ -109,6 +110,7 @@
     "typescript": "^5.9.2"
   },
   "dependencies": {
+    "bulma": "^1.0.4",
     "diff2html": "^3.4.55",
     "mustache": "^4.2.0",
     "vscode-nls-i18n": "^0.2.4"
