@@ -4,6 +4,12 @@ All notable changes to the "diff2html-report" extension will be documented in th
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.3.1] - 2026-03-26
+
+### Fixed
+
+- Fix the bug that the configuration `diff2html-report.filter` does not work when there are more than one filter. The type of configuration has been changed to `array`.
+
 ## [0.3.0] - 2026-01-24
 
 ### Added
@@ -37,6 +43,7 @@ When rendering the page, use CSS and JS files from the npm package instead of fr
 
 Initial release.
 
+[0.3.1]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.3.1
 [0.3.0]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.3.0
 [0.2.1]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.2.1
 [0.2.0]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.2.0

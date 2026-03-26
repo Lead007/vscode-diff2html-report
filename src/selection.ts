@@ -75,9 +75,9 @@ export async function selectDiffOptions(extensionConfig: vscode.WorkspaceConfigu
     });
 
     const enableOptionsStr = enabledOptions?.map(p => p.label) || [];
-    const filter = extensionConfig.get<string>('filter');
-    if (filter && filter.trim().length > 0) {
-        enableOptionsStr.push(filter);
+    const filter = extensionConfig.get<string[]>('filter');
+    if (filter && filter.length > 0) {
+        enableOptionsStr.push(...filter);
     }
 
     return enableOptionsStr;
