@@ -112,6 +112,7 @@
   "dependencies": {
     "diff2html": "^3.4.55",
     "mustache": "^4.2.0",
+    "open": "^11.0.1",
     "vscode-nls-i18n": "^0.2.4"
   }
 }
