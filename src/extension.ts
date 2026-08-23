@@ -268,7 +268,8 @@ export function activate(context: vscode.ExtensionContext) {
 							localize('diff2html-report.export.openFolder')
 						);
 						if (action === localize('diff2html-report.export.openFile')) {
-							vscode.env.openExternal(vscode.Uri.file(uri.fsPath));
+							const open = (await import('open')).default;
+							await open(uri.fsPath);
 						} else if (action === localize('diff2html-report.export.openFolder')) {
 							vscode.commands.executeCommand('revealFileInOS', uri);
 						}
