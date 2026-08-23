@@ -1,11 +1,13 @@
+/// <reference types="node" />
+
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import { RefInfo } from './scmTypes';
+import type { RefInfo } from './scmTypes';
 import { getSelection, selectCommit, selectDiffOptions } from './selection';
 import { execFile, ExecFileOptionsWithBufferEncoding, ExecFileOptionsWithStringEncoding } from 'child_process';
 import * as diff2html from 'diff2html';
-import { OutputFormatType } from 'diff2html/lib/types';
+import type { OutputFormatType } from 'diff2html/lib/types';
 import { getExportContent, getWebviewContent } from './htmlTemplate';
 import { promisify } from 'util';
 import { init, localize } from 'vscode-nls-i18n';
@@ -214,7 +216,7 @@ export function activate(context: vscode.ExtensionContext) {
 						}
 					});
 					if (uri) {
-						vscode.window.withProgress({
+						await vscode.window.withProgress({
 							location: vscode.ProgressLocation.Notification,
 							cancellable: false
 						}, async (progress) => {
@@ -258,8 +260,11 @@ export function activate(context: vscode.ExtensionContext) {
 							let finalHtml = await getExportContent(vscode.Uri.joinPath(context.extensionUri, 'webview', 'export-page.html'),
 								{ title: localize('diff2html-report.webview.header'), htmlContent: html, cssContent: diff2htmlCss, lineCountContent });
 							await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(finalHtml));
-
 						});
+
+						//先让 VS Code 有机会刷新并关闭进度通知
+						await new Promise<void>(resolve => setTimeout(resolve, 1000));
+						//提示保存成功，可以打开文件或文件夹
 						const action = await vscode.window.showInformationMessage(
 							localize('diff2html-report.export.information', uri.fsPath),
 							localize('diff2html-report.export.openFile'),
@@ -270,6 +275,7 @@ export function activate(context: vscode.ExtensionContext) {
 						} else if (action === localize('diff2html-report.export.openFolder')) {
 							vscode.commands.executeCommand('revealFileInOS', uri);
 						}
+
 					}
 				}
 			});
