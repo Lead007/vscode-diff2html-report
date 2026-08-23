@@ -27,7 +27,6 @@ export function activate(context: vscode.ExtensionContext) {
 	// npm包中的样式和脚本
 	const uri_diff2html_ui_css = vscode.Uri.joinPath(context.extensionUri, 'node_modules', 'diff2html', 'bundles', 'css', 'diff2html.min.css');
 	const uri_diff2html_ui_js = vscode.Uri.joinPath(context.extensionUri, 'node_modules', 'diff2html', 'bundles', 'js', 'diff2html-ui.min.js');
-	const uri_bulma_css = vscode.Uri.joinPath(context.extensionUri, 'node_modules', 'bulma', 'css', 'bulma.css');
 
 	// 在 SCM 提供者上注册命令
 	context.subscriptions.push(
@@ -143,7 +142,6 @@ export function activate(context: vscode.ExtensionContext) {
 				// 使用在线资源
 				cssUris = [
 					vscode.Uri.parse(localize('diff2html-report.webview.css.diff2html.online')),
-					vscode.Uri.parse(localize('diff2html-report.webview.css.bulma.online')),
 				];
 				scriptUris = [
 					vscode.Uri.joinPath(context.extensionUri, 'webview', 'preview-page.js'),
@@ -153,7 +151,6 @@ export function activate(context: vscode.ExtensionContext) {
 				// 使用本地资源
 				cssUris = [
 					uri_diff2html_ui_css,
-					uri_bulma_css,
 				];
 				scriptUris = [
 					vscode.Uri.joinPath(context.extensionUri, 'webview', 'preview-page.js'),
