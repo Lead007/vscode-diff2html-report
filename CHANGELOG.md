@@ -4,6 +4,16 @@ All notable changes to the "diff2html-report" extension will be documented in th
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.4.0] - 2026-08-31
+
+### Changed
+
+- Use CSS native styles instead of Bulma to render the `Save as HTML file` options and buttons in the `diff2html` preview interface.
+
+### Fixed
+
+- Fix the bug that after an HTML file has been exported, if the path contains "#" characters or non-ASCII characters, the file cannot be opened through the button in the vscode prompt box.
+
 ## [0.3.1] - 2026-03-26
 
 ### Fixed
@@ -19,7 +29,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Changed
 
-When rendering the page, use CSS and JS files from the npm package instead of from the extension source directory. Therefore, remove the CSS and JS library files from the extension source code directory.
+- When rendering the page, use CSS and JS files from the npm package instead of from the extension source directory. Therefore, remove the CSS and JS library files from the extension source code directory.
 
 ## [0.2.1] - 2026-01-19
 
@@ -43,6 +53,7 @@ When rendering the page, use CSS and JS files from the npm package instead of fr
 
 Initial release.
 
+[0.3.1]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.4.0
 [0.3.1]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.3.1
 [0.3.0]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.3.0
 [0.2.1]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.2.1
