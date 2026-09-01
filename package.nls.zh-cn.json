@@ -1,5 +1,6 @@
 {
     "diff2html-report.configuration.title": "Diff2html Report配置",
+    "diff2html-report.configuration.defaultDiffOptions": "生成差异报告时的默认git diff选项。\n支持的选项: \n* -b: 忽略行尾空格\n* -w: 忽略所有空格\n* -M: 重命名检测\n* -C: 移动检测\n* --submodule: 递归子模块",
     "diff2html-report.configuration.filter": "筛选字符串，以仅在差异报告中包含特定文件。",
     "diff2html-report.configuration.encoding": "用于检索存储库文件特定版本时的字符集编码（例如在差异视图中）。所有支持的编码列表可以在[这里](https://github.com/ashtuchkin/iconv-lite/wiki/Supported-Encodings)找到。",
     "diff2html-report.configuration.maxGitDiffFileSize": "git diff 输出的最大文件大小（以字节为单位）。默认值为64MB。",

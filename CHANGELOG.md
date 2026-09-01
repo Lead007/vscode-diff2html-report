@@ -4,6 +4,12 @@ All notable changes to the "diff2html-report" extension will be documented in th
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.5.0] - 2026-09-01
+
+### Added
+
+- The configuration `diff2html-report.defaultDiffOptions` has been added as default `git diff` options when generating the diff report.
+
 ## [0.4.0] - 2026-08-31
 
 ### Changed
@@ -53,7 +59,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 Initial release.
 
-[0.3.1]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.4.0
+[0.5.0]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.5.0
+[0.4.0]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.4.0
 [0.3.1]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.3.1
 [0.3.0]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.3.0
 [0.2.1]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.2.1
