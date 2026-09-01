@@ -3,7 +3,7 @@
   "displayName": "diff2html-report",
   "icon": "assets/icon.png",
   "description": "A Git diff report generator For VSCode using Diff2Html.",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "license": "MIT",
   "publisher": "Lead007",
   "engines": {
@@ -34,6 +34,17 @@
       "type": "object",
       "title": "%diff2html-report.configuration.title%",
       "properties": {
+        "diff2html-report.defaultDiffOptions": {
+          "type": "object",
+          "default": {
+            "-b": false,
+            "-w": false,
+            "-M": false,
+            "-C": false,
+            "--submodule": false
+          },
+          "markdownDescription": "%diff2html-report.configuration.defaultDiffOptions%"
+        },
         "diff2html-report.filter": {
           "type": "array",
           "default": "",

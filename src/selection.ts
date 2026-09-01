@@ -59,13 +59,15 @@ export async function selectCommit(commits: vscode.QuickPickItem[], placeHolder:
  * @returns 用户选择的git diff参数数组
  */
 export async function selectDiffOptions(extensionConfig: vscode.WorkspaceConfiguration): Promise<string[]> {
+    // 读取git diff默认配置
+    const defaultDiffOptions = extensionConfig.get<Record<string, boolean>>('defaultDiffOptions') || {};
     // 选择git diff参数
     const options = [
-        { label: '-b', description: localize('diff2html-report.commandOption.b'), picked: false },
-        { label: '-w', description: localize('diff2html-report.commandOption.w'), picked: false },
-        { label: '-M', description: localize('diff2html-report.commandOption.M'), picked: false },
-        { label: '-C', description: localize('diff2html-report.commandOption.C'), picked: false },
-        { label: '--submodule', description: localize('diff2html-report.commandOption.--submodule'), picked: false },
+        { label: '-b', description: localize('diff2html-report.commandOption.b'), picked: defaultDiffOptions['-b'] },
+        { label: '-w', description: localize('diff2html-report.commandOption.w'), picked: defaultDiffOptions['-w'] },
+        { label: '-M', description: localize('diff2html-report.commandOption.M'), picked: defaultDiffOptions['-M'] },
+        { label: '-C', description: localize('diff2html-report.commandOption.C'), picked: defaultDiffOptions['-C'] },
+        { label: '--submodule', description: localize('diff2html-report.commandOption.--submodule'), picked: defaultDiffOptions['--submodule'] },
     ];
 
     const enabledOptions = await vscode.window.showQuickPick(options, {
