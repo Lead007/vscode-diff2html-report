@@ -6,15 +6,12 @@ import { localize } from 'vscode-nls-i18n';
  * 生成某个ref对应的选择项
  * @param ref git ref信息
  * @param description 描述
- * @param repo 仓库对象
  * @returns 生成的vscode下拉选择项
  */
-export async function getSelection(ref: RefInfo, description: string, repo: any): Promise<vscode.QuickPickItem> {
-    var detail: string = '';
-    if (ref.commit) {
-        const commit = await repo.getCommit(ref.commit);
-        detail = `${commit.message} (${ref.commit.slice(0, 8)})`;
-    }
+export function getSelection(ref: RefInfo, description: string): vscode.QuickPickItem {
+    const detail = ref.commit
+        ? `${ref.subject || ''}${ref.subject ? ' ' : ''}(${ref.commit.slice(0, 8)})`
+        : '';
     return {
         label: ref.name,
         description,

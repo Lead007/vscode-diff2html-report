@@ -41,7 +41,7 @@ export function activate(context: vscode.ExtensionContext) {
 				cancellable: false
 			}, async (progress) => {
 				progress.report({ message: localize('diff2html-report.progress.loadingRefs') });
-				const refs: RefInfo[] = await repo.getRefs();
+				const refs = await getGitRefs(repo.rootUri.fsPath);
 
 				progress.report({ message: localize('diff2html-report.progress.loadingRefsMessage') });
 				const head = {
@@ -57,18 +57,18 @@ export function activate(context: vscode.ExtensionContext) {
 					isCustom: true
 				};
 
-				// 获取分支、标签和提交
+				// 获取分支和标签
 				const localBranches = await Promise.all(refs
-					.filter(ref => ref.type === 0) // type 1 是本地分支
-					.map(ref => getSelection(ref, localize('diff2html-report.commitOption.description.local'), repo)));
+					.filter(ref => ref.type === 0) // 本地分支
+					.map(ref => getSelection(ref, localize('diff2html-report.commitOption.description.local'))));
 
 				const remoteBranches = await Promise.all(refs
-					.filter(ref => ref.type === 1) // type 2 是远程分支
-					.map(ref => getSelection(ref, localize('diff2html-report.commitOption.description.remote'), repo)));
+					.filter(ref => ref.type === 1) // 远程分支
+					.map(ref => getSelection(ref, localize('diff2html-report.commitOption.description.remote'))));
 
 				const tags = await Promise.all(refs
-					.filter(ref => ref.type === 2) // type 3 是Tag
-					.map(ref => getSelection(ref, localize('diff2html-report.commitOption.description.tag'), repo)));
+					.filter(ref => ref.type === 2) // Tag
+					.map(ref => getSelection(ref, localize('diff2html-report.commitOption.description.tag'))));
 				return [head, input, ...localBranches, ...remoteBranches, ...tags];
 			});
 
@@ -284,6 +284,53 @@ export function activate(context: vscode.ExtensionContext) {
 
 // This method is called when your extension is deactivated
 export function deactivate() { }
+
+async function getGitRefs(path: string): Promise<RefInfo[]> {
+	try {
+		const execFileAsync = promisify(execFile);
+		const execOption: ExecFileOptionsWithStringEncoding = { cwd: path, encoding: 'utf8' };
+		const { stdout } = await execFileAsync('git', [
+			'for-each-ref',
+			'--format=%(refname)%00%(objectname)%00%(*objectname)%00%(subject)%00%(*subject)%00%(symref)',
+			'refs/heads',
+			'refs/remotes',
+			'refs/tags'
+		], execOption);
+
+		return stdout.split(/\r?\n/).filter(Boolean).flatMap(line => {
+			const [fullName, objectName, peeledObjectName, subject, peeledSubject, symbolicRef] = line.split('\0');
+			if (symbolicRef) {
+				return [];
+			}
+
+			let name: string;
+			let type: number;
+			if (fullName.startsWith('refs/heads/')) {
+				name = fullName.slice('refs/heads/'.length);
+				type = 0;
+			} else if (fullName.startsWith('refs/remotes/')) {
+				name = fullName.slice('refs/remotes/'.length);
+				type = 1;
+			} else if (fullName.startsWith('refs/tags/')) {
+				name = fullName.slice('refs/tags/'.length);
+				type = 2;
+			} else {
+				return [];
+			}
+
+			return [{
+				name,
+				type,
+				commit: peeledObjectName || objectName,
+				subject: peeledSubject || subject
+			}];
+		});
+	} catch (error) {
+		const message = String(error);
+		vscode.window.showErrorMessage(localize('diff2html-report.commandErrorText', message));
+		throw error;
+	}
+}
 
 /**
  * 指定编码运行 git diff 命令并返回输出

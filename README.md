@@ -4,7 +4,7 @@ Generate and export a `git diff` report as an HTML page.
 
 ## Features
 
-This extension adds a "Genetate Diff Report" menu in the "Change" menu of Git panel, which allows you to select two branches or tags to generate HTML formatted Git Diff reports. You can also export the HTML page as a file.
+This extension adds a "Genetate Diff Report" menu in the "Change" menu of Git panel, which allows you to select two local/remote branches or tags to generate HTML formatted Git Diff reports. The HTML page can also be exported as a file.
 
 ## Requirements
 
