@@ -3,13 +3,10 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import type { RefInfo } from './scmTypes';
-import { getSelection, selectCommit, selectDiffOptions } from './selection';
-import { execFile, ExecFileOptionsWithBufferEncoding, ExecFileOptionsWithStringEncoding } from 'child_process';
+import { getGitRefs, getSelection, runGitDiffCommand, selectCommit, selectDiffOptions } from './selection';
 import * as diff2html from 'diff2html';
 import type { OutputFormatType } from 'diff2html/lib/types';
 import { getExportContent, getWebviewContent } from './htmlTemplate';
-import { promisify } from 'util';
 import { init, localize } from 'vscode-nls-i18n';
 // This method is called when your extension is activateds
 // Your extension is activated the very first time the command is executed
@@ -111,13 +108,15 @@ export function activate(context: vscode.ExtensionContext) {
 					return;
 				}
 
-				// 使用Diff2Html渲染
-				progress.report({ message: localize('diff2html-report.progress.generatingReport') });
 				const configuration = {
 					drawFileList: true,
 					matching: 'lines',
 					outputFormat: extensionConfig.get<string>('defaultViewType') as OutputFormatType,
 				} as diff2html.Diff2HtmlConfig;
+				const diffInfo = diff2html.parse(diffContent, { drawFileList: true, matching: 'lines', outputFormat: extensionConfig.get<string>('defaultViewType') as OutputFormatType });
+
+				// 使用Diff2Html渲染
+				progress.report({ message: localize('diff2html-report.progress.generatingReport') });
 				return diff2html.html(diffContent, configuration);
 			});
 
@@ -282,88 +281,3 @@ export function activate(context: vscode.ExtensionContext) {
 	);
 }
 
-// This method is called when your extension is deactivated
-export function deactivate() { }
-
-async function getGitRefs(path: string): Promise<RefInfo[]> {
-	try {
-		const execFileAsync = promisify(execFile);
-		const execOption: ExecFileOptionsWithStringEncoding = { cwd: path, encoding: 'utf8' };
-		const { stdout } = await execFileAsync('git', [
-			'for-each-ref',
-			'--format=%(refname)%00%(objectname)%00%(*objectname)%00%(subject)%00%(*subject)%00%(symref)',
-			'refs/heads',
-			'refs/remotes',
-			'refs/tags'
-		], execOption);
-
-		return stdout.split(/\r?\n/).filter(Boolean).flatMap(line => {
-			const [fullName, objectName, peeledObjectName, subject, peeledSubject, symbolicRef] = line.split('\0');
-			if (symbolicRef) {
-				return [];
-			}
-
-			let name: string;
-			let type: number;
-			if (fullName.startsWith('refs/heads/')) {
-				name = fullName.slice('refs/heads/'.length);
-				type = 0;
-			} else if (fullName.startsWith('refs/remotes/')) {
-				name = fullName.slice('refs/remotes/'.length);
-				type = 1;
-			} else if (fullName.startsWith('refs/tags/')) {
-				name = fullName.slice('refs/tags/'.length);
-				type = 2;
-			} else {
-				return [];
-			}
-
-			return [{
-				name,
-				type,
-				commit: peeledObjectName || objectName,
-				subject: peeledSubject || subject
-			}];
-		});
-	} catch (error) {
-		const message = String(error);
-		vscode.window.showErrorMessage(localize('diff2html-report.commandErrorText', message));
-		throw error;
-	}
-}
-
-/**
- * 指定编码运行 git diff 命令并返回输出
- * @param path 运行目录
- * @param encoding 编码
- * @param paras git diff后的参数列表
- * @returns stdout，若有错误返回空字符串
- */
-async function runGitDiffCommand(path: string, encoding: string, maxBuffer: number, paras: string[]): Promise<string> {
-	try {
-		const execFileAsync = promisify(execFile);
-		const execOption: ExecFileOptionsWithBufferEncoding = { cwd: path, maxBuffer: maxBuffer, encoding: 'buffer' };
-		const { stdout, stderr } = await execFileAsync(
-			'git',
-			['diff', ...paras],
-			execOption
-		);
-
-		const decoder = new TextDecoder(encoding);
-		if (stderr.buffer.byteLength && !decoder.decode(stderr.buffer).includes('warning:')) {
-			const errString = decoder.decode(stderr.buffer);
-			if (!errString.includes('warning:')) {
-				vscode.window.showErrorMessage(localize('diff2html-report.commandErrorText', errString));
-				return '';
-			}
-		}
-		if (stdout.buffer.byteLength === 0) {
-			vscode.window.showInformationMessage(localize('diff2html-report.commandNoDiffText'));
-			return '';
-		}
-		return decoder.decode(stdout);
-	} catch (error) {
-		vscode.window.showErrorMessage(localize('diff2html-report.commandErrorText', String(error)));
-		return '';
-	}
-}
