@@ -1,7 +1,6 @@
-import { execFile, ExecFileOptionsWithStringEncoding, ExecFileOptionsWithBufferEncoding } from 'child_process';
-import { promisify } from 'util';
 import * as vscode from 'vscode';
 import { localize } from 'vscode-nls-i18n';
+import { execCmdAsync } from './scmHelper';
 
 
 export interface RefInfo{
@@ -18,15 +17,13 @@ export interface RefInfo{
  */
 export async function getGitRefs(path: string): Promise<RefInfo[]> {
 	try {
-		const execFileAsync = promisify(execFile);
-		const execOption: ExecFileOptionsWithStringEncoding = { cwd: path, encoding: 'utf8' };
-		const { stdout } = await execFileAsync('git', [
+		const { stdout } = await execCmdAsync(path, 'git', [
 			'for-each-ref',
 			'--format=%(refname)%00%(objectname)%00%(*objectname)%00%(subject)%00%(*subject)%00%(symref)',
 			'refs/heads',
 			'refs/remotes',
 			'refs/tags'
-		], execOption);
+		], 'utf8');
 
 		return stdout.split(/\r?\n/).filter(Boolean).flatMap(line => {
 			const [fullName, objectName, peeledObjectName, subject, peeledSubject, symbolicRef] = line.split('\0');
@@ -141,41 +138,4 @@ export async function selectDiffOptions(extensionConfig: vscode.WorkspaceConfigu
     }
 
     return enableOptionsStr;
-}
-
-
-/**
- * 指定编码运行 git diff 命令并返回输出
- * @param path 运行目录
- * @param encoding 编码
- * @param paras git diff后的参数列表
- * @returns stdout，若有错误返回空字符串
- */
-export async function runGitDiffCommand(path: string, encoding: string, maxBuffer: number, paras: string[]): Promise<string> {
-	try {
-		const execFileAsync = promisify(execFile);
-		const execOption: ExecFileOptionsWithBufferEncoding = { cwd: path, maxBuffer: maxBuffer, encoding: 'buffer' };
-		const { stdout, stderr } = await execFileAsync(
-			'git',
-			['diff', ...paras],
-			execOption
-		);
-
-		const decoder = new TextDecoder(encoding);
-		if (stderr.buffer.byteLength && !decoder.decode(stderr.buffer).includes('warning:')) {
-			const errString = decoder.decode(stderr.buffer);
-			if (!errString.includes('warning:')) {
-				vscode.window.showErrorMessage(localize('diff2html-report.commandErrorText', errString));
-				return '';
-			}
-		}
-		if (stdout.buffer.byteLength === 0) {
-			vscode.window.showInformationMessage(localize('diff2html-report.commandNoDiffText'));
-			return '';
-		}
-		return decoder.decode(stdout);
-	} catch (error) {
-		vscode.window.showErrorMessage(localize('diff2html-report.commandErrorText', String(error)));
-		return '';
-	}
 }

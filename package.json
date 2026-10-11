@@ -85,12 +85,21 @@
       {
         "command": "diff2html-report.generateDiffReport",
         "title": "%diff2html-report.command.generateDiffReport%"
+      },
+      {
+        "command": "diff2html-report.analyzeDiffFunction",
+        "title": "%diff2html-report.command.analyzeDiffFunction%"
       }
     ],
     "menus": {
       "scm/title": [
         {
           "command": "diff2html-report.generateDiffReport",
+          "when": "scmProvider == git",
+          "group": "inline"
+        },
+        {
+          "command": "diff2html-report.analyzeDiffFunction",
           "when": "scmProvider == git",
           "group": "inline"
         }
