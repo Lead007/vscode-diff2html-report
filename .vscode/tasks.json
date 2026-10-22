@@ -5,7 +5,15 @@
 	"tasks": [
 		{
 			"type": "npm",
-			"script": "compile",
+			"script": "build",
+			"problemMatcher": "$tsc",
+			"group": {
+				"kind": "build"
+			}
+		},
+		{
+			"type": "npm",
+			"script": "build:debug",
 			"problemMatcher": "$tsc",
 			"group": {
 				"kind": "build",

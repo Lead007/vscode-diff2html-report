@@ -1,5 +1,6 @@
 out
 dist
+webview/vue-dist
 node_modules
 .vscode-test/
 *.vsix

@@ -2,6 +2,7 @@
 .vscode-test/**
 out/**
 src/**
+webview-vue/**
 .gitignore
 .yarnrc
 vsc-extension-quickstart.md
