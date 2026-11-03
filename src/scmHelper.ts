@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { promisify } from 'util';
 import { execFile } from 'child_process';
 import { localize } from 'vscode-nls-i18n';
+import { appendLog } from './logger';
 
 /**
  * 按照指定编码输出运行命令
@@ -26,6 +27,7 @@ export async function execCmdAsync(
     }
     const maxBuffer = extensionConfig.get<number>('maxGitDiffFileSize') || 67108864;
 
+    appendLog(`Running command in path: ${rootPath} with cmd: ${cmd}, parameters: ${args.join(' ')}`);
     const execFileAsync = promisify(execFile);
     const { stdout, stderr } = await execFileAsync(cmd, args, {
         cwd: rootPath,
@@ -35,7 +37,6 @@ export async function execCmdAsync(
     // 按照编码解码
     const decoder = new TextDecoder(encoding);
     return { stdout: decoder.decode(stdout), stderr: decoder.decode(stderr) };
-
 }
 
 
@@ -47,7 +48,7 @@ export async function execCmdAsync(
  * @returns stdout，若有错误返回空字符串
  */
 export async function runGitDiffCommand(path: string, paras: string[]): Promise<string> {
-	try {
+    try {
 		const { stdout, stderr } = await execCmdAsync(path,
 			'git',
 			['diff', ...paras],

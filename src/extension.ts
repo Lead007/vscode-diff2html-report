@@ -11,8 +11,23 @@ import { findChangedFunctions } from './functionSymbols';
 import type { ChangedFileFunctions } from './functionSymbols';
 import { init, localize } from 'vscode-nls-i18n';
 import { runGitDiffCommand } from './scmHelper';
+import { randomBytes } from 'crypto';
+import { appendLog, logger } from './logger';
 
-const extensionConfig = vscode.workspace.getConfiguration('diff2html-report');
+const WEBVIEW_PREFIX = 'diff2html-report.webview.';
+const FUNCTION_LABEL_PREFIX = 'diff2html-report.functions.';
+
+async function getl18nWithPrefix(extensionUri: vscode.Uri, prefix: string): Promise<Record<string, string>> {
+	const localizationUri = vscode.Uri.joinPath(extensionUri, 'package.nls.json');
+	const localizationBytes = await vscode.workspace.fs.readFile(localizationUri);
+	const localizationEntries = JSON.parse(new TextDecoder().decode(localizationBytes)) as Record<string, string>;
+
+	return Object.fromEntries(
+		Object.keys(localizationEntries)
+			.filter(key => key.startsWith(prefix))
+			.map(key => [key.slice(prefix.length), localize(key)]),
+	);
+}
 
 // This method is called when your extension is activateds
 // Your extension is activated the very first time the command is executed
@@ -31,9 +46,12 @@ export function activate(context: vscode.ExtensionContext) {
 	const uri_diff2html_ui_css = vscode.Uri.joinPath(context.extensionUri, 'node_modules', 'diff2html', 'bundles', 'css', 'diff2html.min.css');
 	const uri_diff2html_ui_js = vscode.Uri.joinPath(context.extensionUri, 'node_modules', 'diff2html', 'bundles', 'js', 'diff2html-ui.min.js');
 
+	context.subscriptions.push(logger);
 	// 在 SCM 提供者上注册命令
 	context.subscriptions.push(
 		vscode.commands.registerCommand('diff2html-report.generateDiffReport', async (uri?) => {
+			appendLog(`Command 'diff2html-report.generateDiffReport' executing...`);
+			const extensionConfig = vscode.workspace.getConfiguration('diff2html-report');
 			// 获取当前仓库
 			const repo = git.repositories[0];
 			if (!repo) { return; }
@@ -147,11 +165,9 @@ export function activate(context: vscode.ExtensionContext) {
 				title: localize('diff2html-report.webview.title'),
 				header: localize('diff2html-report.webview.header'),
 			}, {
-				exportOptionsLabel: localize('diff2html-report.webview.exportOptionsLabel'),
-				generateFileListLabel: localize('diff2html-report.webview.generateFileListLabel'),
-				exportButtonLabel: localize('diff2html-report.webview.exportButtonLabel'),
 				htmlContent: htmlContent.html,
-				lineCountContent
+				lineCountContent,
+				labels: await getl18nWithPrefix(context.extensionUri, WEBVIEW_PREFIX),
 			});
 
 			panel.webview.html = resultHtml;
@@ -242,11 +258,15 @@ export function activate(context: vscode.ExtensionContext) {
 				}
 			});
 
+			appendLog(`Command 'diff2html-report.generateDiffReport' executed.`);
+
 		})
 	);
 
 	context.subscriptions.push(
-		vscode.commands.registerCommand('diff2html-report.analyzeDiffFunction', async (uri?) => {
+		vscode.commands.registerCommand('diff2html-report.generateChangeItemReport', async (uri?) => {
+			appendLog(`Command 'diff2html-report.generateChangeItemReport' executing...`);
+			const extensionConfig = vscode.workspace.getConfiguration('diff2html-report');
 			// 获取当前仓库
 			const repo = git.repositories[0];
 			if (!repo) { return; }
@@ -261,38 +281,78 @@ export function activate(context: vscode.ExtensionContext) {
 			const selectedCur = selected.current;
 			const enableOptionsStr = selected.options;
 
-			const diffContent = await runGitDiffCommand(repo.rootUri.fsPath, [selectedBase.label, selectedCur.label, ...enableOptionsStr]);
-			if (!diffContent) {
+			const webViewContext = await vscode.window.withProgress({
+				location: vscode.ProgressLocation.Notification,
+				cancellable: false
+			}, async (progress) => {
+				progress.report({ message: localize('diff2html-report.progress.executingDiff') });
+
+				const diffContent = await runGitDiffCommand(repo.rootUri.fsPath, [selectedBase.label, selectedCur.label, ...enableOptionsStr]);
+				if (!diffContent) {
+					return;
+				}
+
+				progress.report({ message: localize('diff2html-report.progress.analyzingFunctions') });
+
+				const diffInfo = diff2html.parse(diffContent, { drawFileList: true, matching: 'lines', outputFormat: extensionConfig.get<string>('defaultViewType') as OutputFormatType });
+				let changedFunctions: ChangedFileFunctions[];
+				try {
+					changedFunctions = await findChangedFunctions(
+						repo.rootUri.fsPath,
+						diffInfo,
+						selectedBase.label,
+						selectedCur.label,
+						(current, total, filePath) => {
+							progress.report({
+								message: localize('diff2html-report.progress.analyzingFunctionsProgress', filePath, String(current), String(total)),
+								increment: (1 / total) * 100
+							});
+						}
+					);
+				} catch (error) {
+					vscode.window.showErrorMessage(localize('diff2html-report.commandErrorText', String(error)));
+					return;
+				}
+
+				const labels = await getl18nWithPrefix(context.extensionUri, FUNCTION_LABEL_PREFIX);
+
+				return { diffInfo, changedFunctions, labels };
+			});
+
+			if (!webViewContext) {
 				return;
 			}
 
-			const diffInfo = diff2html.parse(diffContent, { drawFileList: true, matching: 'lines', outputFormat: extensionConfig.get<string>('defaultViewType') as OutputFormatType });
-			let changedFunctions: ChangedFileFunctions[];
-			try {
-				changedFunctions = await findChangedFunctions(
-					repo.rootUri.fsPath,
-					diffInfo,
-					selectedBase.label,
-					selectedCur.label,
+			const panel = vscode.window.createWebviewPanel(
+				'diff2htmlVuePreview',
+				localize('diff2html-report.functions.panelTitle'),
+				vscode.ViewColumn.Active,
+				{
+					enableScripts: true,
+					localResourceRoots: [
+						vscode.Uri.joinPath(context.extensionUri, 'webview', 'vue-dist'),
+					],
+				},
+			);
+
+			const nonce = randomBytes(16).toString('base64');
+			const webviewRoot = vscode.Uri.joinPath(context.extensionUri, 'webview', 'vue-dist');
+			const templateUri = vscode.Uri.joinPath(webviewRoot, 'index.html');
+			const templateBytes = await vscode.workspace.fs.readFile(templateUri);
+			let html = new TextDecoder().decode(templateBytes);
+			const initialData = JSON.stringify(webViewContext).replace(/</g, '\\u003c');
+			html = html
+				.replace(/(src|href)="\.\/([^"]+)"/g, (_match, attribute: string, assetPath: string) => {
+					const assetUri = vscode.Uri.joinPath(webviewRoot, ...assetPath.split('/'));
+					return `${attribute}="${panel.webview.asWebviewUri(assetUri)}"`;
+				})
+				.replace('<script type="module"', `<script nonce="${nonce}" type="module"`)
+				.replace(
+					'</head>',
+					`<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${panel.webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}' ${panel.webview.cspSource}; font-src ${panel.webview.cspSource}; connect-src ${panel.webview.cspSource};"><script nonce="${nonce}">window.__DIFF_REVIEW_DATA__ = ${initialData};</script></head>`,
 				);
-			} catch (error) {
-				vscode.window.showErrorMessage(localize('diff2html-report.commandErrorText', String(error)));
-				return;
-			}
-			const functionInfo = JSON.stringify({
-				files: changedFunctions,
-				labels: {
-					title: localize('diff2html-report.functions.title'),
-					added: localize('diff2html-report.functions.added'),
-					deleted: localize('diff2html-report.functions.deleted'),
-					modified: localize('diff2html-report.functions.modified'),
-					noSymbols: localize('diff2html-report.functions.noSymbols'),
-					noChanges: localize('diff2html-report.functions.noChanges'),
-					binary: localize('diff2html-report.functions.binary'),
-					tooBig: localize('diff2html-report.functions.tooBig'),
-					error: localize('diff2html-report.functions.error')
-				}
-			}).replace(/</g, '\\u003c');
+			panel.webview.html = html;
+			appendLog(`Command 'diff2html-report.generateChangeItemReport' executed`);
 		})
 	);
 }
@@ -356,6 +416,7 @@ async function selectTwoCommits(repoPath: string): Promise<{ base: vscode.QuickP
 	}
 
 	// 选择git diff参数
+	const extensionConfig = vscode.workspace.getConfiguration('diff2html-report');
 	const options = await selectDiffOptions(extensionConfig);
 
 	return { base, current, options };

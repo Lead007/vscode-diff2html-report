@@ -2,8 +2,8 @@
   "name": "diff2html-report",
   "displayName": "diff2html-report",
   "icon": "assets/icon.png",
-  "description": "A Git diff report generator For VSCode using Diff2Html.",
-  "version": "0.5.0",
+  "description": "A Git diff report generator For VSCode.",
+  "version": "0.6.0-alpha3",
   "license": "MIT",
   "publisher": "Lead007",
   "engines": {
@@ -60,6 +60,66 @@
           "default": 67108864,
           "description": "%diff2html-report.configuration.maxGitDiffFileSize%"
         },
+        "diff2html-report.functionDiffLineThreshold": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 30,
+          "description": "%diff2html-report.configuration.functionDiffLineThreshold%"
+        },
+        "diff2html-report.functionDiffChangePercentage": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "default": 30,
+          "description": "%diff2html-report.configuration.functionDiffChangePercentage%"
+        },
+        "diff2html-report.functionDiffContextLines": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 3,
+          "description": "%diff2html-report.configuration.functionDiffContextLines%"
+        },
+        "diff2html-report.functionDiffSymbolKinds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "File",
+              "Module",
+              "Namespace",
+              "Package",
+              "Class",
+              "Method",
+              "Property",
+              "Field",
+              "Constructor",
+              "Enum",
+              "Interface",
+              "Function",
+              "Variable",
+              "Constant",
+              "String",
+              "Number",
+              "Boolean",
+              "Array",
+              "Object",
+              "Key",
+              "Null",
+              "EnumMember",
+              "Struct",
+              "Event",
+              "Operator",
+              "TypeParameter"
+            ]
+          },
+          "default": [
+            "Function",
+            "Method",
+            "Constructor",
+            "Operator"
+          ],
+          "markdownDescription": "%diff2html-report.configuration.functionDiffSymbolKinds%"
+        },
         "diff2html-report.drawLineCount": {
           "type": "boolean",
           "default": true,
@@ -87,8 +147,8 @@
         "title": "%diff2html-report.command.generateDiffReport%"
       },
       {
-        "command": "diff2html-report.analyzeDiffFunction",
-        "title": "%diff2html-report.command.analyzeDiffFunction%"
+        "command": "diff2html-report.generateChangeItemReport",
+        "title": "%diff2html-report.command.generateChangeItemReport%"
       }
     ],
     "menus": {
@@ -99,7 +159,7 @@
           "group": "inline"
         },
         {
-          "command": "diff2html-report.analyzeDiffFunction",
+          "command": "diff2html-report.generateChangeItemReport",
           "when": "scmProvider == git",
           "group": "inline"
         }
