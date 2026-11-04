@@ -4,6 +4,14 @@ All notable changes to the "diff2html-report" extension will be documented in th
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.6.0] - 2026.11.4
+
+### Added
+
+- Add the **Generate Change Item Report** command to review changes between Git revisions at the function and file level. Function-level diff analysis matches changed functions across revisions and showing focused context for large functions.
+- Add a review Webview for selecting changed functions or file-level diffs, organizing them into change items, and adding titles and descriptions.
+- Add HTML preview and standalone export for function change reports, with light and dark themes.
+
 ## [0.5.0] - 2026-09-01
 
 ### Added
@@ -59,6 +67,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 Initial release.
 
+[0.6.0]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.6.0
 [0.5.0]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.5.0
 [0.4.0]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.4.0
 [0.3.1]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.3.1
