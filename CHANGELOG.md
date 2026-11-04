@@ -4,7 +4,7 @@ All notable changes to the "diff2html-report" extension will be documented in th
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
-## [0.6.0] - 2026.11.4
+## [0.6.0] - 2026-11-05
 
 ### Added
 
