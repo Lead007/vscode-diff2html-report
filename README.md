@@ -66,6 +66,10 @@ Set `diff2html-report.encoding` in VS Code settings to match the encoding of you
 
 Set `diff2html-report.filter` to an array of `git diff` pathspec arguments. For example, use `["--", "src/"]` to include a folder or `["--", "*.cpp"]` to include files matching a pattern.
 
+### What if I can't find the base or current revision in the list?
+
+Find the commit in Git history or a Git Graph extension, copy its commit hash, and enter the hash manually when selecting the base or current revision.
+
 ### Why are some files uncorrectly missing function-level analysis results?
 
 The language extension that provides document symbols may not have finished loading, especially immediately after opening a workspace. Wait for the language extension to finish loading, then run **Generate Change Item Report** again.
@@ -146,6 +150,10 @@ See [CHANGELOG](https://github.com/Lead007/vscode-diff2html-report/blob/main/CHA
 ### 如何只报告指定文件夹或文件类型？
 
 将 `diff2html-report.filter` 设置为 Git `diff` 的 pathspec 参数数组。例如，`["--", "src/"]` 可筛选 `src` 文件夹，`["--", "*.cpp"]` 可筛选匹配该模式的文件。
+
+### 如果在列表中找不到基准版本或当前版本怎么办？
+
+可以在 Git 历史记录或 Git Graph 等扩展中找到相应的提交，复制其提交哈希，然后在选择基准版本或当前版本时手动输入该哈希。
 
 ### 为什么有些文件没有正确显示函数级分析结果？
 
