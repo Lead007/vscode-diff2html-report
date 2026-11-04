@@ -1,20 +1,75 @@
 import * as vscode from 'vscode';
-import { RefInfo } from './scmTypes';
 import { localize } from 'vscode-nls-i18n';
+import { execCmdAsync } from './scmHelper';
+
+
+export interface RefInfo{
+    commit: string;
+    name: string;
+    type: number;
+    subject?: string;
+}
+
+/**
+ * 获取 Git 引用信息
+ * @param path 工作目录
+ * @returns 引用信息数组
+ */
+export async function getGitRefs(path: string): Promise<RefInfo[]> {
+	try {
+		const { stdout } = await execCmdAsync(path, 'git', [
+			'for-each-ref',
+			'--format=%(refname)%00%(objectname)%00%(*objectname)%00%(subject)%00%(*subject)%00%(symref)',
+			'refs/heads',
+			'refs/remotes',
+			'refs/tags'
+		], 'utf8');
+
+		return stdout.split(/\r?\n/).filter(Boolean).flatMap(line => {
+			const [fullName, objectName, peeledObjectName, subject, peeledSubject, symbolicRef] = line.split('\0');
+			if (symbolicRef) {
+				return [];
+			}
+
+			let name: string;
+			let type: number;
+			if (fullName.startsWith('refs/heads/')) {
+				name = fullName.slice('refs/heads/'.length);
+				type = 0;
+			} else if (fullName.startsWith('refs/remotes/')) {
+				name = fullName.slice('refs/remotes/'.length);
+				type = 1;
+			} else if (fullName.startsWith('refs/tags/')) {
+				name = fullName.slice('refs/tags/'.length);
+				type = 2;
+			} else {
+				return [];
+			}
+
+			return [{
+				name,
+				type,
+				commit: peeledObjectName || objectName,
+				subject: peeledSubject || subject
+			}];
+		});
+	} catch (error) {
+		const message = String(error);
+		vscode.window.showErrorMessage(localize('diff2html-report.commandErrorText', message));
+		throw error;
+	}
+}
 
 /**
  * 生成某个ref对应的选择项
  * @param ref git ref信息
  * @param description 描述
- * @param repo 仓库对象
  * @returns 生成的vscode下拉选择项
  */
-export async function getSelection(ref: RefInfo, description: string, repo: any): Promise<vscode.QuickPickItem> {
-    var detail: string = '';
-    if (ref.commit) {
-        const commit = await repo.getCommit(ref.commit);
-        detail = `${commit.message} (${ref.commit.slice(0, 8)})`;
-    }
+export function getSelection(ref: RefInfo, description: string): vscode.QuickPickItem {
+    const detail = ref.commit
+        ? `${ref.subject || ''}${ref.subject ? ' ' : ''}(${ref.commit.slice(0, 8)})`
+        : '';
     return {
         label: ref.name,
         description,

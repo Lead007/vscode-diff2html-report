@@ -1,0 +1,151 @@
+/* 页面基础排版与默认主题颜色，优先使用 VS Code Webview 提供的变量。 */
+:root {
+	--review-foreground: var(--vscode-foreground, #172033);
+	--review-muted-foreground: var(--vscode-descriptionForeground, #606266);
+	--review-accent-foreground: var(--vscode-textLink-foreground, #2563eb);
+	--review-success-foreground: var(--vscode-gitDecoration-addedResourceForeground, #16803c);
+	--review-danger-foreground: var(--vscode-gitDecoration-deletedResourceForeground, #b42318);
+	--review-surface: var(--vscode-editor-background, #f5f7fb);
+	--review-subtle-surface: var(--vscode-sideBar-background, #f8fafc);
+	--review-raised-surface: var(--vscode-editorWidget-background, #ffffff);
+	--review-accent-surface: var(--vscode-list-hoverBackground, #eef2ff);
+	--review-border: var(--vscode-panel-border, #e2e8f0);
+	--review-button-foreground: var(--vscode-button-foreground, #ffffff);
+	--review-diff-added-background: var(--vscode-diffEditor-insertedLineBackground, rgba(129, 201, 140, 0.12));
+	--review-diff-deleted-background: var(--vscode-diffEditor-removedLineBackground, rgba(244, 135, 113, 0.12));
+	--review-diff-added-highlight: var(--vscode-diffEditor-insertedTextBackground, rgba(129, 201, 140, 0.3));
+	--review-diff-deleted-highlight: var(--vscode-diffEditor-removedTextBackground, rgba(244, 135, 113, 0.3));
+	font-family: Inter, "Segoe UI", "Microsoft YaHei", sans-serif;
+	color: var(--review-foreground);
+	background: var(--review-surface);
+	font-synthesis: none;
+	text-rendering: optimizeLegibility;
+}
+
+* { box-sizing: border-box; }
+body {
+	min-width: 360px;
+	min-height: 100vh;
+	margin: 0;
+	color: var(--review-foreground);
+	background: var(--review-surface);
+}
+button { font-family: inherit; }
+
+.review-text-primary { color: var(--review-foreground); }
+.review-text-muted { color: var(--review-muted-foreground); }
+.review-text-accent { color: var(--review-accent-foreground); }
+.review-text-added { color: var(--review-success-foreground); }
+.review-text-deleted,
+.review-text-danger { color: var(--review-danger-foreground); }
+.review-surface { background-color: var(--review-surface); }
+.review-surface-subtle { background-color: var(--review-subtle-surface); }
+.review-surface-raised { background-color: var(--review-raised-surface); }
+.review-surface-accent { background-color: var(--review-accent-surface); }
+.review-border { border-color: var(--review-border); }
+.review-app-icon {
+	background-color: var(--review-accent-foreground);
+	color: var(--review-button-foreground);
+}
+.review-function-header { background-color: var(--review-subtle-surface); }
+.review-tag {
+	border-color: var(--review-border);
+	background-color: var(--review-raised-surface);
+	color: var(--review-accent-foreground);
+}
+.review-file-status {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin: 12px;
+	padding: 12px 14px;
+	border: 1px solid var(--review-file-status-border);
+	border-left-width: 4px;
+	border-radius: 6px;
+	background-color: var(--review-file-status-background);
+	color: var(--review-file-status-foreground);
+	font-size: 13px;
+	font-weight: 600;
+	line-height: 1.5;
+}
+.review-file-status--error {
+	--review-file-status-background: var(--vscode-inputValidation-errorBackground, var(--review-subtle-surface));
+	--review-file-status-border: var(--vscode-inputValidation-errorBorder, var(--review-danger-foreground));
+	--review-file-status-foreground: var(--vscode-editorError-foreground, var(--review-danger-foreground));
+}
+.review-file-status--info {
+	--review-file-status-background: var(--vscode-inputValidation-infoBackground, var(--review-subtle-surface));
+	--review-file-status-border: var(--vscode-inputValidation-infoBorder, var(--review-accent-foreground));
+	--review-file-status-foreground: var(--vscode-editorInfo-foreground, var(--review-accent-foreground));
+}
+.review-file-status--neutral {
+	--review-file-status-background: var(--review-subtle-surface);
+	--review-file-status-border: var(--review-border);
+	--review-file-status-foreground: var(--review-foreground);
+}
+.review-file-status--neutral .review-file-status__icon {
+	background-color: var(--review-foreground);
+}
+.review-file-status__icon {
+	display: inline-flex;
+	width: 28px;
+	height: 28px;
+	flex: 0 0 28px;
+	align-items: center;
+	justify-content: center;
+	border-radius: 6px;
+	background-color: var(--review-file-status-border);
+	color: var(--review-surface);
+	font-family: "Segoe UI", sans-serif;
+	font-size: 14px;
+	font-weight: 700;
+}
+.review-form .el-form-item__label { color: var(--review-foreground); }
+
+/* 清空按钮在两种主题下都使用次级文字颜色。 */
+.theme-clear-button {
+	color: var(--review-muted-foreground) !important;
+	border-color: var(--review-border) !important;
+}
+
+/* Diff2Html 主题变量作用于页面中的全部差异表格及行号。 */
+.dark,
+.dark .d2h-light-color-scheme {
+	--d2h-bg-color: var(--review-surface);
+	--d2h-border-color: var(--review-border);
+	--d2h-change-del-color: var(--review-diff-deleted-background);
+	--d2h-change-ins-color: var(--review-diff-added-background);
+	--d2h-change-label-color: var(--review-foreground);
+	--d2h-del-bg-color: var(--review-diff-deleted-background);
+	--d2h-del-border-color: var(--review-border);
+	--d2h-del-highlight-bg-color: var(--review-diff-deleted-highlight);
+	--d2h-del-label-color: var(--review-danger-foreground);
+	--d2h-dim-color: var(--review-muted-foreground);
+	--d2h-empty-placeholder-bg-color: var(--review-surface);
+	--d2h-empty-placeholder-border-color: var(--review-border);
+	--d2h-file-header-bg-color: var(--review-subtle-surface);
+	--d2h-file-header-border-color: var(--review-border);
+	--d2h-info-bg-color: var(--review-raised-surface);
+	--d2h-info-border-color: var(--review-border);
+	--d2h-ins-bg-color: var(--review-diff-added-background);
+	--d2h-ins-border-color: var(--review-border);
+	--d2h-ins-highlight-bg-color: var(--review-diff-added-highlight);
+	--d2h-ins-label-color: var(--review-success-foreground);
+	--d2h-line-border-color: var(--review-border);
+	--d2h-moved-label-color: var(--vscode-editorWarning-foreground, #cca700);
+	--d2h-selected-color: var(--vscode-list-activeSelectionBackground, #094771);
+}
+
+/* 桌面端左右栏独立滚动；滚动边界可继续传递给全局页面。 */
+.diff-columns { height: 100vh; min-height: 260px; }
+.diff-column { height: 100%; min-height: 0; overflow-y: auto; overscroll-behavior-y: auto; padding-top: 16px; }
+
+/* Element Plus 卡片基础边框与差异面板内边距。 */
+.el-card { --el-card-border-color: var(--review-border); border-radius: 10px; }
+.diff-panel>.el-card__header { padding: 14px 17px; }
+.diff-panel>.el-card__body { padding: 13px; }
+
+/* Diff2Html 行号回归表格布局，确保与代码行同步滚动。 */
+.diff-panel .d2h-file-diff { overflow: visible; }
+.diff-panel .d2h-code-linenumber { display: table-cell; position: static; }
+.diff-panel .d2h-code-line { width: auto; padding: 0 8px; }
