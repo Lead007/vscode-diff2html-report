@@ -183,6 +183,7 @@
     "release": "vsce package"
   },
   "devDependencies": {
+    "@element-plus/icons-vue": "^2.3.2",
     "@types/diff": "^7.0.2",
     "@types/mocha": "^10.0.10",
     "@types/mustache": "^4.2.6",
@@ -193,6 +194,7 @@
     "@vitejs/plugin-vue": "^6.0.1",
     "@vscode/test-cli": "^0.0.11",
     "@vscode/test-electron": "^2.5.2",
+    "element-plus": "^2.11.4",
     "esbuild": "^0.27.2",
     "eslint": "^9.32.0",
     "typescript": "^5.9.2",
@@ -201,10 +203,8 @@
     "vue-tsc": "^3.0.8"
   },
   "dependencies": {
-    "@element-plus/icons-vue": "^2.3.2",
     "diff": "^9.0.0",
     "diff2html": "^3.4.55",
-    "element-plus": "^2.11.4",
     "mustache": "^4.2.0",
     "open": "^11.0.1",
     "vscode-nls-i18n": "^0.2.4",
