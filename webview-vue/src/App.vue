@@ -5,11 +5,14 @@ import { Check, Delete, Document, Download, Edit } from '@element-plus/icons-vue
 import DiffFile from './DiffFile.vue';
 import EntryTree from './EntryTree.vue';
 import FileIcon from './FileIcon.vue';
+import ReportPreview from './ReportPreview.vue';
 import { formatLabel, getRangeStartLine } from './types';
-import type { ChangeEntry, DiffReviewData } from './types';
+import type { ChangeEntry, ChangeItem, DiffReviewData } from './types';
 
 // 扩展宿主传入的本次 Diff 文件和函数数据。
 const props = defineProps<DiffReviewData>();
+const vscodeApi = window.acquireVsCodeApi?.();
+let initialDarkMode = document.body.classList.contains('vscode-dark');
 
 // Diff 概览区展示的文件列表。
 const diffFiles = computed(() => props.diffInfo ?? []);
@@ -43,16 +46,9 @@ function scrollToDiffFile(filePath: string): void {
 	document.getElementById(getDiffFileId(filePath))?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-// 右侧一条已添加说明的数据结构，包含标题、描述和关联文件/函数。
-interface ChangeItem {
-	id: number;
-	title: string;
-	description: string;
-	entries: ChangeEntry[];
-}
-
 // 已创建的更改说明列表。
 const changeItems = ref<ChangeItem[]>([]);
+const isPreviewingReport = ref(false);
 // 新增更改项表单的标题和描述草稿。
 const form = ref({ title: '', description: '' });
 // 当前进入编辑态的更改项 ID；为空时处于新增/浏览状态。
@@ -160,7 +156,7 @@ function changeSelectedPath(filePath: string, selected: boolean) {
 
 // 校验并创建一条更改说明，保存当前关联项后清空待选状态。
 function addChangeItem() {
-	if (!form.value.title.trim() || !form.value.description.trim()) {
+	if (!form.value.title.trim()) {
 		ElMessage.warning(props.labels.fillTitleAndDescription);
 		return;
 	}
@@ -204,7 +200,7 @@ async function removeChangeItem(itemId: number) {
 
 // 校验并完成当前编辑；成功后清空待选状态并保持已保存条目展开。
 function finishEditing(item: ChangeItem) {
-	if (!item.title.trim() || !item.description.trim()) {
+	if (!item.title.trim()) {
 		ElMessage.warning(props.labels.fillTitleAndDescription);
 		return false;
 	}
@@ -305,9 +301,22 @@ async function clearChangeItems() {
 	}
 }
 
-// 对插入 HTML 的文本进行转义，避免内容被浏览器当作标签解析。
+// 先让用户审阅 Vue 报告，再由预览界面触发文件导出。
+function previewHtml() {
+	if (changeItems.value.length === 0) {
+		ElMessage.warning(props.labels.emptyChangeItems);
+		return;
+	}
+	if (editingChangeItemId.value !== null) {
+		const item = activeChangeItem.value;
+		if (!item || !finishEditing(item)) return;
+	}
+	initialDarkMode = document.body.classList.contains('vscode-dark');
+	isPreviewingReport.value = true;
+}
+
 function escapeHtml(value: string): string {
-	return value.replace(/[&<>"']/g, (character) => ({
+	return value.replace(/[&<>"']/g, character => ({
 		'&': '&amp;',
 		'<': '&lt;',
 		'>': '&gt;',
@@ -316,54 +325,52 @@ function escapeHtml(value: string): string {
 	})[character] ?? character);
 }
 
-// 将函数差异块转换成带增删样式的 HTML 行。
-function renderFunctionDiff(blocks: DiffReviewData['changedFunctions'][number]['functions'][number]['diffBlocks'] = []): string {
-	return blocks.flatMap((block) => block.lines).map((line) => {
-		const prefix = line.type === 'insert' ? '+' : line.type === 'delete' ? '-' : ' ';
-		return `<pre class="${line.type}">${prefix}${escapeHtml(line.content)}</pre>`;
-	}).join('');
+function getExportStyles(): string {
+	return Array.from(document.styleSheets)
+		.flatMap(stylesheet => Array.from(stylesheet.cssRules, rule => rule.cssText))
+		.join('\n');
 }
 
-// 导出报告的入口；当前导出实现仍处于注释状态，调用时不会生成文件。
-function previewHtml() {
-	// 	if (changeItems.value.length === 0) {
-	// 		ElMessage.warning('请先添加至少一个更改项，再导出报告');
-	// 		return;
-	// 	}
-	// 	const sections = diffFunctionsFiles.value.map((file) => `
-	// 		<section class="file">
-	// 			<h2>${escapeHtml(file.path)} <span>+${file.diffInfo.addedLines} −${file.diffInfo.deletedLines}</span></h2>
-	// 			${(file.functions ?? []).map((fn) => `
-	// 				<article class="function">
-	// 					<h3>${escapeHtml(fn.name)} (${fn.kind === 'modified' ? 'changed' : fn.kind})</h3>
-	// 					${renderFunctionDiff(fn.diffBlocks ?? [])}
-	// 				</article>
-	// 			`).join('')}
-	// 		</section>
-	// 	`).join('');
-	// 	const notes = changeItems.value.map((item) => {
-	// 		const related = item.functionIds.map((id) => {
-	// 			const fn = allFunctions.value.find((candidate) => candidate.id === id);
-	// 			return fn ? `<code>${escapeHtml(fn.file)} · ${escapeHtml(fn.name)}</code>` : '';
-	// 		}).join(' ');
-	// 		return `<article class="note"><h2>${escapeHtml(item.title)}</h2><p>${escapeHtml(item.description)}</p><div>关联函数：${related}</div></article>`;
-	// 	}).join('');
-	// 	const html = `<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Diff 函数变更报告</title><style>
-	// body{max-width:1100px;margin:32px auto;padding:0 18px;background:#f5f7fb;color:#172033;font:14px/1.6 "Segoe UI","Microsoft YaHei",sans-serif}
-	// .file,.note{margin:16px 0;padding:18px;border:1px solid #e2e8f0;border-radius:9px;background:white}.file h2{font:600 14px monospace}.file h2 span{color:#16803c}.function{margin-top:12px;border:1px solid #e2e8f0}.function h3{margin:0;padding:9px;background:#f8fafc;font:600 12px monospace}pre{margin:0;padding:3px 10px;font:12px/1.6 monospace;white-space:pre-wrap}.context{background:#fff;color:#334155}.insert{background:#e8f7ec;color:#166534}.delete{background:#fff0ee;color:#991b1b}.hunk{background:#eef2ff;color:#52618a}.note code{display:inline-block;margin:3px;padding:4px;background:#f1f5f9}
-	// </style><h1>Diff 函数变更报告</h1><p>导出时间：${escapeHtml(new Date().toLocaleString('zh-CN'))}</p><h2>更改说明</h2>${notes}<h2>文件与函数差异</h2>${sections}</html>`;
-	// 	const url = URL.createObjectURL(new Blob([html], { type: 'text/html;charset=utf-8' }));
-	// 	const link = document.createElement('a');
-	// 	link.href = url;
-	// 	link.download = 'diff-function-report.html';
-	// 	link.click();
-	// 	window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+function exportReport(darkMode: boolean): void {
+	const reportContent = document.getElementById('report-content');
+	if (!vscodeApi || !reportContent) {
+		ElMessage.error(props.labels.reportExportUnavailable);
+		return;
+	}
+
+	let styles: string;
+	try {
+		styles = getExportStyles();
+	} catch (error) {
+		console.error('Failed to collect styles for the exported report.', error);
+		ElMessage.error(`${props.labels.reportExportUnavailable} ${String(error)}`);
+		return;
+	}
+
+	const html = `<!doctype html>
+<html lang="${escapeHtml(document.documentElement.lang || 'en')}">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>${escapeHtml(props.labels.reportTitle)}</title>
+	<style>${styles}</style>
+</head>
+<body style="margin: 0;"><div>${reportContent.outerHTML}</div></body>
+</html>`;
+	const themedHtml = html.replace(
+		'<html lang=',
+		`<html class="${darkMode ? 'dark' : ''}" lang=`,
+	);
+	vscodeApi.postMessage({ type: 'exportReport', html: themedHtml });
 }
 </script>
 
 <template>
-	<div class="min-h-screen">
-		<header class="flex items-center justify-between px-4 py-3 border-b border-solid review-border">
+	<ReportPreview v-if="isPreviewingReport" :items="changeItems" :files="diffFunctionsFiles" :labels="props.labels"
+		:initial-dark-mode="initialDarkMode"
+		@back="isPreviewingReport = false" @export="exportReport" />
+	<div v-else class="min-h-screen">
+		<header class="flex items-center justify-between px-4 py-3">
 			<div class="flex items-center gap-3">
 				<div class="review-app-icon flex items-center justify-center w-10 h-10 rounded-lg">
 					<el-icon class="text-xl">
@@ -467,23 +474,25 @@ function previewHtml() {
 									<el-form-item :label="props.labels.changeTitle" required>
 										<el-input v-model="form.title" maxlength="100" :placeholder="props.labels.titlePlaceholder" />
 									</el-form-item>
-									<el-form-item :label="props.labels.changeDescription" required>
+									<el-form-item :label="props.labels.changeDescription">
 										<el-input v-model="form.description" type="textarea" :rows="4" maxlength="1000"
 											:placeholder="props.labels.descriptionPlaceholder" />
 									</el-form-item>
+									<div
+										class="mb-[15px] rounded-lg border border-dashed review-border review-surface-subtle p-[11px]">
+										<div class="mb-[7px] text-xs font-bold review-text-primary">{{
+											props.labels.relatedFilesAndFunctions }} <span
+												class="review-text-danger">*</span>
+										</div>
+										<EntryTree v-if="selectedEntries.length !== 0" :entries="selectedEntries"
+											:labels="props.labels" :can-edit="true"
+											@remove-entry="(filePath) => changeSelectedPath(filePath, false)"
+											@remove-function="(filePath, functionId) => changeSelectedFunctionIds(filePath, [functionId], false)" />
+										<div v-else class="mt-1 text-xs review-text-muted">{{
+											props.labels.selectFunctionHint }}</div>
+									</div>
 									<el-button type="primary" class="!w-full" @click="addChangeItem">＋ {{ props.labels.addChangeItem }}</el-button>
 								</el-form>
-								<div
-									class="mb-[15px] rounded-lg border border-dashed review-border review-surface-subtle p-[11px]">
-									<div class="mb-[7px] text-xs font-bold review-text-primary">{{ props.labels.relatedFilesAndFunctions }} <span
-											class="review-text-danger">*</span>
-									</div>
-									<EntryTree v-if="selectedEntries.length !== 0" :entries="selectedEntries" :labels="props.labels"
-										:can-edit="true"
-										@remove-entry="(filePath) => changeSelectedPath(filePath, false)"
-										@remove-function="(filePath, functionId) => changeSelectedFunctionIds(filePath, [functionId], false)" />
-									<div v-else class="mt-1 text-xs review-text-muted">{{ props.labels.selectFunctionHint }}</div>
-								</div>
 							</el-collapse-item>
 						</el-collapse>
 						<div class="mb-[9px] mt-4 flex items-center justify-between gap-3">
@@ -509,24 +518,31 @@ function previewHtml() {
 										</div>
 									</div>
 								</template>
-
-								<el-input v-if="editingChangeItemId === item.id" v-model="item.title" class="mb-2"
-									maxlength="100" :placeholder="props.labels.changeTitle" />
-								<p v-else
-									class="my-2 mt-[5px] text-[11px] review-text-muted [overflow-wrap:anywhere] whitespace-pre-wrap">
-									{{ item.description }}</p>
-								<el-input v-if="editingChangeItemId === item.id" v-model="item.description"
-									type="textarea" :rows="4" maxlength="1000" :placeholder="props.labels.changeDescription" />
-								<div v-if="editingChangeItemId === item.id" class="mt-3">
-									<div class="mb-1 text-xs font-bold review-text-primary">{{ props.labels.relatedFilesAndFunctions }}</div>
-									<div v-if="item.entries.length === 0" class="text-xs review-text-muted">{{ props.labels.selectFunctionHint }}
+								<template v-if="editingChangeItemId === item.id">
+									<el-input v-if="editingChangeItemId === item.id" v-model="item.title" class="mb-2"
+										maxlength="100" :placeholder="props.labels.changeTitle" />
+									<el-input v-if="editingChangeItemId === item.id" v-model="item.description"
+										type="textarea" :rows="4" maxlength="1000"
+										:placeholder="props.labels.changeDescription" />
+									<div v-if="editingChangeItemId === item.id" class="mt-3">
+										<div class="mb-1 text-xs font-bold review-text-primary">{{
+											props.labels.relatedFilesAndFunctions }}</div>
+										<div v-if="item.entries.length === 0" class="text-xs review-text-muted">{{
+											props.labels.selectFunctionHint }}
+										</div>
+										<EntryTree v-else :entries="item.entries" :can-edit="true"
+											:labels="props.labels"
+											@remove-entry="(filePath) => changeSelectedPath(filePath, false)"
+											@remove-function="(filePath, functionId) => changeSelectedFunctionIds(filePath, [functionId], false)" />
 									</div>
-									<EntryTree v-else :entries="item.entries" :can-edit="true" :labels="props.labels"
-										@remove-entry="(filePath) => changeSelectedPath(filePath, false)"
-										@remove-function="(filePath, functionId) => changeSelectedFunctionIds(filePath, [functionId], false)" />
-								</div>
-								<EntryTree v-else-if="item.entries.length !== 0" :entries="item.entries" :labels="props.labels"
-									:can-edit="false" />
+								</template>
+								<template v-else>
+									<p v-if="item.description.trim().length !== 0"
+										class="my-2 mt-[5px] text-[11px] review-text-muted [overflow-wrap:anywhere] whitespace-pre-wrap">
+										{{ item.description }}</p>
+									<EntryTree v-if="item.entries.length !== 0" :entries="item.entries" :labels="props.labels"
+										:can-edit="false" />
+								</template>
 							</el-collapse-item>
 						</el-collapse>
 					</el-card>

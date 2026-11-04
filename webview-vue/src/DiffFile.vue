@@ -13,6 +13,7 @@ const props = defineProps<{
     item: ChangedFileFunctions;
     entry?: ChangeEntry;
     labels: DiffReviewLabels;
+    displayOnly?: boolean;
 }>();
 const emit = defineEmits<{
     'update:selectedFunctionIds': [ids: string[], selected: boolean];
@@ -89,7 +90,7 @@ function toggleFunctionSelection(fn: ChangedFunction, functionIndex: number, sel
 
 </script>
 <template>
-    <el-card class="mb-12" :body-style="{ padding: '0' }" shadow="never">
+    <el-card :class="props.displayOnly ? 'mb-4' : 'mb-12'" :body-style="{ padding: '0' }" shadow="never">
         <template #header>
             <div class="flex items-center text-sm font-semibold review-text-primary">
                 <span class="flex min-w-0 flex-1 items-center">
@@ -107,10 +108,10 @@ function toggleFunctionSelection(fn: ChangedFunction, functionIndex: number, sel
                 </span>
                 <span class="ml-auto shrink-0 review-text-added font-medium">+{{ props.item.diffInfo.addedLines }}</span>
                 <span class="ml-3 shrink-0 review-text-deleted font-medium">-{{ props.item.diffInfo.deletedLines }}</span>
-                <el-checkbox v-if="functions.length > 0" class="ml-3 shrink-0" :model-value="allFunctionsSelected"
+                <el-checkbox v-if="!props.displayOnly && functions.length > 0" class="ml-3 shrink-0" :model-value="allFunctionsSelected"
                     :indeterminate="someFunctionsSelected && !allFunctionsSelected"
                     :aria-label="formatLabel(props.labels.selectAllFunctionsInFile, props.item.path)" @change="toggleFileSelection($event === true)" />
-               <el-checkbox v-else class="ml-3 shrink-0" :model-value="props.entry?.filePath == props.item.path"
+               <el-checkbox v-else-if="!props.displayOnly" class="ml-3 shrink-0" :model-value="props.entry?.filePath == props.item.path"
                     :aria-label="formatLabel(props.labels.selectFile, props.item.path)" @change="toggleFileSelection($event === true)" />
             </div>
         </template>
@@ -136,7 +137,7 @@ function toggleFunctionSelection(fn: ChangedFunction, functionIndex: number, sel
                 </div>
                 <!--有差异但无法解析出函数，则直接渲染差异内容-->
                 <template v-else-if="functions.length === 0 && nonFunctionDiffBlocks.length === 0">
-                    <div v-if="props.item.error" class="review-file-status review-file-status--error" role="status">
+                    <div v-if="props.item.error && !props.displayOnly" class="review-file-status review-file-status--error" role="status">
                         <span class="review-file-status__icon" aria-hidden="true">!</span>
                         <span>{{ props.item.error }}</span>
                     </div>
@@ -144,7 +145,7 @@ function toggleFunctionSelection(fn: ChangedFunction, functionIndex: number, sel
                 </template>
                 <!--有差异且解析出函数，则渲染函数列表-->
                 <div v-else>
-                    <div v-if="!props.item.symbolProviderAvailable" class="review-file-status review-file-status--error" role="status">
+                    <div v-if="!props.item.symbolProviderAvailable && !props.displayOnly" class="review-file-status review-file-status--error" role="status">
                         <span class="review-file-status__icon" aria-hidden="true">!</span>
                         <span>{{ props.labels.fileSymbolError }}</span>
                     </div>
@@ -171,7 +172,7 @@ function toggleFunctionSelection(fn: ChangedFunction, functionIndex: number, sel
                                     class="review-tag shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide">
                                     {{ displayItem.fn.kind === 'added' ? props.labels.added : displayItem.fn.kind === 'deleted' ? props.labels.deleted : props.labels.modified }}
                                 </span>
-                                <el-checkbox class="ml-2 shrink-0"
+                                <el-checkbox v-if="!props.displayOnly" class="ml-2 shrink-0"
                                     :model-value="props.entry?.functions?.has(getFunctionId(displayItem.fn, displayItem.functionIndex))"
                                     :aria-label="formatLabel(props.labels.selectFunction, displayItem.fn.name)"
                                     @change="toggleFunctionSelection(displayItem.fn, displayItem.functionIndex, $event === true)" />

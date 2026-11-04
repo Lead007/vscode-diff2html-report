@@ -6,6 +6,7 @@ import 'diff2html/bundles/css/diff2html.min.css';
 import 'virtual:uno.css';
 import App from './App.vue';
 import './style.css';
+import './report.css';
 
 function syncElementPlusTheme() {
 	document.documentElement.classList.toggle('dark', document.body.classList.contains('vscode-dark'));

@@ -36,6 +36,17 @@ export interface DiffReviewLabels {
 	subtitle: string;
 	clearChanges: string;
 	previewHtml: string;
+	reportPreviewTitle: string;
+	reportPreviewDescription: string;
+	backToReview: string;
+	exportReport: string;
+	reportTitle: string;
+	reportGeneratedAt: string;
+	reportDiffUnavailable: string;
+	reportExportUnavailable: string;
+	themeMode: string;
+	lightMode: string;
+	darkMode: string;
 	pageTitle: string;
 	pageDescription: string;
 	filesChanged: string;
@@ -100,8 +111,18 @@ export interface ChangeEntry {
 	functions?: Map<string, ChangedFunction>;
 }
 
+export interface ChangeItem {
+	id: number;
+	title: string;
+	description: string;
+	entries: ChangeEntry[];
+}
+
 declare global {
 	interface Window {
 		__DIFF_REVIEW_DATA__?: DiffReviewData;
+		acquireVsCodeApi?: () => {
+			postMessage(message: { type: 'exportReport'; html: string }): void;
+		};
 	}
 }

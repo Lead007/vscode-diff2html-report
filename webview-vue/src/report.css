@@ -1,0 +1,65 @@
+.report-theme {
+	--review-foreground: #303030;
+	--review-muted-foreground: #6b7280;
+	--review-accent-foreground: #2563eb;
+	--review-success-foreground: #16803c;
+	--review-danger-foreground: #b42318;
+	--review-surface: #f5f7fb;
+	--review-subtle-surface: #f8fafc;
+	--review-raised-surface: #fff;
+	--review-accent-surface: #eef2ff;
+	--review-border: #e2e8f0;
+	--review-button-foreground: #fff;
+	--review-diff-added-background: rgba(129, 201, 140, 0.12);
+	--review-diff-deleted-background: rgba(244, 135, 113, 0.12);
+	--review-diff-added-highlight: rgba(129, 201, 140, 0.3);
+	--review-diff-deleted-highlight: rgba(244, 135, 113, 0.3);
+}
+
+.report-theme.dark {
+	--review-foreground: #e5e7eb;
+	--review-muted-foreground: #9ca3af;
+	--review-accent-foreground: #93c5fd;
+	--review-success-foreground: #86efac;
+	--review-danger-foreground: #fca5a5;
+	--review-surface: #1e1e1e;
+	--review-subtle-surface: #252526;
+	--review-raised-surface: #2d2d30;
+	--review-accent-surface: #37373d;
+	--review-border: #454545;
+	--review-button-foreground: #fff;
+	--review-diff-added-background: rgba(46, 160, 67, 0.18);
+	--review-diff-deleted-background: rgba(248, 81, 73, 0.18);
+	--review-diff-added-highlight: rgba(46, 160, 67, 0.35);
+	--review-diff-deleted-highlight: rgba(248, 81, 73, 0.35);
+}
+
+.report-theme.dark .d2h-light-color-scheme {
+	--d2h-bg-color: var(--review-surface);
+	--d2h-border-color: var(--review-border);
+	--d2h-change-del-color: var(--review-diff-deleted-background);
+	--d2h-change-ins-color: var(--review-diff-added-background);
+	--d2h-change-label-color: var(--review-foreground);
+	--d2h-del-bg-color: var(--review-diff-deleted-background);
+	--d2h-del-border-color: var(--review-border);
+	--d2h-del-highlight-bg-color: var(--review-diff-deleted-highlight);
+	--d2h-del-label-color: var(--review-danger-foreground);
+	--d2h-dim-color: var(--review-muted-foreground);
+	--d2h-empty-placeholder-bg-color: var(--review-surface);
+	--d2h-empty-placeholder-border-color: var(--review-border);
+	--d2h-file-header-bg-color: var(--review-subtle-surface);
+	--d2h-file-header-border-color: var(--review-border);
+	--d2h-info-bg-color: var(--review-raised-surface);
+	--d2h-info-border-color: var(--review-border);
+	--d2h-ins-bg-color: var(--review-diff-added-background);
+	--d2h-ins-border-color: var(--review-border);
+	--d2h-ins-highlight-bg-color: var(--review-diff-added-highlight);
+	--d2h-ins-label-color: var(--review-success-foreground);
+	--d2h-line-border-color: var(--review-border);
+}
+
+@media print {
+	.report-page { max-width: none; }
+	.report-change-item,
+	.report-file { break-inside: avoid; }
+}

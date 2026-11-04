@@ -305,7 +305,7 @@ export function activate(context: vscode.ExtensionContext) {
 						(current, total, filePath) => {
 							progress.report({
 								message: localize('diff2html-report.progress.analyzingFunctionsProgress', filePath, String(current), String(total)),
-								increment: (1 / total) * 100
+								increment: current === 0 ? 0 : ((1 / total) * 100)
 							});
 						}
 					);
@@ -352,6 +352,45 @@ export function activate(context: vscode.ExtensionContext) {
 					`<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${panel.webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}' ${panel.webview.cspSource}; font-src ${panel.webview.cspSource}; connect-src ${panel.webview.cspSource};"><script nonce="${nonce}">window.__DIFF_REVIEW_DATA__ = ${initialData};</script></head>`,
 				);
 			panel.webview.html = html;
+			panel.webview.onDidReceiveMessage(async (message) => {
+				if (message.type !== 'exportReport') {
+					return;
+				}
+				if (typeof message.html !== 'string') {
+					vscode.window.showErrorMessage(localize('diff2html-report.commandErrorText', 'Invalid report content.'));
+					return;
+				}
+
+				try {
+					const uri = await vscode.window.showSaveDialog({
+						defaultUri: vscode.Uri.joinPath(
+							vscode.workspace.workspaceFolders?.[0].uri || vscode.Uri.file('/'),
+							`diff-report-${new Date().toLocaleDateString().replace(/\//g, '-')}.html`
+						),
+						filters: { 'HTML file': ['html', 'htm'] }
+					});
+					if (!uri) {
+						return;
+					}
+
+					await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(message.html));
+					appendLog(`Function change report exported to '${uri.fsPath}'.`);
+					const action = await vscode.window.showInformationMessage(
+						localize('diff2html-report.export.information', uri.fsPath),
+						localize('diff2html-report.export.openFile'),
+						localize('diff2html-report.export.openFolder')
+					);
+					if (action === localize('diff2html-report.export.openFile')) {
+						const open = (await import('open')).default;
+						await open(uri.fsPath);
+					} else if (action === localize('diff2html-report.export.openFolder')) {
+						await vscode.commands.executeCommand('revealFileInOS', uri);
+					}
+				} catch (error) {
+					appendLog(`Failed to export function change report: ${String(error)}`);
+					vscode.window.showErrorMessage(localize('diff2html-report.commandErrorText', String(error)));
+				}
+			});
 			appendLog(`Command 'diff2html-report.generateChangeItemReport' executed`);
 		})
 	);

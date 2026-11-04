@@ -101,6 +101,31 @@ suite('Changed function symbols', () => {
 		assert.ok(diffLines.some(line => line.type === 'insert' && line.content.includes('newName')));
 	});
 
+	test('analyzes files concurrently while preserving input order and reporting completed progress', async () => {
+		await fs.writeFile(path.join(repositoryPath, 'second.txt'), 'function second() {\n  return 1;\n}\n');
+		await runGit(['add', 'second.txt']);
+		await runGit(['commit', '-qm', 'add second file']);
+		const multiFileRevision = (await runGit(['rev-parse', 'HEAD'])).trim();
+		const { stdout: diff } = await execFileAsync('git', ['diff', baseRevision, multiFileRevision], {
+			cwd: repositoryPath,
+			encoding: 'utf8'
+		});
+		const diffFiles = diff2html.parse(diff).reverse();
+		const inputPaths = diffFiles.map(file => file.newName || file.oldName);
+		const progress: Array<{ current: number; filePath: string }> = [];
+		const results = await findChangedFunctions(
+			repositoryPath,
+			diffFiles,
+			baseRevision,
+			multiFileRevision,
+			(current, _total, filePath) => progress.push({ current, filePath }),
+		);
+
+		assert.deepStrictEqual(results.map(file => file.path), inputPaths);
+		assert.deepStrictEqual(progress.map(item => item.current), [1, 2]);
+		assert.deepStrictEqual(progress.map(item => item.filePath).sort(), [...inputPaths].sort());
+	});
+
 	test('includes configured document symbol kinds in function-level changes', async () => {
 		const configuration = vscode.workspace.getConfiguration('diff2html-report');
 		const previousGlobalValue = configuration.inspect<string[]>('functionDiffSymbolKinds')?.globalValue;

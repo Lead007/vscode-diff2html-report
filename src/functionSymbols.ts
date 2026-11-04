@@ -155,96 +155,98 @@ export async function findChangedFunctions(
 	}
 	const options = getFunctionDiffOptions();
 	const functionKinds = getFunctionSymbolKinds();
-	const results: ChangedFileFunctions[] = [];
-
-	// 逐文件分析，并保留无法分析或被跳过的文件状态，保证结果与输入差异对应。
-	for (const file of diffFiles) {
+	let completedFiles = 0;
+	const results = await Promise.all(diffFiles.map(async (file): Promise<ChangedFileFunctions | undefined> => {
 		const oldPath = file.isNew ? undefined : file.oldName;
 		const newPath = file.isDeleted ? undefined : file.newName;
 		const displayPath = newPath || oldPath;
 		if (!displayPath) {
 			appendLog('Skipping a diff file without an old or new path.');
-			continue;
+			return undefined;
 		}
 		appendLog(`Analyzing changed functions in '${displayPath}'.`);
-		if (onProgress) {
-			onProgress(results.length + 1, diffFiles.length, displayPath);
-		}
+
+		let result: ChangedFileFunctions;
 		// 二进制文件和超大文件无法可靠地通过文档符号提供器分析，明确记录跳过原因。
 		if (file.isBinary || file.isTooBig) {
-			results.push({
+			result = {
 				path: displayPath,
 				diffInfo: file,
 				functions: [],
 				nonFunctionDiffBlocks: [],
 				symbolProviderAvailable: false,
 				skipReason: file.isBinary ? 'binary' : 'tooBig'
-			});
+			};
 			appendLog(`Skipped function analysis for '${displayPath}' (${file.isBinary ? 'binary' : 'too large'} file).`);
-			continue;
+		} else {
+			try {
+				// 从差异块提取两版各自修改的行，并从 Git 读取两版源码。
+				const changedLines = collectChangedLines(file);
+				const oldSource = oldPath
+					? await readSource(repositoryPath, base, oldPath, false)
+					: undefined;
+				const newSource = newPath
+					? await readSource(repositoryPath, current, newPath, staged)
+					: undefined;
+				// 新增文件没有旧源码，删除文件没有新源码；对应的空符号集便于统一后续匹配。
+				const oldResult = oldSource === undefined
+					? { symbols: [], available: true }
+					: await getDocumentSymbols(oldSource, oldPath!, functionKinds);
+				const newResult = newSource === undefined
+					? { symbols: [], available: true }
+					: await getDocumentSymbols(newSource, newPath!, functionKinds);
+				const oldSymbols = oldResult.symbols;
+				const newSymbols = newResult.symbols;
+				// 先筛选范围与变更行相交的函数，再将旧版/新版符号配对为修改、新增或删除。
+				const changes = pairChangedSymbols(
+					oldSymbols.filter(symbol => intersectsLines(symbol.range, changedLines.oldLines)),
+					newSymbols.filter(symbol => intersectsLines(symbol.range, changedLines.newLines)),
+					oldSymbols,
+					newSymbols,
+					file,
+					oldSource,
+					newSource,
+					options
+				);
+				const nonFunctionDiffBlocks = createNonFunctionDiffBlocks(
+					file.blocks,
+					oldSymbols,
+					newSymbols,
+					options.contextLines
+				);
+				result = {
+					path: displayPath,
+					diffInfo: file,
+					functions: changes,
+					nonFunctionDiffBlocks,
+					symbolProviderAvailable: oldResult.available || newResult.available
+				};
+				//TODO
+				if (!oldResult.available || !newResult.available) {
+					appendLog(`A document symbol provider was unavailable for '${displayPath}' (old: ${oldResult.available}, new: ${newResult.available}).`);
+				}
+				appendLog(`Finished analyzing '${displayPath}': ${changes.length} function change(s), ${nonFunctionDiffBlocks.length} non-function diff block(s).`);
+			} catch (error) {
+				// 单个文件分析失败不应中断整个列表；将错误文本附在该文件结果上供调用方展示。
+				appendLog(`Failed to analyze changed functions in '${displayPath}': ${String(error)}`);
+				result = {
+					path: displayPath,
+					diffInfo: file,
+					functions: [],
+					nonFunctionDiffBlocks: [],
+					symbolProviderAvailable: false,
+					error: String(error)
+				};
+			}
 		}
 
-		try {
-			// 从差异块提取两版各自修改的行，并从 Git 读取两版源码。
-			const changedLines = collectChangedLines(file);
-			const oldSource = oldPath
-				? await readSource(repositoryPath, base, oldPath, false)
-				: undefined;
-			const newSource = newPath
-				? await readSource(repositoryPath, current, newPath, staged)
-				: undefined;
-			// 新增文件没有旧源码，删除文件没有新源码；对应的空符号集便于统一后续匹配。
-			const oldResult = oldSource === undefined
-				? { symbols: [], available: true }
-				: await getDocumentSymbols(oldSource, oldPath!, functionKinds);
-			const newResult = newSource === undefined
-				? { symbols: [], available: true }
-				: await getDocumentSymbols(newSource, newPath!, functionKinds);
-			const oldSymbols = oldResult.symbols;
-			const newSymbols = newResult.symbols;
-			// 先筛选范围与变更行相交的函数，再将旧版/新版符号配对为修改、新增或删除。
-			const changes = pairChangedSymbols(
-				oldSymbols.filter(symbol => intersectsLines(symbol.range, changedLines.oldLines)),
-				newSymbols.filter(symbol => intersectsLines(symbol.range, changedLines.newLines)),
-				oldSymbols,
-				newSymbols,
-				file,
-				oldSource,
-				newSource,
-				options
-			);
-			const nonFunctionDiffBlocks = createNonFunctionDiffBlocks(
-				file.blocks,
-				oldSymbols,
-				newSymbols,
-				options.contextLines
-			);
-			results.push({
-				path: displayPath,
-				diffInfo: file,
-				functions: changes,
-				nonFunctionDiffBlocks,
-				symbolProviderAvailable: oldResult.available || newResult.available
-			});
-			if (!oldResult.available || !newResult.available) {
-				appendLog(`A document symbol provider was unavailable for '${displayPath}' (old: ${oldResult.available}, new: ${newResult.available}).`);
-			}
-			appendLog(`Finished analyzing '${displayPath}': ${changes.length} function change(s), ${nonFunctionDiffBlocks.length} non-function diff block(s).`);
-		} catch (error) {
-			// 单个文件分析失败不应中断整个列表；将错误文本附在该文件结果上供调用方展示。
-			appendLog(`Failed to analyze changed functions in '${displayPath}': ${String(error)}`);
-			results.push({
-				path: displayPath,
-				diffInfo: file,
-				functions: [],
-				nonFunctionDiffBlocks: [],
-				symbolProviderAvailable: false,
-				error: String(error)
-			});
-		}
-	}
-	appendLog(`Completed function diff analysis: ${results.length} of ${diffFiles.length} file(s) processed.`);
-	return results;
+		completedFiles++;
+		onProgress?.(completedFiles, diffFiles.length, displayPath);
+		return result;
+	}));
+	const processedResults = results.filter((result): result is ChangedFileFunctions => result !== undefined);
+	appendLog(`Completed function diff analysis: ${processedResults.length} of ${diffFiles.length} file(s) processed.`);
+	return processedResults;
 }
 
 /**
