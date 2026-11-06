@@ -147,5 +147,5 @@ button { font-family: inherit; }
 
 /* Diff2Html 行号回归表格布局，确保与代码行同步滚动。 */
 .diff-panel .d2h-file-diff { overflow: visible; }
-.diff-panel .d2h-code-linenumber { display: table-cell; position: static; }
+.diff-panel .d2h-code-linenumber { display: table-cell; position: static; min-width: 7.5em; }
 .diff-panel .d2h-code-line { width: auto; padding: 0 8px; }

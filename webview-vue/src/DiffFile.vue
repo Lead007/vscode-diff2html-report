@@ -136,13 +136,13 @@ function toggleFunctionSelection(fn: ChangedFunction, functionIndex: number, sel
                     <span>{{ props.labels.fileWithoutChanges }}</span>
                 </div>
                 <!--有差异但无法解析出函数，则直接渲染差异内容-->
-                <template v-else-if="functions.length === 0 && nonFunctionDiffBlocks.length === 0">
+                <div v-else-if="functions.length === 0 && nonFunctionDiffBlocks.length === 0">
                     <div v-if="props.item.error && !props.displayOnly" class="review-file-status review-file-status--error" role="status">
                         <span class="review-file-status__icon" aria-hidden="true">!</span>
                         <span>{{ props.item.error }}</span>
                     </div>
                     <DiffLineByLine :item="alignDiffLines(props.item.diffInfo.blocks)" />
-                </template>
+                </div>
                 <!--有差异且解析出函数，则渲染函数列表-->
                 <div v-else>
                     <div v-if="!props.item.symbolProviderAvailable && !props.displayOnly" class="review-file-status review-file-status--error" role="status">
