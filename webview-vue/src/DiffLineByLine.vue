@@ -1,8 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import { getFileIcon } from 'diff2html/lib/render-utils';
-import type { ChangedFileFunctions } from '../../src/functionSymbols';
-import { alignDiffLines, DiffBlockParsed, DiffBlockType } from '../../src/diffUtils';
+import { DiffBlockParsed, DiffBlockType } from '../../src/diffUtils';
 
 const props = defineProps<{ item: DiffBlockParsed[] }>();
 
@@ -10,9 +7,6 @@ const props = defineProps<{ item: DiffBlockParsed[] }>();
 <template>
     <table class="d2h-diff-table">
         <tbody class="d2h-diff-tbody">
-        </tbody>
-        <!--有差异但无法解析出函数，则直接渲染差异内容-->
-        <tbody>
             <template v-for="(block, blockIndex) in props.item" :key="blockIndex">
                 <!--上下文-->
                 <template v-if="block.type === DiffBlockType.CONTEXT">
