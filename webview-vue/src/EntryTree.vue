@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { formatLabel } from './types';
 import type { ChangeEntry, DiffReviewLabels } from './types';
 import { Close } from '@element-plus/icons-vue';
 
