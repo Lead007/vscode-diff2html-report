@@ -26,6 +26,7 @@ export interface DiffReviewData {
 	diffInfo: DiffFile[];
 	changedFunctions: ChangedFileFunctions[];
 	labels: DiffReviewLabels;
+	configs: DiffReviewConfigs;
 }
 
 export interface DiffReviewLabels {
@@ -104,6 +105,10 @@ export interface DiffReviewLabels {
 
 export function formatLabel(template: string, ...values: string[]): string {
 	return template.replace(/\{(\d+)\}/g, (_match, index: string) => values[Number(index)] ?? '');
+}
+
+export interface DiffReviewConfigs {
+	viewType: 'line-by-line' | 'side-by-side';
 }
 
 export interface ChangeEntry {

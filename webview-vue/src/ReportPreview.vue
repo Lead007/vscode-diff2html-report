@@ -11,6 +11,7 @@ const props = defineProps<{
 	files: ChangedFileFunctions[];
 	labels: DiffReviewLabels;
 	initialDarkMode: boolean;
+    viewType: 'line-by-line' | 'side-by-side';
 }>();
 
 const emit = defineEmits<{
@@ -83,7 +84,7 @@ onBeforeUnmount(() => {
 		</header>
 
 		<main id="report-content"
-			class="report-theme report-page mx-auto min-h-screen max-w-5xl p-4 review-surface review-text-primary md:p-8"
+			class="report-theme report-page mx-auto min-h-screen max-w-8xl p-4 review-surface review-text-primary md:p-8"
 			:class="{ dark: darkMode }">
 			<div class="mb-5">
 				<h1 class="mb-2 text-2xl font-bold">{{ props.labels.reportTitle }}</h1>
@@ -103,7 +104,7 @@ onBeforeUnmount(() => {
 					class="mb-4 whitespace-pre-wrap [overflow-wrap:anywhere]">{{ item.description }}</p>
 
 				<template v-for="entry in item.entries" :key="entry.filePath">
-					<DiffFile v-if="entry.file" :item="entry.file" :labels="props.labels" display-only />
+					<DiffFile v-if="entry.file" :item="entry.file" :labels="props.labels" :view-type="props.viewType" display-only />
 					<el-card v-else class="mb-4" shadow="never">
 						<template #header>
 							<strong class="text-sm [overflow-wrap:anywhere]">{{ entry.filePath }}</strong>

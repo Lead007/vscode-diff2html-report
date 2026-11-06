@@ -8,12 +8,14 @@ import { alignDiffLines } from '../../src/diffUtils';
 import DiffLineByLine from './DiffLineByLine.vue';
 import { formatLabel, getRangeStartLine } from './types';
 import type { ChangeEntry, DiffReviewLabels } from './types';
+import DiffSideBySide from './DiffSideBySide.vue';
 
 const props = defineProps<{
     item: ChangedFileFunctions;
     entry?: ChangeEntry;
     labels: DiffReviewLabels;
     displayOnly?: boolean;
+    viewType: 'line-by-line' | 'side-by-side';
 }>();
 const emit = defineEmits<{
     'update:selectedFunctionIds': [ids: string[], selected: boolean];
@@ -141,7 +143,8 @@ function toggleFunctionSelection(fn: ChangedFunction, functionIndex: number, sel
                         <span class="review-file-status__icon" aria-hidden="true">!</span>
                         <span>{{ props.item.error }}</span>
                     </div>
-                    <DiffLineByLine :item="alignDiffLines(props.item.diffInfo.blocks)" />
+                    <DiffLineByLine v-if="props.viewType === 'line-by-line'" :item="alignDiffLines(props.item.diffInfo.blocks)" />
+                    <DiffSideBySide v-else :item="alignDiffLines(props.item.diffInfo.blocks)" />
                 </div>
                 <!--有差异且解析出函数，则渲染函数列表-->
                 <div v-else>
@@ -158,7 +161,8 @@ function toggleFunctionSelection(fn: ChangedFunction, functionIndex: number, sel
                                     aria-hidden="true">#</span>
                                 <span>{{ props.labels.fileLevelChanges }}</span>
                             </div>
-                            <DiffLineByLine :item="alignDiffLines([displayItem.block])" />
+                            <DiffLineByLine v-if="props.viewType === 'line-by-line'" :item="alignDiffLines([displayItem.block])" />
+                            <DiffSideBySide v-else :item="alignDiffLines([displayItem.block])" />
                         </template>
                         <template v-else>
                             <div
@@ -177,7 +181,8 @@ function toggleFunctionSelection(fn: ChangedFunction, functionIndex: number, sel
                                     :aria-label="formatLabel(props.labels.selectFunction, displayItem.fn.name)"
                                     @change="toggleFunctionSelection(displayItem.fn, displayItem.functionIndex, $event === true)" />
                             </div>
-                            <DiffLineByLine :item="alignDiffLines(displayItem.fn.diffBlocks ?? [])" />
+                            <DiffLineByLine v-if="props.viewType === 'line-by-line'" :item="alignDiffLines(displayItem.fn.diffBlocks ?? [])" />
+                            <DiffSideBySide v-else :item="alignDiffLines(displayItem.fn.diffBlocks ?? [])" />
                         </template>
                     </template>
                 </div>

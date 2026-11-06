@@ -136,6 +136,12 @@ button { font-family: inherit; }
 	--d2h-selected-color: var(--vscode-list-activeSelectionBackground, #094771);
 }
 
+.dark .d2h-code-side-emptyplaceholder,
+.dark .d2h-emptyplaceholder {
+	background-color: var(--review-surface);
+	border-color: var(--review-border);
+}
+
 /* 桌面端左右栏独立滚动；滚动边界可继续传递给全局页面。 */
 .diff-columns { height: 100vh; min-height: 260px; }
 .diff-column { height: 100%; min-height: 0; overflow-y: auto; overscroll-behavior-y: auto; padding-top: 16px; }
