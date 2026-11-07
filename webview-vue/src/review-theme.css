@@ -88,11 +88,6 @@ button { font-family: inherit; }
 	color: var(--review-button-foreground);
 }
 .review-function-header { background-color: var(--review-subtle-surface); }
-.review-tag {
-	border-color: var(--review-border);
-	background-color: var(--review-raised-surface);
-	color: var(--review-accent-foreground);
-}
 
 /* diff2html样式改写 */
 .dark,
@@ -102,7 +97,7 @@ button { font-family: inherit; }
 	--d2h-border-color: var(--review-border, var(--vscode-panel-border, #454545));
 	--d2h-change-del-color: var(--review-diff-deleted-background, var(--vscode-diffEditor-removedLineBackground, rgba(248, 81, 73, 0.18)));
 	--d2h-change-ins-color: var(--review-diff-added-background, var(--vscode-diffEditor-insertedLineBackground, rgba(46, 160, 67, 0.18)));
-	--d2h-change-label-color: var(--review-foreground, var(--vscode-foreground, #e5e7eb));
+	--d2h-change-label-color: var(--vscode-editorWarning-foreground, #d29922);
 	--d2h-del-bg-color: var(--review-diff-deleted-background, var(--vscode-diffEditor-removedLineBackground, rgba(248, 81, 73, 0.18)));
 	--d2h-del-border-color: var(--review-border, var(--vscode-panel-border, #454545));
 	--d2h-del-highlight-bg-color: var(--review-diff-deleted-highlight, var(--vscode-diffEditor-removedTextBackground, rgba(248, 81, 73, 0.35)));
@@ -119,7 +114,7 @@ button { font-family: inherit; }
 	--d2h-ins-highlight-bg-color: var(--review-diff-added-highlight, var(--vscode-diffEditor-insertedTextBackground, rgba(46, 160, 67, 0.35)));
 	--d2h-ins-label-color: var(--review-success-foreground, var(--vscode-gitDecoration-addedResourceForeground, #86efac));
 	--d2h-line-border-color: var(--review-border, var(--vscode-panel-border, #454545));
-	--d2h-moved-label-color: var(--vscode-editorWarning-foreground, #cca700);
+	--d2h-moved-label-color: var(--vscode-textLink-foreground, #3572b0);
 	--d2h-selected-color: var(--vscode-list-activeSelectionBackground, #094771);
 }
 

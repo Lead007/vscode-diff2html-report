@@ -53,6 +53,17 @@ function getFileBlockLine(block: DiffBlock): number {
             : Math.min(block.oldStartLine, block.newStartLine);
 }
 
+function getFunctionBadge(kind: 'added' | 'deleted' | 'modified') {
+    switch (kind) {
+        case 'added':
+            return { class: 'review-text-added', text: props.labels.added };
+        case 'deleted':
+            return { class: 'review-text-deleted', text: props.labels.deleted };
+        case 'modified':
+            return { class: 'review-text-accent', text: props.labels.changed };
+    }
+}
+
 const displayItems = computed<DisplayItem[]>(() => [
     ...nonFunctionDiffBlocks.value.map((block, index) => ({
         type: 'file' as const,
@@ -173,8 +184,10 @@ function toggleFunctionSelection(fn: ChangedFunction, functionIndex: number, sel
                                     aria-hidden="true">ƒ</span>
                                 <span class="min-w-0 flex-1 truncate font-mono text-sm font-semibold review-text-primary"
                                     :title="displayItem.fn.name">{{ displayItem.fn.name }}</span>
-                                <span class="review-tag shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide">
-                                    {{ displayItem.fn.kind === 'added' ? props.labels.added : displayItem.fn.kind === 'deleted' ? props.labels.deleted : props.labels.changed }}
+                               <span v-for="badge in [getFunctionBadge(displayItem.fn.kind)]" :key="badge.text"
+                                    :class="badge.class"
+                                    class="shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide">
+                                    {{ badge.text }}
                                 </span>
                                 <el-checkbox v-if="!props.displayOnly" class="ml-2 shrink-0"
                                     :model-value="props.entry?.functions?.has(getFunctionId(displayItem.fn, displayItem.functionIndex))"
