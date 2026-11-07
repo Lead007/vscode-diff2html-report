@@ -15,18 +15,27 @@ import { randomBytes } from 'crypto';
 import { appendLog, logger } from './logger';
 
 const WEBVIEW_PREFIX = 'diff2html-report.webview.';
-const FUNCTION_LABEL_PREFIX = 'diff2html-report.functions.';
+const DIFFVIEW_PREFIX = 'diff2html-report.webview.diffview.';
+const CHANGE_ITEM_PREFIX = 'diff2html-report.webview.changeitems.';
 
-async function getl18nWithPrefix(extensionUri: vscode.Uri, prefix: string): Promise<Record<string, string>> {
+async function getl18nWithPrefix(extensionUri: vscode.Uri, prefixes: string[]): Promise<Record<string, string>> {
 	const localizationUri = vscode.Uri.joinPath(extensionUri, 'package.nls.json');
 	const localizationBytes = await vscode.workspace.fs.readFile(localizationUri);
 	const localizationEntries = JSON.parse(new TextDecoder().decode(localizationBytes)) as Record<string, string>;
 
-	return Object.fromEntries(
-		Object.keys(localizationEntries)
-			.filter(key => key.startsWith(prefix))
-			.map(key => [key.slice(prefix.length), localize(key)]),
-	);
+	const result: Record<string, string> = {};
+
+	for (const key of Object.keys(localizationEntries)) {
+		for (const prefix of prefixes) {
+			if (key.slice(0, key.lastIndexOf('.') + 1) !== prefix) {
+				continue;
+			}
+
+			// 去掉命中的 prefix 和点，作为新 key
+			result[key.slice(prefix.length)] = localize(key);
+		}
+	}
+	return result;
 }
 
 // This method is called when your extension is activateds
@@ -127,7 +136,7 @@ export function activate(context: vscode.ExtensionContext) {
 				header: localize('diff2html-report.webview.header'),
 				htmlContent: htmlContent.html,
 				lineCountContent,
-				labels: await getl18nWithPrefix(context.extensionUri, WEBVIEW_PREFIX),
+				labels: await getl18nWithPrefix(context.extensionUri, [WEBVIEW_PREFIX, DIFFVIEW_PREFIX]),
 			};
 			showVuePage(context, 'legacy-diff-preview.html', localize('diff2html-report.webview.title'),
 				webViewContext, '__LEGACY_DIFF_PREVIEW_DATA__',
@@ -273,7 +282,7 @@ export function activate(context: vscode.ExtensionContext) {
 					return;
 				}
 
-				const labels = await getl18nWithPrefix(context.extensionUri, FUNCTION_LABEL_PREFIX);
+				const labels = await getl18nWithPrefix(context.extensionUri, [WEBVIEW_PREFIX, CHANGE_ITEM_PREFIX]);
 
 				const configs = {
 					viewType: extensionConfig.get<string>('defaultViewType'),
@@ -285,7 +294,7 @@ export function activate(context: vscode.ExtensionContext) {
 				return;
 			}
 
-			showVuePage(context, 'change-items-page.html', localize('diff2html-report.functions.panelTitle'),
+			showVuePage(context, 'change-items-page.html', localize('diff2html-report.webview.changeitems.panelTitle'),
 				webViewContext, '__DIFF_REVIEW_DATA__',
 				async (message) => {
 					if (message.type !== 'exportReport') {

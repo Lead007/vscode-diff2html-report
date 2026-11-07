@@ -4,10 +4,12 @@ export interface LegacyDiffPreviewData {
 	htmlContent: string;
 	lineCountContent: string;
 	labels: {
-		exportOptionsLabel: string;
-		generateFileListLabel: string;
-		exportButtonLabel: string;
+		themeMode: string;
+		lightMode: string;
+		darkMode: string;
+		exportReport: string;
 	};
+	initialDarkMode: boolean;
 }
 
 declare global {
