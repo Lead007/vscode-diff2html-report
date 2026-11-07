@@ -387,8 +387,6 @@ function exportReport(darkMode: boolean): void {
 				<div class="d2h-file-list-wrapper d2h-light-color-scheme">
 					<div class="d2h-file-list-header">
 						<span class="d2h-file-list-title review-text-primary">{{ formatLabel(props.labels.filesChanged, String(diffFiles.length)) }}</span>
-						<a class="d2h-file-switch d2h-hide">{{ props.labels.hide }}</a>
-						<a class="d2h-file-switch d2h-show">{{ props.labels.show }}</a>
 					</div>
 					<ol class="d2h-file-list">
 						<li v-for="file in diffFiles" :key="file.newName || file.oldName" class="d2h-file-list-line">

@@ -47,8 +47,6 @@ export interface DiffReviewLabels extends SharedLabels {
 	pageTitle: string;
 	pageDescription: string;
 	filesChanged: string;
-	hide: string;
-	show: string;
 	fileFunctions: string;
 	selectFunctionsHint: string;
 	updateSelectionHint: string;
@@ -82,10 +80,10 @@ export interface DiffReviewLabels extends SharedLabels {
 	associateEntry: string;
 	changeItemAdded: string;
 	noChangeItemsToClear: string;
-	fileAdded: string;
-	fileChanged: string;
-	fileDeleted: string;
-	fileRenamed: string;
+	added: string;
+	deleted: string;
+	changed: string;
+	renamed: string;
 	selectAllFunctionsInFile: string;
 	selectFile: string;
 	selectFunction: string;
@@ -94,9 +92,6 @@ export interface DiffReviewLabels extends SharedLabels {
 	fileWithoutChanges: string;
 	fileSymbolError: string;
 	fileLevelChanges: string;
-	added: string;
-	deleted: string;
-	modified: string;
 }
 
 export interface DiffReviewConfigs {
