@@ -316,7 +316,10 @@ export function activate(context: vscode.ExtensionContext) {
 
 				const labels = await getl18nWithPrefix(context.extensionUri, FUNCTION_LABEL_PREFIX);
 
-				return { diffInfo, changedFunctions, labels };
+				const configs = {
+					viewType: extensionConfig.get<string>('defaultViewType'),
+				};
+				return { diffInfo, changedFunctions, labels, configs };
 			});
 
 			if (!webViewContext) {

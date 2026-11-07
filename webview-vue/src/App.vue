@@ -327,7 +327,9 @@ function escapeHtml(value: string): string {
 
 function getExportStyles(): string {
 	return Array.from(document.styleSheets)
-		.flatMap(stylesheet => Array.from(stylesheet.cssRules, rule => rule.cssText))
+		.flatMap(stylesheet => Array.from(stylesheet.cssRules))
+		.filter(rule => !rule.cssText.startsWith('@layer vscode-default'))
+		.map(rule => rule.cssText)
 		.join('\n');
 }
 
@@ -367,7 +369,7 @@ function exportReport(darkMode: boolean): void {
 
 <template>
 	<ReportPreview v-if="isPreviewingReport" :items="changeItems" :files="diffFunctionsFiles" :labels="props.labels"
-		:initial-dark-mode="initialDarkMode"
+		:initial-dark-mode="initialDarkMode" :view-type="props.configs.viewType"
 		@back="isPreviewingReport = false" @export="exportReport" />
 	<div v-else class="min-h-screen">
 		<header class="flex items-center justify-between px-4 py-3">
@@ -439,7 +441,7 @@ function exportReport(darkMode: boolean): void {
 						<template v-for="file in diffFunctionsFiles" :key="file.path">
 							<div :id="getDiffFileId(file.path)">
 								<DiffFile :item="file" :entry="activeEntries.find(entry => entry.filePath === file.path)"
-									:labels="props.labels"
+									:labels="props.labels" view-type="line-by-line"
 									@update:selected-function-ids="(ids, selected) => changeSelectedFunctionIds(file.path, ids, selected)"
 									@update:selected-path="(selected) => changeSelectedPath(file.path, selected)" />
 							</div>

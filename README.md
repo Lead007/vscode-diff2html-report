@@ -53,7 +53,7 @@ This extension contributes the following settings:
 * `diff2html-report.functionDiffContextLines`: Number of unchanged lines shown around changes in long functions with a small change percentage. The default is 3.
 * `diff2html-report.functionDiffSymbolKinds`: Select which VS Code document symbol kinds are included in function-level change analysis. The default is `Function`, `Method`, `Constructor`, and `Operator`.
 * `diff2html-report.drawLineCount`: Display line count statistics in the diff report.
-* `diff2html-report.defaultViewType`: Set the diff2html default view type. The default setting is side-by-side.
+* `diff2html-report.defaultViewType`: Set the default view type to show diff lines for exported page, including Git Diff Report and Change Items Report. The default setting is side-by-side.
 * `diff2html-report.useOnlineResources`: Set whether to use online resources for `diff2html`. The default setting is `false`, which means using stylesheets and scripts inside this extension.
 
 ## Q&A
@@ -73,6 +73,10 @@ Find the commit in Git history or a Git Graph extension, copy its commit hash, a
 ### Why are some files uncorrectly missing function-level analysis results?
 
 The language extension that provides document symbols may not have finished loading, especially immediately after opening a workspace. Wait for the language extension to finish loading, then run **Generate Change Item Report** again.
+
+### Why are code diffs always shown in `line-by-line` view on the Diff Review page, even when my setting is `side-by-side`?
+
+On the Diff Review page, the code diff and the change item form are displayed side by side. Since there is limited horizontal space for the diff, it always uses the `line-by-line` view.
 
 ## License
 
@@ -138,7 +142,7 @@ See [CHANGELOG](https://github.com/Lead007/vscode-diff2html-report/blob/main/CHA
 * `diff2html-report.functionDiffContextLines`：长函数仅有少量变更时，在变更周围显示的未修改上下文行数，默认值为 3。
 * `diff2html-report.functionDiffSymbolKinds`：函数级分析包含的 VS Code 文档符号类型，默认值为 `Function`、`Method`、`Constructor` 和 `Operator`。
 * `diff2html-report.drawLineCount`：是否在差异报告中显示行数统计。
-* `diff2html-report.defaultViewType`：差异报告的默认视图类型，默认值为并排视图（`side-by-side`）。
+* `diff2html-report.defaultViewType`：导出报告中显示差异行的默认视图类型，包括 Git Diff 报告和更改项报告。默认值为并排视图（`side-by-side`）。
 * `diff2html-report.useOnlineResources`：是否使用 CDN 在线资源生成差异报告。默认值为 `false`，即使用扩展内的本地资源。
 
 ## 常见问题
@@ -158,6 +162,10 @@ See [CHANGELOG](https://github.com/Lead007/vscode-diff2html-report/blob/main/CHA
 ### 为什么有些文件没有正确显示函数级分析结果？
 
 尤其是在刚打开工作区时，提供文档符号的语言扩展可能尚未完成加载。等待语言扩展加载完成后，再次运行**生成更改项报告**。
+
+### 为什么编写更改项的页面中，代码行差异始终是`line-by-line`视图类型，即使我的设置是`side-by side`？
+
+因为编写更改项的页面中代码差异和填写更改项的表单是水平方向并排的，考虑到给代码差异能留的宽度有限，所以视图类型始终是`line-by-line`。
 
 ## 许可证
 

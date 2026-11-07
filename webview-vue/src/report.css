@@ -58,6 +58,12 @@
 	--d2h-line-border-color: var(--review-border);
 }
 
+.report-theme.dark .d2h-code-side-emptyplaceholder,
+.report-theme.dark .d2h-emptyplaceholder {
+	background-color: var(--review-surface);
+	border-color: var(--review-border);
+}
+
 @media print {
 	.report-page { max-width: none; }
 	.report-change-item,
