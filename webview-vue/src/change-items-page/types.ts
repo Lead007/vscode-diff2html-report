@@ -1,5 +1,6 @@
 import type { DiffFile } from 'diff2html/lib/types';
 import type { ChangedFileFunctions, ChangedFunction } from '../../../src/functionSymbols';
+import type { SharedLabels } from '../shared';
 
 function getLineNumber(value: unknown): number | undefined {
 	if (Array.isArray(value) && typeof value[0] === 'number') {
@@ -29,8 +30,7 @@ export interface DiffReviewData {
 	configs: DiffReviewConfigs;
 }
 
-export interface DiffReviewLabels {
-	[key: string]: string;
+export interface DiffReviewLabels extends SharedLabels {
 	title: string;
 	appTitle: string;
 	panelTitle: string;
@@ -40,14 +40,10 @@ export interface DiffReviewLabels {
 	reportPreviewTitle: string;
 	reportPreviewDescription: string;
 	backToReview: string;
-	exportReport: string;
 	reportTitle: string;
 	reportGeneratedAt: string;
 	reportDiffUnavailable: string;
 	reportExportUnavailable: string;
-	themeMode: string;
-	lightMode: string;
-	darkMode: string;
 	pageTitle: string;
 	pageDescription: string;
 	filesChanged: string;
@@ -101,10 +97,6 @@ export interface DiffReviewLabels {
 	added: string;
 	deleted: string;
 	modified: string;
-}
-
-export function formatLabel(template: string, ...values: string[]): string {
-	return template.replace(/\{(\d+)\}/g, (_match, index: string) => values[Number(index)] ?? '');
 }
 
 export interface DiffReviewConfigs {

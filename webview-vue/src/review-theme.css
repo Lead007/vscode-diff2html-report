@@ -1,0 +1,132 @@
+:root {
+	--review-foreground: var(--vscode-foreground, #172033);
+	--review-muted-foreground: var(--vscode-descriptionForeground, #606266);
+	--review-accent-foreground: var(--vscode-textLink-foreground, #2563eb);
+	--review-success-foreground: var(--vscode-gitDecoration-addedResourceForeground, #16803c);
+	--review-danger-foreground: var(--vscode-gitDecoration-deletedResourceForeground, #b42318);
+	--review-surface: var(--vscode-editor-background, #f5f7fb);
+	--review-subtle-surface: var(--vscode-sideBar-background, #f8fafc);
+	--review-raised-surface: var(--vscode-editorWidget-background, #ffffff);
+	--review-accent-surface: var(--vscode-list-hoverBackground, #eef2ff);
+	--review-border: var(--vscode-panel-border, #e2e8f0);
+	--review-button-foreground: var(--vscode-button-foreground, #ffffff);
+	--review-diff-added-background: var(--vscode-diffEditor-insertedLineBackground, rgba(129, 201, 140, 0.12));
+	--review-diff-deleted-background: var(--vscode-diffEditor-removedLineBackground, rgba(244, 135, 113, 0.12));
+	--review-diff-added-highlight: var(--vscode-diffEditor-insertedTextBackground, rgba(129, 201, 140, 0.3));
+	--review-diff-deleted-highlight: var(--vscode-diffEditor-removedTextBackground, rgba(244, 135, 113, 0.3));
+}
+
+/* 页面基础排版与默认主题颜色，优先使用 VS Code Webview 提供的变量。 */
+:root {
+	font-family: Inter, "Segoe UI", "Microsoft YaHei", sans-serif;
+	color: var(--review-foreground);
+	background: var(--review-surface);
+	font-synthesis: none;
+	text-rendering: optimizeLegibility;
+}
+
+* { box-sizing: border-box; }
+body {
+	min-width: 360px;
+	min-height: 100vh;
+	margin: 0;
+	color: var(--review-foreground);
+	background: var(--review-surface);
+}
+button { font-family: inherit; }
+
+.report-theme {
+	--review-foreground: #303030;
+	--review-muted-foreground: #6b7280;
+	--review-accent-foreground: #2563eb;
+	--review-success-foreground: #16803c;
+	--review-danger-foreground: #b42318;
+	--review-surface: #f5f7fb;
+	--review-subtle-surface: #f8fafc;
+	--review-raised-surface: #fff;
+	--review-accent-surface: #eef2ff;
+	--review-border: #e2e8f0;
+	--review-button-foreground: #fff;
+	--review-diff-added-background: rgba(129, 201, 140, 0.12);
+	--review-diff-deleted-background: rgba(244, 135, 113, 0.12);
+	--review-diff-added-highlight: rgba(129, 201, 140, 0.3);
+	--review-diff-deleted-highlight: rgba(244, 135, 113, 0.3);
+}
+
+.report-theme.dark,
+.dark .report-theme {
+	--review-foreground: #e5e7eb;
+	--review-muted-foreground: #9ca3af;
+	--review-accent-foreground: #93c5fd;
+	--review-success-foreground: #86efac;
+	--review-danger-foreground: #fca5a5;
+	--review-surface: #1e1e1e;
+	--review-subtle-surface: #252526;
+	--review-raised-surface: #2d2d30;
+	--review-accent-surface: #37373d;
+	--review-border: #454545;
+	--review-button-foreground: #fff;
+	--review-diff-added-background: rgba(46, 160, 67, 0.18);
+	--review-diff-deleted-background: rgba(248, 81, 73, 0.18);
+	--review-diff-added-highlight: rgba(46, 160, 67, 0.35);
+	--review-diff-deleted-highlight: rgba(248, 81, 73, 0.35);
+}
+
+.review-text-primary { color: var(--review-foreground); }
+.review-text-muted { color: var(--review-muted-foreground); }
+.review-text-accent { color: var(--review-accent-foreground); }
+.review-text-added { color: var(--review-success-foreground); }
+.review-text-deleted,
+.review-text-danger { color: var(--review-danger-foreground); }
+.review-surface { background-color: var(--review-surface); }
+.review-surface-subtle { background-color: var(--review-subtle-surface); }
+.review-surface-raised { background-color: var(--review-raised-surface); }
+.review-surface-accent { background-color: var(--review-accent-surface); }
+.review-border { border-color: var(--review-border); }
+.review-app-icon {
+	background-color: var(--review-accent-foreground);
+	color: var(--review-button-foreground);
+}
+.review-function-header { background-color: var(--review-subtle-surface); }
+.review-tag {
+	border-color: var(--review-border);
+	background-color: var(--review-raised-surface);
+	color: var(--review-accent-foreground);
+}
+
+/* diff2html样式改写 */
+.dark,
+.dark .d2h-light-color-scheme,
+.report-theme.dark .d2h-light-color-scheme {
+	--d2h-bg-color: var(--review-surface, var(--vscode-editor-background, #1e1e1e));
+	--d2h-border-color: var(--review-border, var(--vscode-panel-border, #454545));
+	--d2h-change-del-color: var(--review-diff-deleted-background, var(--vscode-diffEditor-removedLineBackground, rgba(248, 81, 73, 0.18)));
+	--d2h-change-ins-color: var(--review-diff-added-background, var(--vscode-diffEditor-insertedLineBackground, rgba(46, 160, 67, 0.18)));
+	--d2h-change-label-color: var(--review-foreground, var(--vscode-foreground, #e5e7eb));
+	--d2h-del-bg-color: var(--review-diff-deleted-background, var(--vscode-diffEditor-removedLineBackground, rgba(248, 81, 73, 0.18)));
+	--d2h-del-border-color: var(--review-border, var(--vscode-panel-border, #454545));
+	--d2h-del-highlight-bg-color: var(--review-diff-deleted-highlight, var(--vscode-diffEditor-removedTextBackground, rgba(248, 81, 73, 0.35)));
+	--d2h-del-label-color: var(--review-danger-foreground, var(--vscode-gitDecoration-deletedResourceForeground, #fca5a5));
+	--d2h-dim-color: var(--review-muted-foreground, var(--vscode-descriptionForeground, #9ca3af));
+	--d2h-empty-placeholder-bg-color: var(--review-surface, var(--vscode-editor-background, #1e1e1e));
+	--d2h-empty-placeholder-border-color: var(--review-border, var(--vscode-panel-border, #454545));
+	--d2h-file-header-bg-color: var(--review-subtle-surface, var(--vscode-sideBar-background, #252526));
+	--d2h-file-header-border-color: var(--review-border, var(--vscode-panel-border, #454545));
+	--d2h-info-bg-color: var(--review-raised-surface, var(--vscode-editorWidget-background, #2d2d30));
+	--d2h-info-border-color: var(--review-border, var(--vscode-panel-border, #454545));
+	--d2h-ins-bg-color: var(--review-diff-added-background, var(--vscode-diffEditor-insertedLineBackground, rgba(46, 160, 67, 0.18)));
+	--d2h-ins-border-color: var(--review-border, var(--vscode-panel-border, #454545));
+	--d2h-ins-highlight-bg-color: var(--review-diff-added-highlight, var(--vscode-diffEditor-insertedTextBackground, rgba(46, 160, 67, 0.35)));
+	--d2h-ins-label-color: var(--review-success-foreground, var(--vscode-gitDecoration-addedResourceForeground, #86efac));
+	--d2h-line-border-color: var(--review-border, var(--vscode-panel-border, #454545));
+	--d2h-moved-label-color: var(--vscode-editorWarning-foreground, #cca700);
+	--d2h-selected-color: var(--vscode-list-activeSelectionBackground, #094771);
+}
+
+.dark .d2h-code-side-emptyplaceholder,
+.dark .d2h-emptyplaceholder,
+.report-theme.dark .d2h-code-side-emptyplaceholder,
+.report-theme.dark .d2h-emptyplaceholder {
+	background-color: var(--review-surface, var(--vscode-editor-background, #1e1e1e));
+	border-color: var(--review-border, var(--vscode-panel-border, #454545));
+}

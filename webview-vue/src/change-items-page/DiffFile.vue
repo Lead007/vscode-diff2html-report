@@ -6,9 +6,10 @@ import type { DiffBlock } from 'diff2html/lib/types';
 import type { ChangedFileFunctions, ChangedFunction } from '../../../src/functionSymbols';
 import { alignDiffLines } from '../../../src/diffUtils';
 import DiffLineByLine from './DiffLineByLine.vue';
-import { formatLabel, getRangeStartLine } from './types';
+import { getRangeStartLine } from './types';
 import type { ChangeEntry, DiffReviewLabels } from './types';
 import DiffSideBySide from './DiffSideBySide.vue';
+import { formatLabel } from '../shared';
 
 const props = defineProps<{
     item: ChangedFileFunctions;

@@ -1,6 +1,16 @@
 import { createApp } from 'vue';
-import 'diff2html/bundles/css/diff2html.min.css';
-import './legacy-diff-preview.css';
+import ElementPlus from 'element-plus';
+import '../shared';
 import App from './App.vue';
 
-createApp(App, { ...window.__LEGACY_DIFF_PREVIEW_DATA__ }).mount('#legacy-diff-preview');
+function syncElementPlusTheme() {
+	document.documentElement.classList.toggle('dark', document.body.classList.contains('vscode-dark'));
+}
+
+syncElementPlusTheme();
+new MutationObserver(syncElementPlusTheme).observe(document.body, {
+	attributes: true,
+	attributeFilter: ['class'],
+});
+
+createApp(App, { ...window.__LEGACY_DIFF_PREVIEW_DATA__ }).use(ElementPlus).mount('#app');

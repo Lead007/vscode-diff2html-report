@@ -28,7 +28,6 @@ export interface ExportContentData {
     title: string;
     htmlContent: string;
     cssContent: string;
-    lineCountContent: string;
 }
 
 export async function getExportContent(htmlPath: vscode.Uri, contentData: ExportContentData): Promise<string> {

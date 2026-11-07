@@ -128,17 +128,14 @@ export function activate(context: vscode.ExtensionContext) {
 			const totalAdded = lineCountForFile.reduce((sum, item) => sum + item.added, 0);
 			const totalDeleted = lineCountForFile.reduce((sum, item) => sum + item.deleted, 0);
 
-			const lineCountContent = localize('diff2html-report.webview.lineCountContent', String(totalAdded), String(totalDeleted));
-
 			// 生成最终的webview html内容
 			const webViewContext = {
-				title: localize('diff2html-report.webview.title'),
-				header: localize('diff2html-report.webview.header'),
 				htmlContent: htmlContent.html,
-				lineCountContent,
+				totalAdded,
+				totalDeleted,
 				labels: await getl18nWithPrefix(context.extensionUri, [WEBVIEW_PREFIX, DIFFVIEW_PREFIX]),
 			};
-			showVuePage(context, 'legacy-diff-preview.html', localize('diff2html-report.webview.title'),
+			showVuePage(context, 'legacy-diff-preview.html', localize('diff2html-report.webview.diffview.title'),
 				webViewContext, '__LEGACY_DIFF_PREVIEW_DATA__',
 				async (message) => {
 					if (message.type === 'saveHtml') {
@@ -203,7 +200,7 @@ export function activate(context: vscode.ExtensionContext) {
 								</style>`;
 
 								let finalHtml = await getExportContent(vscode.Uri.joinPath(context.extensionUri, 'webview', 'export-page.html'),
-									{ title: localize('diff2html-report.webview.header'), htmlContent: html, cssContent: diff2htmlCss, lineCountContent });
+									{ title: localize('diff2html-report.webview.header'), htmlContent: html, cssContent: diff2htmlCss });
 								await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(finalHtml));
 							});
 
