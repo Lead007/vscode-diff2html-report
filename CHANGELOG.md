@@ -4,6 +4,16 @@ All notable changes to the "diff2html-report" extension will be documented in th
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.6.1] - 2026-11-07
+
+### Added
+
+- In the change item report, it is supported to display diff lines in a side-by-side view type. The view type is still set through the configuration `diff2html-report.defaultViewType`.
+
+### Fixed
+
+Fix the bug that on the Diff Review page, the old and new line numbers may be arranged vertically instead of horizontally correctly.
+
 ## [0.6.0] - 2026-11-05
 
 ### Added
@@ -67,6 +77,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 Initial release.
 
+[0.6.1]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.6.1
 [0.6.0]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.6.0
 [0.5.0]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.5.0
 [0.4.0]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.4.0
