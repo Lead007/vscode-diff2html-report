@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { DiffBlockParsed, DiffBlockType } from '../../src/diffUtils';
+import { DiffBlockParsed, DiffBlockType } from '../../../src/diffUtils';
 
 const props = defineProps<{ item: DiffBlockParsed[] }>();
 

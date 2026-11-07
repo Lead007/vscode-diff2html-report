@@ -340,7 +340,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 			const nonce = randomBytes(16).toString('base64');
 			const webviewRoot = vscode.Uri.joinPath(context.extensionUri, 'webview', 'vue-dist');
-			const templateUri = vscode.Uri.joinPath(webviewRoot, 'index.html');
+			const templateUri = vscode.Uri.joinPath(webviewRoot, 'change-items-page.html');
 			const templateBytes = await vscode.workspace.fs.readFile(templateUri);
 			let html = new TextDecoder().decode(templateBytes);
 			const initialData = JSON.stringify(webViewContext).replace(/</g, '\\u003c');

@@ -1,5 +1,5 @@
 import type { DiffFile } from 'diff2html/lib/types';
-import type { ChangedFileFunctions, ChangedFunction } from '../../src/functionSymbols';
+import type { ChangedFileFunctions, ChangedFunction } from '../../../src/functionSymbols';
 
 function getLineNumber(value: unknown): number | undefined {
 	if (Array.isArray(value) && typeof value[0] === 'number') {
@@ -127,7 +127,14 @@ declare global {
 	interface Window {
 		__DIFF_REVIEW_DATA__?: DiffReviewData;
 		acquireVsCodeApi?: () => {
-			postMessage(message: { type: 'exportReport'; html: string }): void;
+			postMessage(message:
+				| { type: 'exportReport'; html: string }
+				| {
+					type: 'saveHtml';
+					html: string;
+					options: { generateFileList: boolean };
+				}
+			): void;
 		};
 	}
 }

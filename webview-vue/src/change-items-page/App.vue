@@ -6,8 +6,7 @@ import DiffFile from './DiffFile.vue';
 import EntryTree from './EntryTree.vue';
 import FileIcon from './FileIcon.vue';
 import ReportPreview from './ReportPreview.vue';
-import { formatLabel, getRangeStartLine } from './types';
-import type { ChangeEntry, ChangeItem, DiffReviewData } from './types';
+import { formatLabel, getRangeStartLine, ChangeEntry, ChangeItem, DiffReviewData } from './types.js';
 
 // 扩展宿主传入的本次 Diff 文件和函数数据。
 const props = defineProps<DiffReviewData>();
