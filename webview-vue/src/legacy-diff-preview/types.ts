@@ -10,9 +10,3 @@ export interface LegacyDiffPreviewData {
 	totalDeleted: number,
 	labels: LegacyDiffPreviewLabels;
 }
-
-declare global {
-	interface Window {
-		__LEGACY_DIFF_PREVIEW_DATA__?: LegacyDiffPreviewData;
-	}
-}

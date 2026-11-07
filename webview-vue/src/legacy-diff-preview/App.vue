@@ -2,11 +2,13 @@
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { Download, View } from '@element-plus/icons-vue';
 import type { LegacyDiffPreviewData } from './types';
-import { formatLabel } from '../shared';
+import { formatLabel, getExportStyles } from '../shared';
+import { ElMessage } from 'element-plus';
+import { ExportContent } from '../../../src/htmlTemplate';
 
 const props = defineProps<LegacyDiffPreviewData>();
 const statusMessage = ref('');
-const vscode = window.acquireVsCodeApi?.();
+const vscodeApi = window.acquireVsCodeApi?.();
 
 let initialDarkMode = document.body.classList.contains('vscode-dark');
 const darkMode = ref(initialDarkMode);
@@ -25,15 +27,31 @@ onBeforeUnmount(() => {
 });
 
 function exportHtml(): void {
-	if (!vscode) {
-		statusMessage.value = 'HTML export is only available in a VS Code Webview.';
+	const reportContent = document.getElementById('diff-content');
+	if (!vscodeApi || !reportContent) {
+		ElMessage.error(props.labels.reportExportUnavailable);
 		return;
 	}
 
-	vscode.postMessage({
-		type: 'saveHtml',
-		html: props.htmlContent,
-		options: { generateFileList: true },
+	let styles: string;
+	try {
+		styles = getExportStyles();
+	} catch (error) {
+		console.error('Failed to collect styles for the exported report.', error);
+		ElMessage.error(`${props.labels.reportExportUnavailable} ${String(error)}`);
+		return;
+	}
+
+	const exportContent: ExportContent = {
+		title: props.labels.reportTitle,
+		styles: styles,
+		htmlContent: reportContent.outerHTML,
+		darkMode: darkMode.value
+	}
+
+	vscodeApi.postMessage({
+		type: 'exportReport',
+		content: exportContent,
 	});
 }
 </script>
@@ -61,7 +79,7 @@ function exportHtml(): void {
 				<el-button class="!rounded-md" type="primary" :icon="Download" @click="exportHtml">{{ props.labels.exportReport }}</el-button>
 			</div>
 		</header>
-		<main class="report-theme mx-auto min-h-screen max-w-8xl p-4 review-surface review-text-primary md:p-8">
+		<main id="diff-content" class="report-theme mx-auto min-h-screen max-w-8xl p-4 review-surface review-text-primary md:p-8">
 			<div class="mb-5">
 				<h1 class="mb-2 text-2xl font-bold">{{ props.labels.header }}</h1>
 				<p class="text-xs review-text-muted">

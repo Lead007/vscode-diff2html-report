@@ -7,7 +7,8 @@ import EntryTree from './EntryTree.vue';
 import FileIcon from './FileIcon.vue';
 import ReportPreview from './ReportPreview.vue';
 import { getRangeStartLine, ChangeEntry, ChangeItem, DiffReviewData } from './types.js';
-import { formatLabel } from '../shared.js';
+import { formatLabel, getExportStyles } from '../shared.js';
+import { ExportContent } from '../../../src/htmlTemplate';
 
 // 扩展宿主传入的本次 Diff 文件和函数数据。
 const props = defineProps<DiffReviewData>();
@@ -325,14 +326,6 @@ function escapeHtml(value: string): string {
 	})[character] ?? character);
 }
 
-function getExportStyles(): string {
-	return Array.from(document.styleSheets)
-		.flatMap(stylesheet => Array.from(stylesheet.cssRules))
-		.filter(rule => !rule.cssText.startsWith('@layer vscode-default'))
-		.map(rule => rule.cssText)
-		.join('\n');
-}
-
 function exportReport(darkMode: boolean): void {
 	const reportContent = document.getElementById('report-content');
 	if (!vscodeApi || !reportContent) {
@@ -349,21 +342,13 @@ function exportReport(darkMode: boolean): void {
 		return;
 	}
 
-	const html = `<!doctype html>
-<html lang="${escapeHtml(document.documentElement.lang || 'en')}">
-<head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>${escapeHtml(props.labels.reportTitle)}</title>
-	<style>${styles}</style>
-</head>
-<body style="margin: 0;"><div>${reportContent.outerHTML}</div></body>
-</html>`;
-	const themedHtml = html.replace(
-		'<html lang=',
-		`<html class="${darkMode ? 'dark' : ''}" lang=`,
-	);
-	vscodeApi.postMessage({ type: 'exportReport', html: themedHtml });
+	const exportContent: ExportContent = {
+		title: props.labels.reportTitle,
+		styles: styles,
+		htmlContent: reportContent.outerHTML,
+		darkMode: darkMode
+	}
+	vscodeApi.postMessage({ type: 'exportReport', content: exportContent });
 }
 </script>
 
