@@ -10,7 +10,6 @@
     "diff2html-report.configuration.functionDiffSymbolKinds": "Document symbol kinds to include in function-level change analysis. Choose from VS Code symbol kinds. The default is Function, Method, Constructor, and Operator.",
     "diff2html-report.configuration.drawLineCount": "Display line count statistics in the diff report.",
     "diff2html-report.configuration.defaultViewType": "Default view type for diff reports.",
-    "diff2html-report.configuration.useOnlineResources": "Use online resources (CDN) for diff reports instead of local files.",
     "diff2html-report.command.generateDiffReport": "Generate Diff Report",
     "diff2html-report.command.generateChangeItemReport": "Generate Change Item Report",
     "diff2html-report.commitOption.description.head": "Current HEAD",

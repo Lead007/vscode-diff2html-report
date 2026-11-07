@@ -28,17 +28,17 @@ For either command, select a base revision and a current revision from the avail
 
 1. Run **Generate Diff Report** from the Source Control view's title menu.
 2. Select the base and current revisions, then choose the `git diff` options.
-3. Review the rendered diff in the preview. The report includes a file list and, when enabled, total added/deleted line counts.
-4. To save a standalone HTML report, use **Save as HTML File**, choose whether to include the file list, and select a destination. After export, you can open the saved file or its containing folder.
+3. Review the rendered diff in the preview. The report includes a file list and total added/deleted line counts.
+4. To save it as a standalone HTML report, use **Export HTML**, switch its light/dark theme if desired, and select a destination. After export, you can open the saved file or its containing folder.
 
 ### Generate Change Item Report
 
 1. Run **Generate Change Item Report** from the Source Control view's title menu.
 2. Select the base and current revisions, then choose the `git diff` options. The extension analyzes changed files and uses VS Code document symbols to identify changed functions.
 3. In the review view, select the changed functions or file-level changes that belong to a change item. Add a title and description, then create the item. You can edit or delete items, adjust their selections, or clear all items.
-4. Select **Preview HTML** to review the report, switch its light/dark theme if desired, and choose **Export HTML** to save it as a standalone file.
+4. Select **Preview HTML** to review the report, switch its light/dark theme if desired, and use **Export HTML** to save it as a standalone file.
 
-Function-level analysis requires an installed and enabled language extension that provides document symbols for the file type. If symbols are unavailable or no functions are identified, changes may appear at file level instead. Binary and oversized files are not analyzed for function-level changes.
+Function-level analysis requires an installed and enabled language extension that provides document symbols for the file type. If symbols are unavailable or no functions are identified, changes may appear at file level instead. Diff of Binary and oversized files are not parsed and displayed.
 
 ## Extension Settings
 
@@ -54,7 +54,6 @@ This extension contributes the following settings:
 * `diff2html-report.functionDiffSymbolKinds`: Select which VS Code document symbol kinds are included in function-level change analysis. The default is `Function`, `Method`, `Constructor`, and `Operator`.
 * `diff2html-report.drawLineCount`: Display line count statistics in the diff report.
 * `diff2html-report.defaultViewType`: Set the default view type to show diff lines for exported page, including Git Diff Report and Change Items Report. The default setting is side-by-side.
-* `diff2html-report.useOnlineResources`: Set whether to use online resources for `diff2html`. The default setting is `false`, which means using stylesheets and scripts inside this extension.
 
 ## Q&A
 
@@ -118,7 +117,7 @@ See [CHANGELOG](https://github.com/Lead007/vscode-diff2html-report/blob/main/CHA
 1. 在源代码管理视图的仓库标题菜单中选择**生成差异报告**。
 2. 选择基准版本和当前版本，然后选择 `git diff` 选项。
 3. 在预览中查看差异。报告包含文件列表；启用行数统计时，还会显示新增和删除的总行数。
-4. 如需保存独立 HTML 报告，选择**另存为 HTML 文件**，设置是否包含文件列表并选择保存位置。导出后可以打开文件或其所在文件夹。
+4. 如需保存独立 HTML 报告，选择**导出 HTML**，可以切换浅色/深色主题，选择保存位置。导出后可以打开文件或其所在文件夹。
 
 ### 生成更改项报告
 
@@ -127,7 +126,7 @@ See [CHANGELOG](https://github.com/Lead007/vscode-diff2html-report/blob/main/CHA
 3. 在评审界面中，选择要关联到更改项的变更函数或文件级变更，填写标题和说明并创建更改项。你还可以编辑或删除更改项、调整关联项，或清空所有更改项。
 4. 选择**预览 HTML**检查报告；可以切换浅色/深色主题，然后选择**导出 HTML**将报告保存为独立文件。
 
-函数级分析需要已安装并启用、且能为相应文件类型提供文档符号的语言扩展。如果符号不可用或未识别到函数，相关变更可能以文件级变更显示。二进制文件和超大文件不会进行函数级分析。
+函数级分析需要已安装并启用、且能为相应文件类型提供文档符号的语言扩展。如果符号不可用或未识别到函数，相关变更可能以文件级变更显示。二进制文件和超大文件的差异不会被解析和显示。
 
 ## 扩展设置
 

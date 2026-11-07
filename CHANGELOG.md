@@ -4,11 +4,23 @@ All notable changes to the "diff2html-report" extension will be documented in th
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
-## [0.6.1] - 2026-11-07
+## [0.6.2] - 2026-11-08
 
 ### Added
 
 - In the change item report, it is supported to display diff lines in a side-by-side view type. The view type is still set through the configuration `diff2html-report.defaultViewType`.
+
+## Changed
+
+* The `diff2html` preview page is implemented using Vue instead of native HTML. It also supports switching between light and dark themes.
+
+* Some common functions and localization strings shared by the two webview pages have been abstracted.
+
+* Unified the tag labels for added, changed, and deleted states across file and function changes, and now color-code each type.
+
+### Removed
+
+The configuration `useOnlineResources` is removed, since the exported page's CSS styles  can be obtained from the webview page's stylesheet. Exporting CSS styles from the webview allows the exported page to support light and dark themes. It also ensures the style of the exported page stays consistent with the webview preview page.
 
 ### Fixed
 
@@ -77,7 +89,7 @@ Fix the bug that on the Diff Review page, the old and new line numbers may be ar
 
 Initial release.
 
-[0.6.1]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.6.1
+[0.6.2]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.6.2
 [0.6.0]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.6.0
 [0.5.0]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.5.0
 [0.4.0]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.4.0

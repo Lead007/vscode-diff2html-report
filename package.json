@@ -3,7 +3,7 @@
   "displayName": "diff2html-report",
   "icon": "assets/icon.png",
   "description": "A Git diff report generator For VSCode.",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "license": "MIT",
   "publisher": "Lead007",
   "engines": {
@@ -133,11 +133,6 @@
           ],
           "default": "side-by-side",
           "description": "%diff2html-report.configuration.defaultViewType%"
-        },
-        "diff2html-report.useOnlineResources": {
-          "type": "boolean",
-          "default": false,
-          "description": "%diff2html-report.configuration.useOnlineResources%"
         }
       }
     },
