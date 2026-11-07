@@ -94,42 +94,6 @@ export function activate(context: vscode.ExtensionContext) {
 				return;
 			}
 
-			// 创建Webview
-			const panel = vscode.window.createWebviewPanel(
-				'diff2htmlPreview',
-				localize('diff2html-report.webview.title'),
-				vscode.ViewColumn.Active,
-				{
-					enableScripts: true,
-					localResourceRoots: [
-						vscode.Uri.joinPath(context.extensionUri, 'webview'),
-						vscode.Uri.joinPath(context.extensionUri, 'node_modules'),
-					]
-				}
-			);
-
-			// 准备webview css和js资源
-			let cssUris: vscode.Uri[] = [];
-			let scriptUris: vscode.Uri[] = [];
-			if (extensionConfig.get<boolean>('useOnlineResources')) {
-				// 使用在线资源
-				cssUris = [
-					vscode.Uri.parse(localize('diff2html-report.webview.css.diff2html.online')),
-				];
-				scriptUris = [
-					vscode.Uri.joinPath(context.extensionUri, 'webview', 'preview-page.js'),
-					vscode.Uri.parse(localize('diff2html-report.webview.js.diff2html.online')),
-				];
-			} else {
-				// 使用本地资源
-				cssUris = [
-					uri_diff2html_ui_css,
-				];
-				scriptUris = [
-					vscode.Uri.joinPath(context.extensionUri, 'webview', 'preview-page.js'),
-					uri_diff2html_ui_js
-				];
-			}
 
 			// 计算行数
 			let lineCountResult = '';
@@ -158,72 +122,67 @@ export function activate(context: vscode.ExtensionContext) {
 			const lineCountContent = localize('diff2html-report.webview.lineCountContent', String(totalAdded), String(totalDeleted));
 
 			// 生成最终的webview html内容
-			const resultHtml = await getWebviewContent(panel.webview, {
-				htmlPath: vscode.Uri.joinPath(context.extensionUri, 'webview', 'preview-page.html'),
-				cssUris,
-				scriptUris,
+			const webViewContext = {
 				title: localize('diff2html-report.webview.title'),
 				header: localize('diff2html-report.webview.header'),
-			}, {
 				htmlContent: htmlContent.html,
 				lineCountContent,
 				labels: await getl18nWithPrefix(context.extensionUri, WEBVIEW_PREFIX),
-			});
+			};
+			showVuePage(context, 'legacy-diff-preview.html', localize('diff2html-report.webview.title'),
+				webViewContext, '__LEGACY_DIFF_PREVIEW_DATA__',
+				async (message) => {
+					if (message.type === 'saveHtml') {
+						const options = message.options;
+						const html = message.html;
+						// 保存文件对话框
+						const uri = await vscode.window.showSaveDialog({
+							defaultUri: vscode.Uri.joinPath(vscode.workspace.workspaceFolders?.[0].uri || vscode.Uri.file('/'), `diff-report-${new Date().toLocaleDateString().replace(/\//g, '-')}.html`),
+							filters: {
+								'HTML file': ['html', 'htm']
+							}
+						});
+						if (uri) {
+							await vscode.window.withProgress({
+								location: vscode.ProgressLocation.Notification,
+								cancellable: false
+							}, async (progress) => {
+								progress.report({ message: localize('diff2html-report.progress.exportingReport') });
 
-			panel.webview.html = resultHtml;
+								let diff2htmlCss = '';
+								if (!extensionConfig.get<boolean>('useOnlineResources')) {
+									// 进行资源内联
+									const diff2htmlCssBytes = await vscode.workspace.fs.readFile(uri_diff2html_ui_css);
+									diff2htmlCss = new TextDecoder().decode(diff2htmlCssBytes);
 
-			panel.webview.onDidReceiveMessage(async (message) => {
-				if (message.type === 'saveHtml') {
-					const options = message.options;
-					const html = message.html;
-					// 保存文件对话框
-					const uri = await vscode.window.showSaveDialog({
-						defaultUri: vscode.Uri.joinPath(vscode.workspace.workspaceFolders?.[0].uri || vscode.Uri.file('/'), `diff-report-${new Date().toLocaleDateString().replace(/\//g, '-')}.html`),
-						filters: {
-							'HTML file': ['html', 'htm']
-						}
-					});
-					if (uri) {
-						await vscode.window.withProgress({
-							location: vscode.ProgressLocation.Notification,
-							cancellable: false
-						}, async (progress) => {
-							progress.report({ message: localize('diff2html-report.progress.exportingReport') });
-
-							let diff2htmlCss = '';
-							if (!extensionConfig.get<boolean>('useOnlineResources')) {
-								// 进行资源内联
-								const diff2htmlCssBytes = await vscode.workspace.fs.readFile(uri_diff2html_ui_css);
-								diff2htmlCss = new TextDecoder().decode(diff2htmlCssBytes);
-
-								if (!options.generateFileList) {
-									diff2htmlCss += `
+									if (!options.generateFileList) {
+										diff2htmlCss += `
 									.d2h-file-list-wrapper {
 										display: none !important;
 									}`;
-								}
+									}
 
-								diff2htmlCss = `
+									diff2htmlCss = `
 								<style>
 								${diff2htmlCss}
 								</style>
 							`;
-							} else {
-								// 使用在线资源链接
-								diff2htmlCss = `
+								} else {
+									// 使用在线资源链接
+									diff2htmlCss = `
 								<link rel="stylesheet" href="${localize('diff2html-report.webview.css.diff2html.online')}">
 							`;
-								if (!options.generateFileList) {
-									diff2htmlCss += `
+									if (!options.generateFileList) {
+										diff2htmlCss += `
 								<style>
 									.d2h-file-list-wrapper {
 										display: none !important;
 									}
 								</style>`;
+									}
 								}
-							}
 
-							diff2htmlCss += `
+								diff2htmlCss += `
 								<style>
 									.changed-file { margin: 10px 0; border: 1px solid #d8d8d8; border-radius: 6px; overflow: hidden; }
 									.changed-file-header, .changed-function-header { padding: 8px 12px; background: #f7f7f7; overflow-wrap: anywhere; }
@@ -234,29 +193,29 @@ export function activate(context: vscode.ExtensionContext) {
 									.function-status, .symbol-warning { color: #4b5563; }
 								</style>`;
 
-							let finalHtml = await getExportContent(vscode.Uri.joinPath(context.extensionUri, 'webview', 'export-page.html'),
-								{ title: localize('diff2html-report.webview.header'), htmlContent: html, cssContent: diff2htmlCss, lineCountContent });
-							await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(finalHtml));
-						});
+								let finalHtml = await getExportContent(vscode.Uri.joinPath(context.extensionUri, 'webview', 'export-page.html'),
+									{ title: localize('diff2html-report.webview.header'), htmlContent: html, cssContent: diff2htmlCss, lineCountContent });
+								await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(finalHtml));
+							});
 
-						//先让 VS Code 有机会刷新并关闭进度通知
-						await new Promise<void>(resolve => setTimeout(resolve, 1000));
-						//提示保存成功，可以打开文件或文件夹
-						const action = await vscode.window.showInformationMessage(
-							localize('diff2html-report.export.information', uri.fsPath),
-							localize('diff2html-report.export.openFile'),
-							localize('diff2html-report.export.openFolder')
-						);
-						if (action === localize('diff2html-report.export.openFile')) {
-							const open = (await import('open')).default;
-							await open(uri.fsPath);
-						} else if (action === localize('diff2html-report.export.openFolder')) {
-							vscode.commands.executeCommand('revealFileInOS', uri);
+							//先让 VS Code 有机会刷新并关闭进度通知
+							await new Promise<void>(resolve => setTimeout(resolve, 1000));
+							//提示保存成功，可以打开文件或文件夹
+							const action = await vscode.window.showInformationMessage(
+								localize('diff2html-report.export.information', uri.fsPath),
+								localize('diff2html-report.export.openFile'),
+								localize('diff2html-report.export.openFolder')
+							);
+							if (action === localize('diff2html-report.export.openFile')) {
+								const open = (await import('open')).default;
+								await open(uri.fsPath);
+							} else if (action === localize('diff2html-report.export.openFolder')) {
+								vscode.commands.executeCommand('revealFileInOS', uri);
+							}
+
 						}
-
 					}
-				}
-			});
+				});
 
 			appendLog(`Command 'diff2html-report.generateDiffReport' executed.`);
 
@@ -326,74 +285,48 @@ export function activate(context: vscode.ExtensionContext) {
 				return;
 			}
 
-			const panel = vscode.window.createWebviewPanel(
-				'diff2htmlVuePreview',
-				localize('diff2html-report.functions.panelTitle'),
-				vscode.ViewColumn.Active,
-				{
-					enableScripts: true,
-					localResourceRoots: [
-						vscode.Uri.joinPath(context.extensionUri, 'webview', 'vue-dist'),
-					],
-				},
-			);
-
-			const nonce = randomBytes(16).toString('base64');
-			const webviewRoot = vscode.Uri.joinPath(context.extensionUri, 'webview', 'vue-dist');
-			const templateUri = vscode.Uri.joinPath(webviewRoot, 'change-items-page.html');
-			const templateBytes = await vscode.workspace.fs.readFile(templateUri);
-			let html = new TextDecoder().decode(templateBytes);
-			const initialData = JSON.stringify(webViewContext).replace(/</g, '\\u003c');
-			html = html
-				.replace(/(src|href)="\.\/([^"]+)"/g, (_match, attribute: string, assetPath: string) => {
-					const assetUri = vscode.Uri.joinPath(webviewRoot, ...assetPath.split('/'));
-					return `${attribute}="${panel.webview.asWebviewUri(assetUri)}"`;
-				})
-				.replace('<script type="module"', `<script nonce="${nonce}" type="module"`)
-				.replace(
-					'</head>',
-					`<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${panel.webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}' ${panel.webview.cspSource}; font-src ${panel.webview.cspSource}; connect-src ${panel.webview.cspSource};"><script nonce="${nonce}">window.__DIFF_REVIEW_DATA__ = ${initialData};</script></head>`,
-				);
-			panel.webview.html = html;
-			panel.webview.onDidReceiveMessage(async (message) => {
-				if (message.type !== 'exportReport') {
-					return;
-				}
-				if (typeof message.html !== 'string') {
-					vscode.window.showErrorMessage(localize('diff2html-report.commandErrorText', 'Invalid report content.'));
-					return;
-				}
-
-				try {
-					const uri = await vscode.window.showSaveDialog({
-						defaultUri: vscode.Uri.joinPath(
-							vscode.workspace.workspaceFolders?.[0].uri || vscode.Uri.file('/'),
-							`diff-report-${new Date().toLocaleDateString().replace(/\//g, '-')}.html`
-						),
-						filters: { 'HTML file': ['html', 'htm'] }
-					});
-					if (!uri) {
+			showVuePage(context, 'change-items-page.html', localize('diff2html-report.functions.panelTitle'),
+				webViewContext, '__DIFF_REVIEW_DATA__',
+				async (message) => {
+					if (message.type !== 'exportReport') {
+						return;
+					}
+					if (typeof message.html !== 'string') {
+						vscode.window.showErrorMessage(localize('diff2html-report.commandErrorText', 'Invalid report content.'));
 						return;
 					}
 
-					await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(message.html));
-					appendLog(`Function change report exported to '${uri.fsPath}'.`);
-					const action = await vscode.window.showInformationMessage(
-						localize('diff2html-report.export.information', uri.fsPath),
-						localize('diff2html-report.export.openFile'),
-						localize('diff2html-report.export.openFolder')
-					);
-					if (action === localize('diff2html-report.export.openFile')) {
-						const open = (await import('open')).default;
-						await open(uri.fsPath);
-					} else if (action === localize('diff2html-report.export.openFolder')) {
-						await vscode.commands.executeCommand('revealFileInOS', uri);
+					try {
+						const uri = await vscode.window.showSaveDialog({
+							defaultUri: vscode.Uri.joinPath(
+								vscode.workspace.workspaceFolders?.[0].uri || vscode.Uri.file('/'),
+								`diff-report-${new Date().toLocaleDateString().replace(/\//g, '-')}.html`
+							),
+							filters: { 'HTML file': ['html', 'htm'] }
+						});
+						if (!uri) {
+							return;
+						}
+
+						await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(message.html));
+						appendLog(`Function change report exported to '${uri.fsPath}'.`);
+						const action = await vscode.window.showInformationMessage(
+							localize('diff2html-report.export.information', uri.fsPath),
+							localize('diff2html-report.export.openFile'),
+							localize('diff2html-report.export.openFolder')
+						);
+						if (action === localize('diff2html-report.export.openFile')) {
+							const open = (await import('open')).default;
+							await open(uri.fsPath);
+						} else if (action === localize('diff2html-report.export.openFolder')) {
+							await vscode.commands.executeCommand('revealFileInOS', uri);
+						}
+					} catch (error) {
+						appendLog(`Failed to export function change report: ${String(error)}`);
+						vscode.window.showErrorMessage(localize('diff2html-report.commandErrorText', String(error)));
 					}
-				} catch (error) {
-					appendLog(`Failed to export function change report: ${String(error)}`);
-					vscode.window.showErrorMessage(localize('diff2html-report.commandErrorText', String(error)));
-				}
-			});
+				});
+
 			appendLog(`Command 'diff2html-report.generateChangeItemReport' executed`);
 		})
 	);
@@ -462,4 +395,44 @@ async function selectTwoCommits(repoPath: string): Promise<{ base: vscode.QuickP
 	const options = await selectDiffOptions(extensionConfig);
 
 	return { base, current, options };
+}
+
+async function showVuePage(
+	context: vscode.ExtensionContext,
+	pageFileName: string,
+	title: string,
+	webViewContext: any,
+	webViewContextName: string,
+	onDidReceiveMessage?: (message: any) => void) {
+	const webviewRoot = vscode.Uri.joinPath(context.extensionUri, 'webview', 'vue-dist');
+
+	const panel = vscode.window.createWebviewPanel(
+		'diff2html-report-VuePreview',
+		title,
+		vscode.ViewColumn.Active,
+		{
+			enableScripts: true,
+			localResourceRoots: [webviewRoot],
+		},
+	);
+
+	const nonce = randomBytes(16).toString('base64');
+	const templateUri = vscode.Uri.joinPath(webviewRoot, pageFileName);
+	const templateBytes = await vscode.workspace.fs.readFile(templateUri);
+	let html = new TextDecoder().decode(templateBytes);
+	const initialData = JSON.stringify(webViewContext).replace(/</g, '\\u003c');
+	html = html
+		.replace(/(src|href)="\.\/([^"]+)"/g, (_match, attribute: string, assetPath: string) => {
+			const assetUri = vscode.Uri.joinPath(webviewRoot, ...assetPath.split('/'));
+			return `${attribute}="${panel.webview.asWebviewUri(assetUri)}"`;
+		})
+		.replace('<script type="module"', `<script nonce="${nonce}" type="module"`)
+		.replace(
+			'</head>',
+			`<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${panel.webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}' ${panel.webview.cspSource}; font-src ${panel.webview.cspSource}; connect-src ${panel.webview.cspSource};"><script nonce="${nonce}">window.${webViewContextName} = ${initialData};</script></head>`,
+		);
+	panel.webview.html = html;
+	if (onDidReceiveMessage) {
+		panel.webview.onDidReceiveMessage(onDidReceiveMessage);
+	}
 }

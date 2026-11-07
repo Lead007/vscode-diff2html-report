@@ -1,8 +1,8 @@
 export interface LegacyDiffPreviewData {
 	title: string;
 	header: string;
-	lineCountContent: string;
 	htmlContent: string;
+	lineCountContent: string;
 	labels: {
 		exportOptionsLabel: string;
 		generateFileListLabel: string;
