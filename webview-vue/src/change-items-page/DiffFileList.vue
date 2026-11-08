@@ -10,10 +10,9 @@ const props = defineProps<{
     labels: DiffReviewLabels
 }>();
 
-function scrollToDiffFile(filePath: string): void {
-    document.getElementById(getDiffFileId(filePath))?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
+const emit = defineEmits<{
+    'scrollToDiffFile': [filePath: string]
+}>();
 </script>
 
 
@@ -33,7 +32,7 @@ function scrollToDiffFile(filePath: string): void {
                         <FileIcon :file :labels="props.labels" />
                         <a :href="`#${getDiffFileId(file.newName || file.oldName)}`"
                             class="d2h-file-name cursor-pointer hover:underline"
-                            @click.prevent="scrollToDiffFile(file.newName || file.oldName)">
+                            @click.prevent="emit('scrollToDiffFile', file.newName || file.oldName)">
                             {{ file.newName || file.oldName }}
                         </a>
                         <span class="d2h-file-stats">

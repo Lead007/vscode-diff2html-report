@@ -39,6 +39,10 @@ const diffFunctionsFiles = computed(() => diffFunctions.value.map((file) => ({
 // 当前所有文件中的变更函数总数。
 const diffFunctionsCount = computed(() => diffFunctionsFiles.value.reduce((sum, file) => sum + (file.functions?.length || 1), 0));
 
+function scrollToDiffFile(filePath: string): void {
+    document.getElementById(getDiffFileId(filePath))?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 // 已创建的更改说明列表。
 const changeItems = ref<ChangeItem[]>([]);
 const isPreviewingReport = ref(false);
@@ -376,7 +380,7 @@ function exportReport(darkMode: boolean): void {
 				</div>
 			</div>
 
-			<DiffFileList :diff-files="diffFiles" :labels="props.labels" />
+			<DiffFileList :diff-files="diffFiles" :labels="props.labels" @scroll-to-diff-file="scrollToDiffFile" />
 
 			<el-row gutter="20" class="diff-columns">
 				<el-col :span="16" class="diff-column">
