@@ -320,6 +320,7 @@ async function showVuePage(
 		vscode.ViewColumn.Active,
 		{
 			enableScripts: true,
+			retainContextWhenHidden: true,
 			localResourceRoots: [webviewRoot],
 		},
 	);
@@ -344,4 +345,3 @@ async function showVuePage(
 		panel.webview.onDidReceiveMessage(onDidReceiveMessage);
 	}
 }
-
