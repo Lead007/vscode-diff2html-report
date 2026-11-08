@@ -50,7 +50,6 @@
     "diff2html-report.webview.changeitems.reportPreviewDescription": "Review the change notes and their associated diffs before exporting.",
     "diff2html-report.webview.changeitems.backToReview": "Back to review",
     "diff2html-report.webview.changeitems.reportTitle": "Project Change Report",
-    "diff2html-report.webview.changeitems.reportGeneratedAt": "Generated: {0}",
     "diff2html-report.webview.changeitems.reportDiffUnavailable": "No diff content is available.",
     "diff2html-report.webview.changeitems.pageTitle": "Project Change Review",
     "diff2html-report.webview.changeitems.pageDescription": "Select the changes affected by this update, add notes, and create a shareable HTML report.",

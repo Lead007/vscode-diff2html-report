@@ -88,9 +88,6 @@ onBeforeUnmount(() => {
 			:class="{ dark: darkMode }">
 			<div class="mb-5">
 				<h1 class="mb-2 text-2xl font-bold">{{ props.labels.reportTitle }}</h1>
-				<p class="text-xs review-text-muted">
-					{{ formatLabel(props.labels.reportGeneratedAt, new Date().toLocaleDateString()) }}
-				</p>
 			</div>
 
 			<el-card v-for="(item, itemIndex) in reportItems" :key="item.id" class="mb-4" shadow="never">

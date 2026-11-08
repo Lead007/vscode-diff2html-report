@@ -42,7 +42,6 @@ export interface DiffReviewLabels extends SharedLabels {
 	reportPreviewDescription: string;
 	backToReview: string;
 	reportTitle: string;
-	reportGeneratedAt: string;
 	reportDiffUnavailable: string;
 	pageTitle: string;
 	pageDescription: string;

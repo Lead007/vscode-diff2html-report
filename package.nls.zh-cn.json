@@ -50,7 +50,6 @@
     "diff2html-report.webview.changeitems.reportPreviewDescription": "请审查更改说明及其关联的差异内容，确认后再导出。",
     "diff2html-report.webview.changeitems.backToReview": "返回编辑",
     "diff2html-report.webview.changeitems.reportTitle": "项目变更报告",
-    "diff2html-report.webview.changeitems.reportGeneratedAt": "生成时间：{0}",
     "diff2html-report.webview.changeitems.reportDiffUnavailable": "没有可显示的差异内容。",
     "diff2html-report.webview.changeitems.pageTitle": "项目变更评审",
     "diff2html-report.webview.changeitems.pageDescription": "选择本次涉及的更改项，为变更补充说明并生成可分享的 HTML 报告。",
