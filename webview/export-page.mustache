@@ -1,14 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html {{#darkMode}}class="dark"{{/darkMode}}>
 <head>
     <meta charset="utf-8">
     <title>{{title}}</title>
-    {{{cssContent}}}
+    <style>{{{styles}}}</style>
 </head>
 <body>
-    <h2>{{title}}</h2>
-    <h4>{{lineCountContent}}</h4>
-    <div id="diffOutput">
+    <div>
         {{{htmlContent}}}
     </div>
 </body>

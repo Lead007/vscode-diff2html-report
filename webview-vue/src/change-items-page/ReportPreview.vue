@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { Back, Download, View } from '@element-plus/icons-vue';
-import type { ChangedFileFunctions } from '../../src/functionSymbols';
+import type { ChangedFileFunctions } from '../../../src/functionSymbols';
 import DiffFile from './DiffFile.vue';
-import { formatLabel } from './types';
 import type { ChangeItem, DiffReviewLabels } from './types';
+import { formatLabel } from '../shared';
+import DiffFileList from './DiffFileList.vue';
 
 const props = defineProps<{
 	items: ChangeItem[];
@@ -59,7 +60,7 @@ onBeforeUnmount(() => {
 
 <template>
 	<div class="min-h-screen review-surface review-text-primary" :class="{ 'report-theme': true, dark: darkMode }">
-		<header class="flex flex-wrap items-center justify-between gap-4 border-b review-border review-surface-raised px-4 py-3">
+		<header class="flex flex-wrap items-center justify-between px-4 py-3">
 			<div class="flex min-w-0 items-center gap-3">
 				<div class="review-app-icon flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
 					<el-icon class="text-xl">
@@ -84,15 +85,17 @@ onBeforeUnmount(() => {
 		</header>
 
 		<main id="report-content"
-			class="report-theme report-page mx-auto min-h-screen max-w-8xl p-4 review-surface review-text-primary md:p-8"
+			class="report-theme mx-auto min-h-screen max-w-8xl p-4 review-surface review-text-primary md:p-8"
 			:class="{ dark: darkMode }">
 			<div class="mb-5">
 				<h1 class="mb-2 text-2xl font-bold">{{ props.labels.reportTitle }}</h1>
-				<p class="text-xs review-text-muted">
-					{{ formatLabel(props.labels.reportGeneratedAt, new Date().toLocaleDateString()) }}
-				</p>
 			</div>
 
+			<DiffFileList :diff-files="props.files.map(f => f.diffInfo)" :labels="props.labels" />
+
+			<div class="mb-5">
+				<h1 class="mb-2 text-2xl font-bold">{{ props.labels.changeDescription }}</h1>
+			</div>
 			<el-card v-for="(item, itemIndex) in reportItems" :key="item.id" class="mb-4" shadow="never">
 				<template #header>
 					<div class="flex min-h-[34px] items-center justify-between gap-3">

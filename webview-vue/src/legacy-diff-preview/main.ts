@@ -1,12 +1,7 @@
 import { createApp } from 'vue';
 import ElementPlus from 'element-plus';
-import 'element-plus/dist/index.css';
-import 'element-plus/theme-chalk/dark/css-vars.css';
-import 'diff2html/bundles/css/diff2html.min.css';
-import 'virtual:uno.css';
+import '../shared';
 import App from './App.vue';
-import './style.css';
-import './report.css';
 
 function syncElementPlusTheme() {
 	document.documentElement.classList.toggle('dark', document.body.classList.contains('vscode-dark'));
@@ -18,4 +13,4 @@ new MutationObserver(syncElementPlusTheme).observe(document.body, {
 	attributeFilter: ['class'],
 });
 
-createApp(App, { ...window.__DIFF_REVIEW_DATA__ }).use(ElementPlus).mount('#app');
+createApp(App, { ...window.__LEGACY_DIFF_PREVIEW_DATA__ }).use(ElementPlus).mount('#app');

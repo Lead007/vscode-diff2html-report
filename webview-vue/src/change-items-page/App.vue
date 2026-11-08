@@ -4,10 +4,11 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import { Check, Delete, Document, Download, Edit } from '@element-plus/icons-vue';
 import DiffFile from './DiffFile.vue';
 import EntryTree from './EntryTree.vue';
-import FileIcon from './FileIcon.vue';
 import ReportPreview from './ReportPreview.vue';
-import { formatLabel, getRangeStartLine } from './types';
-import type { ChangeEntry, ChangeItem, DiffReviewData } from './types';
+import { getRangeStartLine, getDiffFileId, ChangeEntry, ChangeItem, DiffReviewData } from './types.js';
+import { formatLabel, getExportStyles } from '../shared.js';
+import { ExportContent } from '../../../src/htmlTemplate';
+import DiffFileList from './DiffFileList.vue';
 
 // 扩展宿主传入的本次 Diff 文件和函数数据。
 const props = defineProps<DiffReviewData>();
@@ -38,12 +39,8 @@ const diffFunctionsFiles = computed(() => diffFunctions.value.map((file) => ({
 // 当前所有文件中的变更函数总数。
 const diffFunctionsCount = computed(() => diffFunctionsFiles.value.reduce((sum, file) => sum + (file.functions?.length || 1), 0));
 
-function getDiffFileId(filePath: string): string {
-	return `diff-file-${encodeURIComponent(filePath)}`;
-}
-
 function scrollToDiffFile(filePath: string): void {
-	document.getElementById(getDiffFileId(filePath))?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.getElementById(getDiffFileId(filePath))?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // 已创建的更改说明列表。
@@ -325,14 +322,6 @@ function escapeHtml(value: string): string {
 	})[character] ?? character);
 }
 
-function getExportStyles(): string {
-	return Array.from(document.styleSheets)
-		.flatMap(stylesheet => Array.from(stylesheet.cssRules))
-		.filter(rule => !rule.cssText.startsWith('@layer vscode-default'))
-		.map(rule => rule.cssText)
-		.join('\n');
-}
-
 function exportReport(darkMode: boolean): void {
 	const reportContent = document.getElementById('report-content');
 	if (!vscodeApi || !reportContent) {
@@ -349,21 +338,13 @@ function exportReport(darkMode: boolean): void {
 		return;
 	}
 
-	const html = `<!doctype html>
-<html lang="${escapeHtml(document.documentElement.lang || 'en')}">
-<head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>${escapeHtml(props.labels.reportTitle)}</title>
-	<style>${styles}</style>
-</head>
-<body style="margin: 0;"><div>${reportContent.outerHTML}</div></body>
-</html>`;
-	const themedHtml = html.replace(
-		'<html lang=',
-		`<html class="${darkMode ? 'dark' : ''}" lang=`,
-	);
-	vscodeApi.postMessage({ type: 'exportReport', html: themedHtml });
+	const exportContent: ExportContent = {
+		title: props.labels.reportTitle,
+		styles: styles,
+		htmlContent: reportContent.outerHTML,
+		darkMode: darkMode
+	}
+	vscodeApi.postMessage({ type: 'exportReport', content: exportContent });
 }
 </script>
 
@@ -398,31 +379,8 @@ function exportReport(darkMode: boolean): void {
 					<p class="review-text-muted">{{ props.labels.pageDescription }}</p>
 				</div>
 			</div>
-			<el-card class="mb-6">
-				<div class="d2h-file-list-wrapper d2h-light-color-scheme">
-					<div class="d2h-file-list-header">
-						<span class="d2h-file-list-title review-text-primary">{{ formatLabel(props.labels.filesChanged, String(diffFiles.length)) }}</span>
-						<a class="d2h-file-switch d2h-hide">{{ props.labels.hide }}</a>
-						<a class="d2h-file-switch d2h-show">{{ props.labels.show }}</a>
-					</div>
-					<ol class="d2h-file-list">
-						<li v-for="file in diffFiles" :key="file.newName || file.oldName" class="d2h-file-list-line">
-							<span class="d2h-file-name-wrapper">
-								<FileIcon :file :labels="props.labels" />
-								<a :href="`#${getDiffFileId(file.newName || file.oldName)}`"
-									class="d2h-file-name cursor-pointer hover:underline"
-									@click.prevent="scrollToDiffFile(file.newName || file.oldName)">
-									{{ file.newName || file.oldName }}
-								</a>
-								<span class="d2h-file-stats">
-									<span class="d2h-lines-added">+{{ file.addedLines }}</span>
-									<span class="d2h-lines-deleted">-{{ file.deletedLines }}</span>
-								</span>
-							</span>
-						</li>
-					</ol>
-				</div>
-			</el-card>
+
+			<DiffFileList :diff-files="diffFiles" :labels="props.labels" @scroll-to-diff-file="scrollToDiffFile" />
 
 			<el-row gutter="20" class="diff-columns">
 				<el-col :span="16" class="diff-column">

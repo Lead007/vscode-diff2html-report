@@ -1,0 +1,68 @@
+.review-file-status {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin: 12px;
+	padding: 12px 14px;
+	border: 1px solid var(--review-file-status-border);
+	border-left-width: 4px;
+	border-radius: 6px;
+	background-color: var(--review-file-status-background);
+	color: var(--review-file-status-foreground);
+	font-size: 13px;
+	font-weight: 600;
+	line-height: 1.5;
+}
+.review-file-status--error {
+	--review-file-status-background: var(--vscode-inputValidation-errorBackground, var(--review-subtle-surface));
+	--review-file-status-border: var(--vscode-inputValidation-errorBorder, var(--review-danger-foreground));
+	--review-file-status-foreground: var(--vscode-editorError-foreground, var(--review-danger-foreground));
+}
+.review-file-status--info {
+	--review-file-status-background: var(--vscode-inputValidation-infoBackground, var(--review-subtle-surface));
+	--review-file-status-border: var(--vscode-inputValidation-infoBorder, var(--review-accent-foreground));
+	--review-file-status-foreground: var(--vscode-editorInfo-foreground, var(--review-accent-foreground));
+}
+.review-file-status--neutral {
+	--review-file-status-background: var(--review-subtle-surface);
+	--review-file-status-border: var(--review-border);
+	--review-file-status-foreground: var(--review-foreground);
+}
+.review-file-status--neutral .review-file-status__icon {
+	background-color: var(--review-foreground);
+}
+.review-file-status__icon {
+	display: inline-flex;
+	width: 28px;
+	height: 28px;
+	flex: 0 0 28px;
+	align-items: center;
+	justify-content: center;
+	border-radius: 6px;
+	background-color: var(--review-file-status-border);
+	color: var(--review-surface);
+	font-family: "Segoe UI", sans-serif;
+	font-size: 14px;
+	font-weight: 700;
+}
+.review-form .el-form-item__label { color: var(--review-foreground); }
+
+/* 清空按钮在两种主题下都使用次级文字颜色。 */
+.theme-clear-button {
+	color: var(--review-muted-foreground) !important;
+	border-color: var(--review-border) !important;
+}
+
+/* 桌面端左右栏独立滚动；滚动边界可继续传递给全局页面。 */
+.diff-columns { height: 100vh; min-height: 260px; }
+.diff-column { height: 100%; min-height: 0; overflow-y: auto; overscroll-behavior-y: auto; padding-top: 16px; }
+
+/* Element Plus 卡片基础边框与差异面板内边距。 */
+.el-card { --el-card-border-color: var(--review-border); border-radius: 10px; }
+.diff-panel>.el-card__header { padding: 14px 17px; }
+.diff-panel>.el-card__body { padding: 13px; }
+
+/* Diff2Html 行号回归表格布局，确保与代码行同步滚动。 */
+.diff-panel .d2h-file-diff { overflow: visible; }
+.diff-panel .d2h-code-linenumber { display: table-cell; position: static; min-width: 7.5em; }
+.diff-panel .d2h-code-line { width: auto; padding: 0 8px; }

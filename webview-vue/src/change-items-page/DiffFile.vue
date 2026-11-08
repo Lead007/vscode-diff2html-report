@@ -3,12 +3,13 @@ import { computed } from 'vue';
 import { getFileIcon } from 'diff2html/lib/render-utils';
 import { LineType } from 'diff2html/lib/types';
 import type { DiffBlock } from 'diff2html/lib/types';
-import type { ChangedFileFunctions, ChangedFunction } from '../../src/functionSymbols';
-import { alignDiffLines } from '../../src/diffUtils';
+import type { ChangedFileFunctions, ChangedFunction } from '../../../src/functionSymbols';
+import { alignDiffLines } from '../../../src/diffUtils';
 import DiffLineByLine from './DiffLineByLine.vue';
-import { formatLabel, getRangeStartLine } from './types';
+import { getRangeStartLine } from './types';
 import type { ChangeEntry, DiffReviewLabels } from './types';
 import DiffSideBySide from './DiffSideBySide.vue';
+import { formatLabel } from '../shared';
 
 const props = defineProps<{
     item: ChangedFileFunctions;
@@ -50,6 +51,17 @@ function getFileBlockLine(block: DiffBlock): number {
         : oldLines.length > 0
             ? Math.min(...oldLines)
             : Math.min(block.oldStartLine, block.newStartLine);
+}
+
+function getFunctionBadge(kind: 'added' | 'deleted' | 'modified') {
+    switch (kind) {
+        case 'added':
+            return { class: 'review-text-added', text: props.labels.added };
+        case 'deleted':
+            return { class: 'review-text-deleted', text: props.labels.deleted };
+        case 'modified':
+            return { class: 'review-text-accent', text: props.labels.changed };
+    }
 }
 
 const displayItems = computed<DisplayItem[]>(() => [
@@ -103,10 +115,10 @@ function toggleFunctionSelection(fn: ChangedFunction, functionIndex: number, sel
                         </path>
                     </svg>
                     <span class="min-w-0 truncate" :title="props.item.path">{{ props.item.path }}</span>
-                    <span v-if="tag === 'file-added'" class="d2h-tag d2h-added d2h-added-tag shrink-0 whitespace-nowrap">{{ props.labels.fileAdded }}</span>
-                    <span v-else-if="tag === 'file-changed'" class="d2h-tag d2h-changed d2h-changed-tag shrink-0 whitespace-nowrap">{{ props.labels.fileChanged }}</span>
-                    <span v-else-if="tag === 'file-deleted'" class="d2h-tag d2h-deleted d2h-deleted-tag shrink-0 whitespace-nowrap">{{ props.labels.fileDeleted }}</span>
-                    <span v-else class="d2h-tag d2h-moved d2h-moved-tag shrink-0 whitespace-nowrap">{{ props.labels.fileRenamed }}</span>
+                    <span v-if="tag === 'file-added'" class="d2h-tag d2h-added d2h-added-tag shrink-0 whitespace-nowrap">{{ props.labels.added }}</span>
+                    <span v-else-if="tag === 'file-changed'" class="d2h-tag d2h-changed d2h-changed-tag shrink-0 whitespace-nowrap">{{ props.labels.changed }}</span>
+                    <span v-else-if="tag === 'file-deleted'" class="d2h-tag d2h-deleted d2h-deleted-tag shrink-0 whitespace-nowrap">{{ props.labels.deleted }}</span>
+                    <span v-else class="d2h-tag d2h-moved d2h-moved-tag shrink-0 whitespace-nowrap">{{ props.labels.renamed }}</span>
                 </span>
                 <span class="ml-auto shrink-0 review-text-added font-medium">+{{ props.item.diffInfo.addedLines }}</span>
                 <span class="ml-3 shrink-0 review-text-deleted font-medium">-{{ props.item.diffInfo.deletedLines }}</span>
@@ -172,9 +184,10 @@ function toggleFunctionSelection(fn: ChangedFunction, functionIndex: number, sel
                                     aria-hidden="true">ƒ</span>
                                 <span class="min-w-0 flex-1 truncate font-mono text-sm font-semibold review-text-primary"
                                     :title="displayItem.fn.name">{{ displayItem.fn.name }}</span>
-                                <span
-                                    class="review-tag shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide">
-                                    {{ displayItem.fn.kind === 'added' ? props.labels.added : displayItem.fn.kind === 'deleted' ? props.labels.deleted : props.labels.modified }}
+                               <span v-for="badge in [getFunctionBadge(displayItem.fn.kind)]" :key="badge.text"
+                                    :class="badge.class"
+                                    class="shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide">
+                                    {{ badge.text }}
                                 </span>
                                 <el-checkbox v-if="!props.displayOnly" class="ml-2 shrink-0"
                                     :model-value="props.entry?.functions?.has(getFunctionId(displayItem.fn, displayItem.functionIndex))"

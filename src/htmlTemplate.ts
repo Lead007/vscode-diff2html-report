@@ -1,41 +1,55 @@
 import mustache from 'mustache';
 import * as vscode from 'vscode';
+import { localize } from 'vscode-nls-i18n';
 
-export interface WebviewContentData {
-    htmlPath: vscode.Uri;
-    cssUris: vscode.Uri[];
-    scriptUris: vscode.Uri[];
-
-    title: string;
-    header: string;
+export interface ExportContent {
+    title: string,
+    styles: string,
+    htmlContent: string,
+    darkMode: boolean
 }
 
-export async function getWebviewContent(webView: vscode.Webview, contentData: WebviewContentData, contentStrings: any): Promise<string> {
-    const tplBytes = await vscode.workspace.fs.readFile(contentData.htmlPath);
-    const tpl = new TextDecoder().decode(tplBytes);
-
-    contentStrings.styleSheetUris = contentData.cssUris.map(uri => webView.asWebviewUri(uri)).map(uri => `\t<link rel="stylesheet" href="${uri}">`).join('\n');
-    contentStrings.scriptUris = contentData.scriptUris.map(uri => webView.asWebviewUri(uri)).map(uri => `\t<script src="${uri}"></script>`).join('\n');
-    contentStrings.title = contentData.title;
-    contentStrings.header = contentData.header;
-
-    const result = mustache.render(tpl, contentStrings);
-
-    return result;
+export interface ExportData {
+    type: 'exportReport'
+    content: ExportContent
 }
 
-export interface ExportContentData {
-    title: string;
-    htmlContent: string;
-    cssContent: string;
-    lineCountContent: string;
-}
+export async function exportHtml(extensionUri: vscode.Uri, defaultFileName: string, data: ExportContent) {
+    // 保存文件对话框
+    const fileName = `${defaultFileName}-${new Date().toLocaleDateString().replace(/\//g, '-')}.html`;
+    const uri = await vscode.window.showSaveDialog({
+        defaultUri: vscode.Uri.joinPath(vscode.workspace.workspaceFolders?.[0].uri || vscode.Uri.file('/'), fileName),
+        filters: {
+            'HTML file': ['html', 'htm']
+        }
+    });
+    if (uri) {
+        await vscode.window.withProgress({
+            location: vscode.ProgressLocation.Notification,
+            cancellable: false
+        }, async (progress) => {
+            progress.report({ message: localize('diff2html-report.progress.exportingReport') });
 
-export async function getExportContent(htmlPath: vscode.Uri, contentData: ExportContentData): Promise<string> {
-    const tplBytes = await vscode.workspace.fs.readFile(htmlPath);
-    const tpl = new TextDecoder().decode(tplBytes);
+            const htmlPath = vscode.Uri.joinPath(extensionUri, 'webview', 'export-page.html');
+            const tplBytes = await vscode.workspace.fs.readFile(htmlPath);
+            const tpl = new TextDecoder().decode(tplBytes);
 
-    const result = mustache.render(tpl, contentData);
+            const finalHtml = mustache.render(tpl, data);
+            await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(finalHtml));
+        });
 
-    return result;
+        //提示保存成功，可以打开文件或文件夹
+        const action = await vscode.window.showInformationMessage(
+            localize('diff2html-report.export.information', uri.fsPath),
+            localize('diff2html-report.export.openFile'),
+            localize('diff2html-report.export.openFolder')
+        );
+        if (action === localize('diff2html-report.export.openFile')) {
+            const open = (await import('open')).default;
+            await open(uri.fsPath);
+        } else if (action === localize('diff2html-report.export.openFolder')) {
+            vscode.commands.executeCommand('revealFileInOS', uri);
+        }
+
+    }
 }

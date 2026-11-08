@@ -1,5 +1,7 @@
 import type { DiffFile } from 'diff2html/lib/types';
-import type { ChangedFileFunctions, ChangedFunction } from '../../src/functionSymbols';
+import type { ChangedFileFunctions, ChangedFunction } from '../../../src/functionSymbols';
+import type { SharedLabels } from '../shared';
+import { ExportContent, ExportData } from '../../../src/htmlTemplate';
 
 function getLineNumber(value: unknown): number | undefined {
 	if (Array.isArray(value) && typeof value[0] === 'number') {
@@ -22,6 +24,10 @@ export function getRangeStartLine(range: unknown): number | undefined {
 	return undefined;
 }
 
+export function getDiffFileId(filePath: string): string {
+	return `diff-file-${encodeURIComponent(filePath)}`;
+}
+
 export interface DiffReviewData {
 	diffInfo: DiffFile[];
 	changedFunctions: ChangedFileFunctions[];
@@ -29,8 +35,7 @@ export interface DiffReviewData {
 	configs: DiffReviewConfigs;
 }
 
-export interface DiffReviewLabels {
-	[key: string]: string;
+export interface DiffReviewLabels extends SharedLabels {
 	title: string;
 	appTitle: string;
 	panelTitle: string;
@@ -40,19 +45,11 @@ export interface DiffReviewLabels {
 	reportPreviewTitle: string;
 	reportPreviewDescription: string;
 	backToReview: string;
-	exportReport: string;
 	reportTitle: string;
-	reportGeneratedAt: string;
 	reportDiffUnavailable: string;
-	reportExportUnavailable: string;
-	themeMode: string;
-	lightMode: string;
-	darkMode: string;
 	pageTitle: string;
 	pageDescription: string;
 	filesChanged: string;
-	hide: string;
-	show: string;
 	fileFunctions: string;
 	selectFunctionsHint: string;
 	updateSelectionHint: string;
@@ -86,10 +83,10 @@ export interface DiffReviewLabels {
 	associateEntry: string;
 	changeItemAdded: string;
 	noChangeItemsToClear: string;
-	fileAdded: string;
-	fileChanged: string;
-	fileDeleted: string;
-	fileRenamed: string;
+	added: string;
+	deleted: string;
+	changed: string;
+	renamed: string;
 	selectAllFunctionsInFile: string;
 	selectFile: string;
 	selectFunction: string;
@@ -98,13 +95,6 @@ export interface DiffReviewLabels {
 	fileWithoutChanges: string;
 	fileSymbolError: string;
 	fileLevelChanges: string;
-	added: string;
-	deleted: string;
-	modified: string;
-}
-
-export function formatLabel(template: string, ...values: string[]): string {
-	return template.replace(/\{(\d+)\}/g, (_match, index: string) => values[Number(index)] ?? '');
 }
 
 export interface DiffReviewConfigs {
@@ -121,13 +111,4 @@ export interface ChangeItem {
 	title: string;
 	description: string;
 	entries: ChangeEntry[];
-}
-
-declare global {
-	interface Window {
-		__DIFF_REVIEW_DATA__?: DiffReviewData;
-		acquireVsCodeApi?: () => {
-			postMessage(message: { type: 'exportReport'; html: string }): void;
-		};
-	}
 }
