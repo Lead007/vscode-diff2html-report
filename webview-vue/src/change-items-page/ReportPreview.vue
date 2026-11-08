@@ -5,6 +5,7 @@ import type { ChangedFileFunctions } from '../../../src/functionSymbols';
 import DiffFile from './DiffFile.vue';
 import type { ChangeItem, DiffReviewLabels } from './types';
 import { formatLabel } from '../shared';
+import DiffFileList from './DiffFileList.vue';
 
 const props = defineProps<{
 	items: ChangeItem[];
@@ -90,6 +91,11 @@ onBeforeUnmount(() => {
 				<h1 class="mb-2 text-2xl font-bold">{{ props.labels.reportTitle }}</h1>
 			</div>
 
+			<DiffFileList :diff-files="props.files.map(f => f.diffInfo)" :labels="props.labels" />
+
+			<div class="mb-5">
+				<h1 class="mb-2 text-2xl font-bold">{{ props.labels.changeDescription }}</h1>
+			</div>
 			<el-card v-for="(item, itemIndex) in reportItems" :key="item.id" class="mb-4" shadow="never">
 				<template #header>
 					<div class="flex min-h-[34px] items-center justify-between gap-3">

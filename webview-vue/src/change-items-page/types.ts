@@ -24,6 +24,10 @@ export function getRangeStartLine(range: unknown): number | undefined {
 	return undefined;
 }
 
+export function getDiffFileId(filePath: string): string {
+	return `diff-file-${encodeURIComponent(filePath)}`;
+}
+
 export interface DiffReviewData {
 	diffInfo: DiffFile[];
 	changedFunctions: ChangedFileFunctions[];

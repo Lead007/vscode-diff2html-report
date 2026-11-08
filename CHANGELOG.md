@@ -18,6 +18,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 * Unified the tag labels for added, changed, and deleted states across file and function changes, and now color-code each type.
 
+* The change preview page now also displays the list of changed files.
+
 ### Removed
 
 The configuration `useOnlineResources` is removed, since the exported page's CSS styles  can be obtained from the webview page's stylesheet. Exporting CSS styles from the webview allows the exported page to support light and dark themes. It also ensures the style of the exported page stays consistent with the webview preview page.
