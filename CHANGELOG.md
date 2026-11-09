@@ -4,6 +4,14 @@ All notable changes to the "diff2html-report" extension will be documented in th
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.6.3] - 2026-11-08
+
+### Fixed
+
+- Fix the bug that on the Project Review page, the file list display deleted files as '/dev/null', while renamed files only show the new file path.
+
+- Delete configuration instructions which no longer exist in the Chinese readme.
+
 ## [0.6.2] - 2026-11-08
 
 ### Added
@@ -91,6 +99,7 @@ Fix the bug that on the Diff Review page, the old and new line numbers may be ar
 
 Initial release.
 
+[0.6.3]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.6.3
 [0.6.2]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.6.2
 [0.6.0]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.6.0
 [0.5.0]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.5.0
