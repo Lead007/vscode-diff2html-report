@@ -10,7 +10,7 @@ import { ExportContent, ExportData, exportHtml } from './htmlTemplate';
 import { findChangedFunctions } from './functionSymbols';
 import type { ChangedFileFunctions } from './functionSymbols';
 import { init, localize } from 'vscode-nls-i18n';
-import { runGitDiffCommand } from './scmHelper';
+import { getLineCount, runGitDiffCommand } from './scmHelper';
 import { randomBytes } from 'crypto';
 import { appendLog, logger } from './logger';
 
@@ -103,30 +103,7 @@ export function activate(context: vscode.ExtensionContext) {
 				return;
 			}
 
-
-			// 计算行数
-			let lineCountResult = '';
-			if (extensionConfig.get<boolean>('drawLineCount')) {
-				lineCountResult = await runGitDiffCommand(repo.rootUri.fsPath, [selectedBase.label, selectedCur.label, '--numstat', ...enableOptionsStr]);
-				if (!lineCountResult) {
-					return;
-				}
-			}
-
-			const lineCountForFile = lineCountResult.trim().split('\n').map(line => {
-				const parts = line.split('\t');
-				if (parts.length >= 3) {
-					return {
-						added: parts[0] === '-' ? 0 : parseInt(parts[0], 10),
-						deleted: parts[1] === '-' ? 0 : parseInt(parts[1], 10),
-						file: parts[2],
-					};
-				}
-				return null;
-			}).filter(item => item !== null) as { added: number, deleted: number, file: string }[];
-
-			const totalAdded = lineCountForFile.reduce((sum, item) => sum + item.added, 0);
-			const totalDeleted = lineCountForFile.reduce((sum, item) => sum + item.deleted, 0);
+			const [totalAdded, totalDeleted] = await getLineCount(repo.rootUri.fsPath, selectedBase.label, selectedCur.label, enableOptionsStr);
 
 			// 生成最终的webview html内容
 			const webViewContext = {
@@ -185,6 +162,8 @@ export function activate(context: vscode.ExtensionContext) {
 					return;
 				}
 
+				const [totalAdded, totalDeleted] = await getLineCount(repo.rootUri.fsPath, selectedBase.label, selectedCur.label, enableOptionsStr);
+
 				progress.report({ message: localize('diff2html-report.progress.analyzingFunctions') });
 
 				const diffInfo = diff2html.parse(diffContent, { drawFileList: true, matching: 'lines', outputFormat: extensionConfig.get<string>('defaultViewType') as OutputFormatType });
@@ -212,7 +191,7 @@ export function activate(context: vscode.ExtensionContext) {
 				const configs = {
 					viewType: extensionConfig.get<string>('defaultViewType'),
 				};
-				return { diffInfo, changedFunctions, labels, configs };
+				return { diffInfo, changedFunctions, labels, configs, totalAdded, totalDeleted };
 			});
 
 			if (!webViewContext) {

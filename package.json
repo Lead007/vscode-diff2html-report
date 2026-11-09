@@ -120,11 +120,6 @@
           ],
           "markdownDescription": "%diff2html-report.configuration.functionDiffSymbolKinds%"
         },
-        "diff2html-report.drawLineCount": {
-          "type": "boolean",
-          "default": true,
-          "description": "%diff2html-report.configuration.drawLineCount%"
-        },
         "diff2html-report.defaultViewType": {
           "type": "string",
           "enum": [

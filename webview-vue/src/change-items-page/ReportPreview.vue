@@ -11,6 +11,8 @@ const props = defineProps<{
 	items: ChangeItem[];
 	files: ChangedFileFunctions[];
 	labels: DiffReviewLabels;
+	totalAdded: number,
+	totalDeleted: number,
 	initialDarkMode: boolean;
     viewType: 'line-by-line' | 'side-by-side';
 }>();
@@ -89,6 +91,10 @@ onBeforeUnmount(() => {
 			:class="{ dark: darkMode }">
 			<div class="mb-5">
 				<h1 class="mb-2 text-2xl font-bold">{{ props.labels.reportTitle }}</h1>
+				<p class="text-xs review-text-muted">
+					{{ formatLabel(props.labels.lineCountContent, String(props.totalAdded),
+						String(props.totalDeleted)) }}
+				</p>
 			</div>
 
 			<DiffFileList :diff-files="props.files.map(f => f.diffInfo)" :labels="props.labels" />

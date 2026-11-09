@@ -52,7 +52,6 @@ This extension contributes the following settings:
 * `diff2html-report.functionDiffChangePercentage`: Show the full function for a larger change when changed lines reach this percentage of the function length. The default is 30.
 * `diff2html-report.functionDiffContextLines`: Number of unchanged lines shown around changes in long functions with a small change percentage. The default is 3.
 * `diff2html-report.functionDiffSymbolKinds`: Select which VS Code document symbol kinds are included in function-level change analysis. The default is `Function`, `Method`, `Constructor`, and `Operator`.
-* `diff2html-report.drawLineCount`: Display line count statistics in the diff report.
 * `diff2html-report.defaultViewType`: Set the default view type to show diff lines for exported page, including Git Diff Report and Change Items Report. The default setting is side-by-side.
 
 ## Q&A
@@ -140,7 +139,6 @@ See [CHANGELOG](https://github.com/Lead007/vscode-diff2html-report/blob/main/CHA
 * `diff2html-report.functionDiffChangePercentage`：较长函数的变更行数达到此比例时，显示完整函数，默认值为 30%。
 * `diff2html-report.functionDiffContextLines`：长函数仅有少量变更时，在变更周围显示的未修改上下文行数，默认值为 3。
 * `diff2html-report.functionDiffSymbolKinds`：函数级分析包含的 VS Code 文档符号类型，默认值为 `Function`、`Method`、`Constructor` 和 `Operator`。
-* `diff2html-report.drawLineCount`：是否在差异报告中显示行数统计。
 * `diff2html-report.defaultViewType`：导出报告中显示差异行的默认视图类型，包括 Git Diff 报告和更改项报告。默认值为并排视图（`side-by-side`）。
 
 ## 常见问题

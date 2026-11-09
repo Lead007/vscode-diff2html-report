@@ -6,9 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [0.6.3] - 2026-11-08
 
+### Changed
+
+- Line count is also displayed on the Change Item page and the change item report. The configuration `diff2html-report.drawLineCount` has been removed.
+
 ### Fixed
 
-- Fix the bug that on the Project Review page, the file list display deleted files as '/dev/null', while renamed files only show the new file path.
+- Fix the bug that on the Change Item page, the file list display deleted files as '/dev/null', while renamed files only show the new file path.
 
 - Delete configuration instructions which no longer exist in the Chinese readme.
 

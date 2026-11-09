@@ -351,6 +351,7 @@ function exportReport(darkMode: boolean): void {
 <template>
 	<ReportPreview v-if="isPreviewingReport" :items="changeItems" :files="diffFunctionsFiles" :labels="props.labels"
 		:initial-dark-mode="initialDarkMode" :view-type="props.configs.viewType"
+		:total-added="props.totalAdded" :total-deleted="props.totalDeleted"
 		@back="isPreviewingReport = false" @export="exportReport" />
 	<div v-else class="min-h-screen">
 		<header class="flex items-center justify-between px-4 py-3">
@@ -377,6 +378,10 @@ function exportReport(darkMode: boolean): void {
 				<div>
 					<h1 class="text-3xl font-bold review-text-primary mb-2">{{ props.labels.pageTitle }}</h1>
 					<p class="review-text-muted">{{ props.labels.pageDescription }}</p>
+					<p class="text-xs review-text-muted">
+						{{ formatLabel(props.labels.lineCountContent, String(props.totalAdded),
+							String(props.totalDeleted)) }}
+					</p>
 				</div>
 			</div>
 

@@ -33,6 +33,8 @@ export interface DiffReviewData {
 	changedFunctions: ChangedFileFunctions[];
 	labels: DiffReviewLabels;
 	configs: DiffReviewConfigs;
+	totalAdded: number,
+	totalDeleted: number,
 }
 
 export interface DiffReviewLabels extends SharedLabels {
