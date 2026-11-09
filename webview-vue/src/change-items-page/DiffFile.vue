@@ -35,6 +35,7 @@ function getFunctionId(fn: ChangedFunction, functionIndex: number): string {
         props.item.path,
         fn.kind,
         fn.name,
+        fn.detail,
         getRangeStartLine(fn.newRange) ?? getRangeStartLine(fn.oldRange) ?? functionIndex,
     ]);
 }
@@ -182,9 +183,14 @@ function toggleFunctionSelection(fn: ChangedFunction, functionIndex: number, sel
                                 <span
                                     class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md review-surface-accent font-mono text-sm font-bold review-text-accent"
                                     aria-hidden="true">ƒ</span>
-                                <span class="min-w-0 flex-1 truncate font-mono text-sm font-semibold review-text-primary"
-                                    :title="displayItem.fn.name">{{ displayItem.fn.name }}</span>
-                               <span v-for="badge in [getFunctionBadge(displayItem.fn.kind)]" :key="badge.text"
+                                <span class="flex min-w-0 flex-1 items-baseline gap-2">
+                                    <span class="truncate font-mono text-sm font-semibold review-text-primary"
+                                        :title="displayItem.fn.name">{{ displayItem.fn.name }}</span>
+                                    <span v-if="displayItem.fn.detail"
+                                        class="min-w-0 truncate text-xs font-normal review-text-muted"
+                                        :title="displayItem.fn.detail">{{ displayItem.fn.detail }}</span>
+                                </span>
+                                <span v-for="badge in [getFunctionBadge(displayItem.fn.kind)]" :key="badge.text"
                                     :class="badge.class"
                                     class="shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide">
                                     {{ badge.text }}

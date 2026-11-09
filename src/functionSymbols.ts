@@ -13,6 +13,7 @@ import { appendLog } from './logger';
  */
 export interface ChangedFunction {
 	name: string;
+	detail?: string;
 	kind: 'added' | 'deleted' | 'modified';
 	oldRange?: vscode.Range;
 	newRange?: vscode.Range;
@@ -37,6 +38,7 @@ export interface ChangedFileFunctions {
  */
 interface SourceSymbol {
 	name: string;
+	detail?: string;
 	range: vscode.Range;
 }
 
@@ -296,17 +298,39 @@ function flattenSymbols(
 	functionKinds: Set<vscode.SymbolKind>
 ): SourceSymbol[] {
 	const result: SourceSymbol[] = [];
-	// DocumentSymbol 可能包含嵌套子项，递归遍历；SymbolInformation 则是扁平结构。
+	type NestedSymbol = vscode.DocumentSymbol | (
+		vscode.SymbolInformation & { children: Array<vscode.DocumentSymbol | vscode.SymbolInformation> }
+	);
+	const hasChildren = (
+		symbol: vscode.DocumentSymbol | vscode.SymbolInformation
+	): symbol is NestedSymbol => 'children' in symbol;
+	type DetailedSymbol = vscode.DocumentSymbol | (
+		vscode.SymbolInformation & { detail: string }
+	);
+	const hasDetail = (
+		symbol: vscode.DocumentSymbol | vscode.SymbolInformation
+	): symbol is DetailedSymbol => 'detail' in symbol;
+
+	// 以 children 字段判断符号是否为层级结构，避免依赖提供器返回的具体实例类型。
 	const visit = (items: Array<vscode.DocumentSymbol | vscode.SymbolInformation>) => {
 		for (const symbol of items) {
-			if (symbol instanceof vscode.DocumentSymbol) {
+			if (hasChildren(symbol)) {
 				// 父级与子级都可能是函数（例如类中的方法），因此检查后仍需遍历 children。
 				if (functionKinds.has(symbol.kind)) {
-					result.push({ name: symbol.name, range: symbol.range });
+					const range = 'location' in symbol ? symbol.location.range : symbol.range;
+					let detail: string | undefined;
+					if (hasDetail(symbol)) {
+						detail = symbol.detail;
+					}
+					result.push({ name: symbol.name, detail, range });
 				}
 				visit(symbol.children);
 			} else if (functionKinds.has(symbol.kind)) {
-				result.push({ name: symbol.name, range: symbol.location.range });
+				let detail: string | undefined;
+				if (hasDetail(symbol)) {
+					detail = symbol.detail;
+				}
+				result.push({ name: symbol.name, detail, range: symbol.location.range });
 			}
 		}
 	};
@@ -370,6 +394,7 @@ function pairChangedSymbols(
 		newMatches.add(newSymbol);
 		changes.push({
 			name: newSymbol.name,
+			detail: newSymbol.detail,
 			kind: 'modified',
 			oldRange: oldSymbol.range,
 			newRange: newSymbol.range,
@@ -434,6 +459,7 @@ function pairChangedSymbols(
 		}
 		changes.push({
 			name: oldSymbol.name,
+			detail: oldSymbol.detail,
 			kind: 'deleted',
 			oldRange: oldSymbol.range,
 			diffBlocks: createFunctionDiffBlocks(
@@ -452,6 +478,7 @@ function pairChangedSymbols(
 		if (!newMatches.has(newSymbol)) {
 			changes.push({
 				name: newSymbol.name,
+				detail: newSymbol.detail,
 				kind: 'added',
 				newRange: newSymbol.range,
 				diffBlocks: createFunctionDiffBlocks(
