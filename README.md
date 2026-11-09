@@ -142,7 +142,6 @@ See [CHANGELOG](https://github.com/Lead007/vscode-diff2html-report/blob/main/CHA
 * `diff2html-report.functionDiffSymbolKinds`：函数级分析包含的 VS Code 文档符号类型，默认值为 `Function`、`Method`、`Constructor` 和 `Operator`。
 * `diff2html-report.drawLineCount`：是否在差异报告中显示行数统计。
 * `diff2html-report.defaultViewType`：导出报告中显示差异行的默认视图类型，包括 Git Diff 报告和更改项报告。默认值为并排视图（`side-by-side`）。
-* `diff2html-report.useOnlineResources`：是否使用 CDN 在线资源生成差异报告。默认值为 `false`，即使用扩展内的本地资源。
 
 ## 常见问题
 

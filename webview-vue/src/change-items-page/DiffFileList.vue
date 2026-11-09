@@ -3,6 +3,7 @@ import FileIcon from './FileIcon.vue';
 import { DiffFile } from 'diff2html/lib/types';
 import { DiffReviewLabels, getDiffFileId } from './types';
 import { formatLabel } from '../shared';
+import { filenameDiff } from 'diff2html/lib/render-utils.js';
 
 
 const props = defineProps<{
@@ -33,7 +34,7 @@ const emit = defineEmits<{
                         <a :href="`#${getDiffFileId(file.newName || file.oldName)}`"
                             class="d2h-file-name cursor-pointer hover:underline"
                             @click.prevent="emit('scrollToDiffFile', file.newName || file.oldName)">
-                            {{ file.newName || file.oldName }}
+                            {{ filenameDiff(file) }}
                         </a>
                         <span class="d2h-file-stats">
                             <span class="d2h-lines-added">+{{ file.addedLines }}</span>
