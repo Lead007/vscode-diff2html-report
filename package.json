@@ -3,7 +3,7 @@
   "displayName": "diff2html-report",
   "icon": "assets/icon.png",
   "description": "A Git diff report generator For VSCode.",
-  "version": "0.6.3",
+  "version": "0.7.0",
   "license": "MIT",
   "publisher": "Lead007",
   "engines": {
@@ -113,10 +113,12 @@
             ]
           },
           "default": [
+            "Class",
             "Function",
             "Method",
             "Constructor",
-            "Operator"
+            "Operator",
+            "Struct"
           ],
           "markdownDescription": "%diff2html-report.configuration.functionDiffSymbolKinds%"
         },
@@ -182,6 +184,7 @@
     "@typescript-eslint/eslint-plugin": "^8.39.0",
     "@typescript-eslint/parser": "^8.39.0",
     "@vitejs/plugin-vue": "^6.0.1",
+    "@vscode/codicons": "^0.0.46-24",
     "@vscode/test-cli": "^0.0.11",
     "@vscode/test-electron": "^2.5.2",
     "element-plus": "^2.11.4",

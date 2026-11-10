@@ -14,6 +14,7 @@ import { appendLog } from './logger';
 export interface ChangedFunction {
 	name: string;
 	detail?: string;
+	symbolKind: vscode.SymbolKind;
 	kind: 'added' | 'deleted' | 'modified';
 	oldRange?: vscode.Range;
 	newRange?: vscode.Range;
@@ -38,7 +39,7 @@ export interface ChangedFileFunctions {
  */
 interface SourceSymbol {
 	name: string;
-	detail?: string;
+	detail: string;
 	kind: vscode.SymbolKind;
 	range: vscode.Range;
 	children: SourceSymbol[];
@@ -311,9 +312,10 @@ function mapSymbols(symbols: Array<vscode.DocumentSymbol | vscode.SymbolInformat
 	const result: SourceSymbol[] = [];
 	for (const symbol of symbols) {
 		const range = 'location' in symbol ? symbol.location.range : symbol.range;
+		const detail = hasDetail(symbol) ? symbol.detail : '';
 		result.push({
 			name: symbol.name,
-			detail: hasDetail(symbol) ? symbol.detail : undefined,
+			detail: `${detail} (${vscode.SymbolKind[symbol.kind]})`,
 			kind: symbol.kind,
 			range,
 			children: hasChildren(symbol) ? mapSymbols(symbol.children) : []
@@ -418,6 +420,7 @@ function pairChangedSymbols(
 		changes.push({
 			name: newSymbol.name,
 			detail: newSymbol.detail,
+			symbolKind: newSymbol.kind,
 			kind: 'modified',
 			oldRange: oldSymbol.range,
 			newRange: newSymbol.range,
@@ -483,6 +486,7 @@ function pairChangedSymbols(
 		changes.push({
 			name: oldSymbol.name,
 			detail: oldSymbol.detail,
+			symbolKind: oldSymbol.kind,
 			kind: 'deleted',
 			oldRange: oldSymbol.range,
 			diffBlocks: createFunctionDiffBlocks(
@@ -502,6 +506,7 @@ function pairChangedSymbols(
 			changes.push({
 				name: newSymbol.name,
 				detail: newSymbol.detail,
+				symbolKind: newSymbol.kind,
 				kind: 'added',
 				newRange: newSymbol.range,
 				diffBlocks: createFunctionDiffBlocks(

@@ -14,6 +14,7 @@ export default defineConfig(({ mode }) => ({
 		minify: mode !== 'development',
 		outDir: '../webview/vue-dist',
 		emptyOutDir: true,
+		assetsInlineLimit: 200_000,
 		rollupOptions: {
 			input: {
 				changeItemsPage: fileURLToPath(new URL('./webview-vue/change-items-page.html', import.meta.url)),

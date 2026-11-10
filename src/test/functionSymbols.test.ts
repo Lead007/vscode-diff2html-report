@@ -96,6 +96,7 @@ suite('Changed function symbols', () => {
 			files[0].functions.map(fn => [fn.name, fn.kind]),
 			[['newName', 'modified']]
 		);
+		assert.strictEqual(files[0].functions[0].symbolKind, vscode.SymbolKind.Function);
 		const diffLines = files[0].functions[0].diffBlocks.flatMap(block => block.lines);
 		assert.ok(diffLines.some(line => line.type === 'delete' && line.content.includes('oldName')));
 		assert.ok(diffLines.some(line => line.type === 'insert' && line.content.includes('newName')));
@@ -248,6 +249,7 @@ suite('Changed function symbols', () => {
 				files[0].functions.map(fn => [fn.name, fn.kind]),
 				[['Example', 'modified']]
 			);
+			assert.strictEqual(files[0].functions[0].symbolKind, vscode.SymbolKind.Class);
 		} finally {
 			await configuration.update('functionDiffSymbolKinds', previousGlobalValue, vscode.ConfigurationTarget.Global);
 		}

@@ -28,6 +28,17 @@ export function getDiffFileId(filePath: string): string {
 	return `diff-file-${encodeURIComponent(filePath)}`;
 }
 
+export function getChangedFunctionId(filePath: string, fn: ChangedFunction, fallbackIndex: number): string {
+	return JSON.stringify([
+		filePath,
+		fn.kind,
+		fn.name,
+		fn.detail,
+		fn.symbolKind,
+		getRangeStartLine(fn.newRange) ?? getRangeStartLine(fn.oldRange) ?? fallbackIndex,
+	]);
+}
+
 export interface DiffReviewData {
 	diffInfo: DiffFile[];
 	changedFunctions: ChangedFileFunctions[];

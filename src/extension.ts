@@ -317,7 +317,7 @@ async function showVuePage(
 		.replace('<script type="module"', `<script nonce="${nonce}" type="module"`)
 		.replace(
 			'</head>',
-			`<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${panel.webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}' ${panel.webview.cspSource}; font-src ${panel.webview.cspSource}; connect-src ${panel.webview.cspSource};"><script nonce="${nonce}">window.${webViewContextName} = ${initialData};</script></head>`,
+			`<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${panel.webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}' ${panel.webview.cspSource}; font-src ${panel.webview.cspSource} data:; connect-src ${panel.webview.cspSource};"><script nonce="${nonce}">window.${webViewContextName} = ${initialData};</script></head>`,
 		);
 	panel.webview.html = html;
 	if (onDidReceiveMessage) {

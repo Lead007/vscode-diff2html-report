@@ -5,10 +5,11 @@ import { Check, Delete, Document, Download, Edit } from '@element-plus/icons-vue
 import DiffFile from './DiffFile.vue';
 import EntryTree from './EntryTree.vue';
 import ReportPreview from './ReportPreview.vue';
-import { getRangeStartLine, getDiffFileId, ChangeEntry, ChangeItem, DiffReviewData } from './types.js';
+import { getChangedFunctionId, getDiffFileId, ChangeEntry, ChangeItem, DiffReviewData } from './types.js';
 import { formatLabel, getExportStyles } from '../shared.js';
 import { ExportContent } from '../../../src/htmlTemplate';
 import DiffFileList from './DiffFileList.vue';
+import type { ChangedFunction } from '../../../src/functionSymbols';
 
 // 扩展宿主传入的本次 Diff 文件和函数数据。
 const props = defineProps<DiffReviewData>();
@@ -26,12 +27,7 @@ const diffFunctionsFiles = computed(() => diffFunctions.value.map((file) => ({
 	...file,
 	functions: (file.functions ?? []).map((fn, index) => ({
 		...fn,
-		id: JSON.stringify([
-			file.path,
-			fn.kind,
-			fn.name,
-			getRangeStartLine(fn.newRange) ?? getRangeStartLine(fn.oldRange) ?? index,
-		])
+		id: getChangedFunctionId(file.path, fn, index),
 	}))
 })),
 );
@@ -102,18 +98,25 @@ function cloneChangeItem(item: ChangeItem): ChangeItem {
 function changeSelectedFunctionIds(filePath: string, ids: string[], selected: boolean) {
 	const file = diffFunctionsFiles.value.find(item => item.path === filePath);
 	if (!file) return;
+	const selectedFunctions = new Map<string, ChangedFunction>();
+	for (const id of ids) {
+		const fn = file.functions.find(fn => fn.id === id);
+		if (fn) {
+			selectedFunctions.set(id, fn);
+		} else {
+			console.error(`Unable to find selected function '${id}' in '${filePath}'.`);
+		}
+	}
+
 	const entry = activeEntries.value.find(item => item.filePath == filePath);
 	if (entry) {
 		if (!entry.functions) {
 			entry.functions = new Map();
 		}
 		if (selected) {
-			// 并集：把 ids 中不存在的添加进去
-			for (const id of ids) {
-				const fn = file.functions.find(fn => fn.id === id);
-				if (fn) {
-					entry.functions.set(id, fn);
-				}
+			// 并集：添加匹配到的函数。
+			for (const [id, fn] of selectedFunctions) {
+				entry.functions.set(id, fn);
 			}
 		} else {
 			// 差集：从已有集合中移除 ids 里存在的
@@ -127,14 +130,12 @@ function changeSelectedFunctionIds(filePath: string, ids: string[], selected: bo
 				}
 			}
 		}
-	} else if (selected && ids.length > 0) {
-		// 不存在且是选中操作 → 新建一条
+	} else if (selected && selectedFunctions.size > 0) {
+		// 不存在且有匹配函数 → 新建一条。
 		activeEntries.value.push({
 			filePath,
-			functions: new Map(
-				ids.map(id => [id, file.functions.find(fn => fn.id === id)!] as const).
-					filter(([, fn]) => fn !== undefined)),
-		})
+			functions: selectedFunctions,
+		});
 	}
 }
 
