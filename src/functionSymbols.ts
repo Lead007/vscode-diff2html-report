@@ -105,7 +105,7 @@ const symbolKindsByName = new Map<string, vscode.SymbolKind>([
  */
 function getFunctionSymbolKinds(): Set<vscode.SymbolKind> {
 	const configuredNames = vscode.workspace.getConfiguration('diff2html-report').get<string[]>(
-		'functionDiffSymbolKinds',
+		'symbolDiffSymbolKinds',
 		defaultFunctionSymbolKindNames
 	);
 	return new Set((Array.isArray(configuredNames) ? configuredNames : [])
@@ -777,15 +777,15 @@ function getFunctionDiffOptions(): FunctionDiffOptions {
 	const configuration = vscode.workspace.getConfiguration('diff2html-report');
 	return {
 		fullFunctionLineThreshold: Math.max(0, configuration.get<number>(
-			'functionDiffLineThreshold',
+			'symbolDiffLineThreshold',
 			defaultFunctionDiffOptions.fullFunctionLineThreshold
 		)),
 		fullFunctionChangePercentage: Math.min(100, Math.max(0, configuration.get<number>(
-			'functionDiffChangePercentage',
+			'symbolDiffChangePercentage',
 			defaultFunctionDiffOptions.fullFunctionChangePercentage
 		))),
 		contextLines: Math.max(0, configuration.get<number>(
-			'functionDiffContextLines',
+			'symbolDiffContextLines',
 			defaultFunctionDiffOptions.contextLines
 		))
 	};

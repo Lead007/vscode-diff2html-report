@@ -216,8 +216,8 @@ suite('Changed function symbols', () => {
 
 	test('includes configured document symbol kinds in function-level changes', async () => {
 		const configuration = vscode.workspace.getConfiguration('diff2html-report');
-		const previousGlobalValue = configuration.inspect<string[]>('functionDiffSymbolKinds')?.globalValue;
-		await configuration.update('functionDiffSymbolKinds', ['Class'], vscode.ConfigurationTarget.Global);
+		const previousGlobalValue = configuration.inspect<string[]>('symbolDiffSymbolKinds')?.globalValue;
+		await configuration.update('symbolDiffSymbolKinds', ['Class'], vscode.ConfigurationTarget.Global);
 		try {
 			await fs.writeFile(
 				path.join(repositoryPath, 'sample.txt'),
@@ -251,7 +251,7 @@ suite('Changed function symbols', () => {
 			);
 			assert.strictEqual(files[0].functions[0].symbolKind, vscode.SymbolKind.Class);
 		} finally {
-			await configuration.update('functionDiffSymbolKinds', previousGlobalValue, vscode.ConfigurationTarget.Global);
+			await configuration.update('symbolDiffSymbolKinds', previousGlobalValue, vscode.ConfigurationTarget.Global);
 		}
 	});
 

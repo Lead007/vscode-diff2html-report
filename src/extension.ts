@@ -164,7 +164,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 				const [totalAdded, totalDeleted] = await getLineCount(repo.rootUri.fsPath, selectedBase.label, selectedCur.label, enableOptionsStr);
 
-				progress.report({ message: localize('diff2html-report.progress.analyzingFunctions') });
+				progress.report({ message: localize('diff2html-report.progress.analyzingSymbols') });
 
 				const diffInfo = diff2html.parse(diffContent, { drawFileList: true, matching: 'lines', outputFormat: extensionConfig.get<string>('defaultViewType') as OutputFormatType });
 				let changedFunctions: ChangedFileFunctions[];
@@ -176,7 +176,7 @@ export function activate(context: vscode.ExtensionContext) {
 						selectedCur.label,
 						(current, total, filePath) => {
 							progress.report({
-								message: localize('diff2html-report.progress.analyzingFunctionsProgress', filePath, String(current), String(total)),
+								message: localize('diff2html-report.progress.analyzingSymbolsProgress', filePath, String(current), String(total)),
 								increment: current === 0 ? 0 : ((1 / total) * 100)
 							});
 						}

@@ -4,17 +4,27 @@ All notable changes to the "diff2html-report" extension will be documented in th
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
-## [0.6.3] - 2026-11-08
+## [0.7.0] - 2026-11-10
 
 ### Changed
 
 - Line count is also displayed on the Change Item page and the change item report. The configuration `diff2html-report.drawLineCount` has been removed.
+
+- Improved analysis of the file's symbol tree: child symbol differences are no longer shown when the parent symbol has changes.
+
+- In the change page, different symbol changes now display distinct icons and tooltip text. Icons are provided by `@vscode/codicons`, matching the symbol icons in the VS Code outline view.
+
+- Added classes and structs to the symbol kinds analyzed by default.
+
+- Renamed all occurrences of "function" to "symbol" in displayed text, since the plugin's diff analysis is not limited to function-type symbols.
 
 ### Fixed
 
 - Fix the bug that on the Change Item page, the file list display deleted files as '/dev/null', while renamed files only show the new file path.
 
 - Delete configuration instructions which no longer exist in the Chinese readme.
+
+- Fixed an incorrect Mustache template path when exporting to HTML.
 
 ## [0.6.2] - 2026-11-08
 
@@ -103,7 +113,7 @@ Fix the bug that on the Diff Review page, the old and new line numbers may be ar
 
 Initial release.
 
-[0.6.3]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.6.3
+[0.7.0]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.7.0
 [0.6.2]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.6.2
 [0.6.0]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.6.0
 [0.5.0]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.5.0

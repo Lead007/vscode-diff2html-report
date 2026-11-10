@@ -150,8 +150,9 @@ function toggleFunctionSelection(fn: ChangedFunction, functionIndex: number, sel
                 <span class="ml-3 shrink-0 review-text-deleted font-medium">-{{ props.item.diffInfo.deletedLines }}</span>
                 <el-checkbox v-if="!props.displayOnly && functions.length > 0" class="ml-3 shrink-0" :model-value="allFunctionsSelected"
                     :indeterminate="someFunctionsSelected && !allFunctionsSelected"
-                    :aria-label="formatLabel(props.labels.selectAllFunctionsInFile, props.item.path)" @change="toggleFileSelection($event === true)" />
+                    :aria-label="formatLabel(props.labels.selectAllSymbolsInFile, props.item.path)" @change="toggleFileSelection($event === true)" />
                <el-checkbox v-else-if="!props.displayOnly" class="ml-3 shrink-0" :model-value="props.entry?.filePath == props.item.path"
+                    :title="formatLabel(props.labels.selectFile, props.item.path)"
                     :aria-label="formatLabel(props.labels.selectFile, props.item.path)" @change="toggleFileSelection($event === true)" />
             </div>
         </template>
@@ -224,7 +225,8 @@ function toggleFunctionSelection(fn: ChangedFunction, functionIndex: number, sel
                                 </span>
                                 <el-checkbox v-if="!props.displayOnly" class="ml-2 shrink-0"
                                     :model-value="props.entry?.functions?.has(getChangedFunctionId(props.item.path, displayItem.fn, displayItem.functionIndex))"
-                                    :aria-label="formatLabel(props.labels.selectFunction, displayItem.fn.name)"
+                                    :title="formatLabel(props.labels.selectSymbol, displayItem.fn.name)"
+                                    :aria-label="formatLabel(props.labels.selectSymbol, displayItem.fn.name)"
                                     @change="toggleFunctionSelection(displayItem.fn, displayItem.functionIndex, $event === true)" />
                             </div>
                             <DiffLineByLine v-if="props.viewType === 'line-by-line'" :item="alignDiffLines(displayItem.fn.diffBlocks ?? [])" />

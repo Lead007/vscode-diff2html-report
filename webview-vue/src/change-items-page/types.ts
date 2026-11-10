@@ -63,8 +63,8 @@ export interface DiffReviewLabels extends SharedLabels {
 	pageTitle: string;
 	pageDescription: string;
 	filesChanged: string;
-	fileFunctions: string;
-	selectFunctionsHint: string;
+	fileSymbols: string;
+	selectSymbolsHint: string;
 	updateSelectionHint: string;
 	selectedCount: string;
 	changeItemCount: string;
@@ -75,8 +75,8 @@ export interface DiffReviewLabels extends SharedLabels {
 	changeDescription: string;
 	titlePlaceholder: string;
 	descriptionPlaceholder: string;
-	relatedFilesAndFunctions: string;
-	selectFunctionHint: string;
+	relatedFilesAndSymbols: string;
+	selectSymbolHint: string;
 	addedChangeItems: string;
 	emptyChangeItems: string;
 	editChangeItem: string;
@@ -100,9 +100,9 @@ export interface DiffReviewLabels extends SharedLabels {
 	deleted: string;
 	changed: string;
 	renamed: string;
-	selectAllFunctionsInFile: string;
+	selectAllSymbolsInFile: string;
 	selectFile: string;
-	selectFunction: string;
+	selectSymbol: string;
 	fileTooBig: string;
 	fileIsBinary: string;
 	fileWithoutChanges: string;

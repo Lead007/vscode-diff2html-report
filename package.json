@@ -60,26 +60,26 @@
           "default": 67108864,
           "description": "%diff2html-report.configuration.maxGitDiffFileSize%"
         },
-        "diff2html-report.functionDiffLineThreshold": {
+        "diff2html-report.symbolDiffLineThreshold": {
           "type": "integer",
           "minimum": 0,
           "default": 30,
-          "description": "%diff2html-report.configuration.functionDiffLineThreshold%"
+          "description": "%diff2html-report.configuration.symbolDiffLineThreshold%"
         },
-        "diff2html-report.functionDiffChangePercentage": {
+        "diff2html-report.symbolDiffChangePercentage": {
           "type": "number",
           "minimum": 0,
           "maximum": 100,
           "default": 30,
-          "description": "%diff2html-report.configuration.functionDiffChangePercentage%"
+          "description": "%diff2html-report.configuration.symbolDiffChangePercentage%"
         },
-        "diff2html-report.functionDiffContextLines": {
+        "diff2html-report.symbolDiffContextLines": {
           "type": "integer",
           "minimum": 0,
           "default": 3,
-          "description": "%diff2html-report.configuration.functionDiffContextLines%"
+          "description": "%diff2html-report.configuration.symbolDiffContextLines%"
         },
-        "diff2html-report.functionDiffSymbolKinds": {
+        "diff2html-report.symbolDiffSymbolKinds": {
           "type": "array",
           "items": {
             "type": "string",
@@ -120,7 +120,7 @@
             "Operator",
             "Struct"
           ],
-          "markdownDescription": "%diff2html-report.configuration.functionDiffSymbolKinds%"
+          "markdownDescription": "%diff2html-report.configuration.symbolDiffSymbolKinds%"
         },
         "diff2html-report.defaultViewType": {
           "type": "string",

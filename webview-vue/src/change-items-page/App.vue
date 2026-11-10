@@ -394,8 +394,8 @@ function exportReport(darkMode: boolean): void {
 						<template #header>
 							<div class="min-h-[34px] flex items-center justify-between">
 								<div>
-									<strong>{{ props.labels.fileFunctions }} <el-tag round>{{ diffFunctionsCount }}</el-tag></strong>
-									<div class="text-xs">{{ editingChangeItemId === null ? props.labels.selectFunctionsHint :
+									<strong>{{ props.labels.fileSymbols }} <el-tag round>{{ diffFunctionsCount }}</el-tag></strong>
+									<div class="text-xs">{{ editingChangeItemId === null ? props.labels.selectSymbolsHint :
 										props.labels.updateSelectionHint }}</div>
 								</div>
 								<span class="text-xs">{{ formatLabel(props.labels.selectedCount, String(selectedCount)) }}</span>
@@ -447,7 +447,7 @@ function exportReport(darkMode: boolean): void {
 									<div
 										class="mb-[15px] rounded-lg border border-dashed review-border review-surface-subtle p-[11px]">
 										<div class="mb-[7px] text-xs font-bold review-text-primary">{{
-											props.labels.relatedFilesAndFunctions }} <span
+											props.labels.relatedFilesAndSymbols }} <span
 												class="review-text-danger">*</span>
 										</div>
 										<EntryTree v-if="selectedEntries.length !== 0" :entries="selectedEntries"
@@ -455,7 +455,7 @@ function exportReport(darkMode: boolean): void {
 											@remove-entry="(filePath) => changeSelectedPath(filePath, false)"
 											@remove-function="(filePath, functionId) => changeSelectedFunctionIds(filePath, [functionId], false)" />
 										<div v-else class="mt-1 text-xs review-text-muted">{{
-											props.labels.selectFunctionHint }}</div>
+											props.labels.selectSymbolHint }}</div>
 									</div>
 									<el-button type="primary" class="!w-full" @click="addChangeItem">＋ {{ props.labels.addChangeItem }}</el-button>
 								</el-form>
@@ -492,9 +492,9 @@ function exportReport(darkMode: boolean): void {
 										:placeholder="props.labels.changeDescription" />
 									<div v-if="editingChangeItemId === item.id" class="mt-3">
 										<div class="mb-1 text-xs font-bold review-text-primary">{{
-											props.labels.relatedFilesAndFunctions }}</div>
+											props.labels.relatedFilesAndSymbols }}</div>
 										<div v-if="item.entries.length === 0" class="text-xs review-text-muted">{{
-											props.labels.selectFunctionHint }}
+											props.labels.selectSymbolHint }}
 										</div>
 										<EntryTree v-else :entries="item.entries" :can-edit="true"
 											:labels="props.labels"
