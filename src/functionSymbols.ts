@@ -34,12 +34,14 @@ export interface ChangedFileFunctions {
 }
 
 /**
- * @brief 从 VS Code 符号提供器中提取出的函数名称和源码范围。
+ * @brief 从 VS Code 符号提供器中提取出的符号及其层级结构。
  */
 interface SourceSymbol {
 	name: string;
 	detail?: string;
+	kind: vscode.SymbolKind;
 	range: vscode.Range;
+	children: SourceSymbol[];
 }
 
 /**
@@ -193,16 +195,16 @@ export async function findChangedFunctions(
 				// 新增文件没有旧源码，删除文件没有新源码；对应的空符号集便于统一后续匹配。
 				const oldResult = oldSource === undefined
 					? { symbols: [], available: true }
-					: await getDocumentSymbols(oldSource, oldPath!, functionKinds);
+					: await getDocumentSymbols(oldSource, oldPath!);
 				const newResult = newSource === undefined
 					? { symbols: [], available: true }
-					: await getDocumentSymbols(newSource, newPath!, functionKinds);
-				const oldSymbols = oldResult.symbols;
-				const newSymbols = newResult.symbols;
-				// 先筛选范围与变更行相交的函数，再将旧版/新版符号配对为修改、新增或删除。
+					: await getDocumentSymbols(newSource, newPath!);
+				const oldSymbols = flattenSymbols(oldResult.symbols, functionKinds);
+				const newSymbols = flattenSymbols(newResult.symbols, functionKinds);
+				// 从树顶向下选择变更符号；命中函数级符号后不再分析它的子级。
 				const changes = pairChangedSymbols(
-					oldSymbols.filter(symbol => intersectsLines(symbol.range, changedLines.oldLines)),
-					newSymbols.filter(symbol => intersectsLines(symbol.range, changedLines.newLines)),
+					collectChangedSymbols(oldResult.symbols, changedLines.oldLines, functionKinds),
+					collectChangedSymbols(newResult.symbols, changedLines.newLines, functionKinds),
 					oldSymbols,
 					newSymbols,
 					file,
@@ -255,12 +257,11 @@ export async function findChangedFunctions(
  * @brief 从 VS Code 语言提供器获取指定源码的文档符号。
  * @param source 要分析的源码。
  * @param sourcePath 源文件路径，用于保留扩展名以识别语言。
- * @returns 提取到的函数符号及符号提供器是否可用。
+ * @returns 提取到的符号树及符号提供器是否可用。
  */
 async function getDocumentSymbols(
 	source: string,
-	sourcePath: string,
-	functionKinds: Set<vscode.SymbolKind>
+	sourcePath: string
 ): Promise<SymbolResult> {
 	// 使用原文件名作为临时文件名，让语言扩展有机会按扩展名识别语言。
 	const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'diff2html-symbol-'));
@@ -274,7 +275,7 @@ async function getDocumentSymbols(
 			document.uri
 		);
 		return {
-			symbols: flattenSymbols(symbols || [], functionKinds),
+			symbols: mapSymbols(symbols || []),
 			available: symbols !== undefined
 		};
 	} finally {
@@ -289,21 +290,17 @@ async function getDocumentSymbols(
 }
 
 /**
- * @brief 将 VS Code 层级或扁平文档符号统一转换为函数符号列表。
+ * @brief 将 VS Code 文档符号转换为保留嵌套结构的内部表示。
  * @param symbols VS Code 符号提供器返回的符号。
- * @returns 函数名称及对应源码范围。
+ * @returns 保留子级关系的符号树。
  */
-function flattenSymbols(
-	symbols: Array<vscode.DocumentSymbol | vscode.SymbolInformation>,
-	functionKinds: Set<vscode.SymbolKind>
-): SourceSymbol[] {
-	const result: SourceSymbol[] = [];
+function mapSymbols(symbols: Array<vscode.DocumentSymbol | vscode.SymbolInformation>): SourceSymbol[] {
 	type NestedSymbol = vscode.DocumentSymbol | (
 		vscode.SymbolInformation & { children: Array<vscode.DocumentSymbol | vscode.SymbolInformation> }
 	);
 	const hasChildren = (
 		symbol: vscode.DocumentSymbol | vscode.SymbolInformation
-	): symbol is NestedSymbol => 'children' in symbol;
+	): symbol is NestedSymbol => 'children' in symbol && Array.isArray(symbol.children);
 	type DetailedSymbol = vscode.DocumentSymbol | (
 		vscode.SymbolInformation & { detail: string }
 	);
@@ -311,26 +308,52 @@ function flattenSymbols(
 		symbol: vscode.DocumentSymbol | vscode.SymbolInformation
 	): symbol is DetailedSymbol => 'detail' in symbol;
 
-	// 以 children 字段判断符号是否为层级结构，避免依赖提供器返回的具体实例类型。
-	const visit = (items: Array<vscode.DocumentSymbol | vscode.SymbolInformation>) => {
+	const result: SourceSymbol[] = [];
+	for (const symbol of symbols) {
+		const range = 'location' in symbol ? symbol.location.range : symbol.range;
+		result.push({
+			name: symbol.name,
+			detail: hasDetail(symbol) ? symbol.detail : undefined,
+			kind: symbol.kind,
+			range,
+			children: hasChildren(symbol) ? mapSymbols(symbol.children) : []
+		});
+	}
+	return result;
+}
+
+/**
+ * @brief 将树形符号转换为需要参与配对的函数符号线性列表。
+ */
+function flattenSymbols(symbols: SourceSymbol[], functionKinds: Set<vscode.SymbolKind>): SourceSymbol[] {
+	const result: SourceSymbol[] = [];
+	const visit = (items: SourceSymbol[]) => {
 		for (const symbol of items) {
-			if (hasChildren(symbol)) {
-				// 父级与子级都可能是函数（例如类中的方法），因此检查后仍需遍历 children。
-				if (functionKinds.has(symbol.kind)) {
-					const range = 'location' in symbol ? symbol.location.range : symbol.range;
-					let detail: string | undefined;
-					if (hasDetail(symbol)) {
-						detail = symbol.detail;
-					}
-					result.push({ name: symbol.name, detail, range });
-				}
+			if (functionKinds.has(symbol.kind)) {
+				result.push(symbol);
+			}
+			visit(symbol.children);
+		}
+	};
+	visit(symbols);
+	return result;
+}
+
+/**
+ * @brief 从树顶向下收集变更符号；选中父级后跳过其所有子级。
+ */
+function collectChangedSymbols(
+	symbols: SourceSymbol[],
+	changedLines: Set<number>,
+	functionKinds: Set<vscode.SymbolKind>
+): SourceSymbol[] {
+	const result: SourceSymbol[] = [];
+	const visit = (items: SourceSymbol[]) => {
+		for (const symbol of items) {
+			if (functionKinds.has(symbol.kind) && intersectsLines(symbol.range, changedLines)) {
+				result.push(symbol);
+			} else {
 				visit(symbol.children);
-			} else if (functionKinds.has(symbol.kind)) {
-				let detail: string | undefined;
-				if (hasDetail(symbol)) {
-					detail = symbol.detail;
-				}
-				result.push({ name: symbol.name, detail, range: symbol.location.range });
 			}
 		}
 	};
