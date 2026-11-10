@@ -4,7 +4,7 @@ All notable changes to the "diff2html-report" extension will be documented in th
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
-## [0.7.0] - 2026-11-10
+## [0.7.0] - 2026-11-11
 
 ### Changed
 
@@ -17,6 +17,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 - Added classes and structs to the symbol kinds analyzed by default.
 
 - Renamed all occurrences of "function" to "symbol" in displayed text, since the plugin's diff analysis is not limited to function-type symbols.
+
+- Fine-tuned the font sizes of some UI text.
 
 ### Fixed
 

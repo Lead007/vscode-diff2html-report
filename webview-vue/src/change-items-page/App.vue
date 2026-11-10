@@ -379,7 +379,7 @@ function exportReport(darkMode: boolean): void {
 				<div>
 					<h1 class="text-3xl font-bold review-text-primary mb-2">{{ props.labels.pageTitle }}</h1>
 					<p class="review-text-muted">{{ props.labels.pageDescription }}</p>
-					<p class="text-xs review-text-muted">
+					<p class="text-sm review-text-muted">
 						{{ formatLabel(props.labels.lineCountContent, String(props.totalAdded),
 							String(props.totalDeleted)) }}
 					</p>

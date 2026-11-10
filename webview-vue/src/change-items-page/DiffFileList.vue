@@ -21,7 +21,7 @@ const emit = defineEmits<{
     <el-card class="mb-6">
         <template #header>
             <div class="d2h-file-list-header">
-                <span class="d2h-file-list-title review-text-primary">
+                <span class="d2h-file-list-title review-text-primary text-base">
                     {{ formatLabel(props.labels.filesChanged, String(props.diffFiles.length)) }}
                 </span>
             </div>

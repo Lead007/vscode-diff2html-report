@@ -91,7 +91,7 @@ onBeforeUnmount(() => {
 			:class="{ dark: darkMode }">
 			<div class="mb-5">
 				<h1 class="mb-2 text-2xl font-bold">{{ props.labels.reportTitle }}</h1>
-				<p class="text-xs review-text-muted">
+				<p class="text-sm review-text-muted">
 					{{ formatLabel(props.labels.lineCountContent, String(props.totalAdded),
 						String(props.totalDeleted)) }}
 				</p>
