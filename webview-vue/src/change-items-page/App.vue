@@ -472,8 +472,8 @@ function exportReport(darkMode: boolean): void {
 							<el-collapse-item v-for="item in changeItems" :key="item.id"
 								:name="`change-${item.id}`" class="mt-2">
 								<template #title>
-									<div class="flex min-w-0 flex-1 items-center justify-between gap-2 pr-2">
-										<strong class="min-w-0 truncate text-xs">{{ item.title }}</strong>
+									<div class="flex min-w-0 flex-1 items-center gap-2 pr-2">
+										<strong class="min-w-0 flex-1 truncate text-xs" :title="item.title">{{ item.title }}</strong>
 										<div class="flex shrink-0 items-center gap-0" @click.stop>
 											<el-button v-if="editingChangeItemId !== item.id" text :icon="Edit" class="!ml-0"
 												:aria-label="props.labels.editChangeItem" :title="props.labels.editChangeItem" @click.stop="startEditing(item)" />

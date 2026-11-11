@@ -20,6 +20,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 - Fine-tuned the font sizes of some UI text.
 
+- The change preview page now also displays the content of change items.
+
 ### Fixed
 
 - Fix the bug that on the Change Item page, the file list display deleted files as '/dev/null', while renamed files only show the new file path.
@@ -27,6 +29,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 - Delete configuration instructions which no longer exist in the Chinese readme.
 
 - Fixed an incorrect Mustache template path when exporting to HTML.
+
+- Fixed the bug that the `el-card` for editing a change item was stretched unexpectedly when the change item title was too long.
 
 ## [0.6.2] - 2026-11-08
 

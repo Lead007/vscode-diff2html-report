@@ -47,6 +47,12 @@
 }
 .review-form .el-form-item__label { color: var(--review-foreground); }
 
+/* Allow collapse titles to shrink so long labels truncate instead of widening the header. */
+.change-items-collapse .el-collapse-item__title {
+	min-width: 0;
+	flex: 1 1 0%;
+}
+
 /* 清空按钮在两种主题下都使用次级文字颜色。 */
 .theme-clear-button {
 	color: var(--review-muted-foreground) !important;

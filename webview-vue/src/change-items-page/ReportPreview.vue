@@ -46,6 +46,10 @@ const reportItems = computed(() => props.items.map(item => ({
 	}),
 })));
 
+function getChangeItemAnchorId(changeItemId: number): string {
+	return `change-item-${changeItemId}`;
+}
+
 function syncTheme(): void {
 	document.documentElement.classList.toggle('dark', darkMode.value);
 }
@@ -97,20 +101,54 @@ onBeforeUnmount(() => {
 				</p>
 			</div>
 
+			<el-card class="mb-6">
+				<template #header>
+					<div class="d2h-file-list-header">
+						<span class="d2h-file-list-title review-text-primary text-base">
+							{{ props.labels.changeItems }}
+						</span>
+					</div>
+				</template>
+				<div class="d2h-file-list-wrapper d2h-light-color-scheme">
+					<ol class="d2h-file-list">
+						<li v-for="(item, index) in reportItems" :key="item.id" class="d2h-file-list-line flex-col items-stretch">
+							<div class="flex min-w-0 items-start gap-3 py-1">
+								<span
+									class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-current review-surface-accent font-mono text-sm font-bold review-text-accent"
+									aria-hidden="true">{{ index + 1 }}</span>
+
+								<a :href="`#${getChangeItemAnchorId(item.id)}`"
+									class="d2h-file-name cursor-pointer text-lg font-semibold review-text-primary hover:underline">
+									{{ item.title }}
+								</a>
+							</div>
+							<p v-if="item.description.trim().length"
+								class="ml-10 mt-1 text-sm leading-normal review-text-muted [overflow-wrap:anywhere] whitespace-pre-wrap">
+								{{ item.description }}
+							</p>
+						</li>
+					</ol>
+				</div>
+			</el-card>
+
 			<DiffFileList :diff-files="props.files.map(f => f.diffInfo)" :labels="props.labels" />
 
 			<div class="mb-5">
 				<h1 class="mb-2 text-2xl font-bold">{{ props.labels.changeDescription }}</h1>
 			</div>
-			<el-card v-for="(item, itemIndex) in reportItems" :key="item.id" class="mb-4" shadow="never">
+			<el-card v-for="(item, itemIndex) in reportItems" :key="item.id"
+				:id="getChangeItemAnchorId(item.id)" class="mb-4 scroll-mt-4" shadow="never">
 				<template #header>
 					<div class="flex min-h-[34px] items-center justify-between gap-3">
-						<strong class="min-w-0 text-base [overflow-wrap:anywhere]">{{itemIndex + 1}}. {{ item.title }}</strong>
+						<span
+							class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-current review-surface-accent font-mono text-sm font-bold review-text-accent"
+							aria-hidden="true">{{ itemIndex + 1 }}</span>
+						<strong class="min-w-0 flex-1 text-base [overflow-wrap:anywhere]">{{ item.title }}</strong>
 						<el-tag round>{{ formatLabel(props.labels.changeItemCount, String(item.entries.length)) }}</el-tag>
 					</div>
 				</template>
 				<p v-if="item.description.trim().length !== 0"
-					class="mb-4 whitespace-pre-wrap [overflow-wrap:anywhere]">{{ item.description }}</p>
+					class="mb-4 text-sm leading-normal whitespace-pre-wrap [overflow-wrap:anywhere]">{{ item.description }}</p>
 
 				<template v-for="entry in item.entries" :key="entry.filePath">
 					<DiffFile v-if="entry.file" :item="entry.file" :labels="props.labels" :view-type="props.viewType" display-only />
