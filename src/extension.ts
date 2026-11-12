@@ -10,7 +10,7 @@ import { ExportContent, ExportData, exportHtml } from './htmlTemplate';
 import { findChangedFunctions } from './functionSymbols';
 import type { ChangedFileFunctions } from './functionSymbols';
 import { init, localize } from 'vscode-nls-i18n';
-import { runGitDiffCommand } from './scmHelper';
+import { getLineCount, runGitDiffCommand } from './scmHelper';
 import { randomBytes } from 'crypto';
 import { appendLog, logger } from './logger';
 
@@ -103,30 +103,7 @@ export function activate(context: vscode.ExtensionContext) {
 				return;
 			}
 
-
-			// 计算行数
-			let lineCountResult = '';
-			if (extensionConfig.get<boolean>('drawLineCount')) {
-				lineCountResult = await runGitDiffCommand(repo.rootUri.fsPath, [selectedBase.label, selectedCur.label, '--numstat', ...enableOptionsStr]);
-				if (!lineCountResult) {
-					return;
-				}
-			}
-
-			const lineCountForFile = lineCountResult.trim().split('\n').map(line => {
-				const parts = line.split('\t');
-				if (parts.length >= 3) {
-					return {
-						added: parts[0] === '-' ? 0 : parseInt(parts[0], 10),
-						deleted: parts[1] === '-' ? 0 : parseInt(parts[1], 10),
-						file: parts[2],
-					};
-				}
-				return null;
-			}).filter(item => item !== null) as { added: number, deleted: number, file: string }[];
-
-			const totalAdded = lineCountForFile.reduce((sum, item) => sum + item.added, 0);
-			const totalDeleted = lineCountForFile.reduce((sum, item) => sum + item.deleted, 0);
+			const [totalAdded, totalDeleted] = await getLineCount(repo.rootUri.fsPath, selectedBase.label, selectedCur.label, enableOptionsStr);
 
 			// 生成最终的webview html内容
 			const webViewContext = {
@@ -185,7 +162,9 @@ export function activate(context: vscode.ExtensionContext) {
 					return;
 				}
 
-				progress.report({ message: localize('diff2html-report.progress.analyzingFunctions') });
+				const [totalAdded, totalDeleted] = await getLineCount(repo.rootUri.fsPath, selectedBase.label, selectedCur.label, enableOptionsStr);
+
+				progress.report({ message: localize('diff2html-report.progress.analyzingSymbols') });
 
 				const diffInfo = diff2html.parse(diffContent, { drawFileList: true, matching: 'lines', outputFormat: extensionConfig.get<string>('defaultViewType') as OutputFormatType });
 				let changedFunctions: ChangedFileFunctions[];
@@ -197,7 +176,7 @@ export function activate(context: vscode.ExtensionContext) {
 						selectedCur.label,
 						(current, total, filePath) => {
 							progress.report({
-								message: localize('diff2html-report.progress.analyzingFunctionsProgress', filePath, String(current), String(total)),
+								message: localize('diff2html-report.progress.analyzingSymbolsProgress', filePath, String(current), String(total)),
 								increment: current === 0 ? 0 : ((1 / total) * 100)
 							});
 						}
@@ -212,7 +191,7 @@ export function activate(context: vscode.ExtensionContext) {
 				const configs = {
 					viewType: extensionConfig.get<string>('defaultViewType'),
 				};
-				return { diffInfo, changedFunctions, labels, configs };
+				return { diffInfo, changedFunctions, labels, configs, totalAdded, totalDeleted };
 			});
 
 			if (!webViewContext) {
@@ -338,7 +317,7 @@ async function showVuePage(
 		.replace('<script type="module"', `<script nonce="${nonce}" type="module"`)
 		.replace(
 			'</head>',
-			`<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${panel.webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}' ${panel.webview.cspSource}; font-src ${panel.webview.cspSource}; connect-src ${panel.webview.cspSource};"><script nonce="${nonce}">window.${webViewContextName} = ${initialData};</script></head>`,
+			`<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${panel.webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}' ${panel.webview.cspSource}; font-src ${panel.webview.cspSource} data:; connect-src ${panel.webview.cspSource};"><script nonce="${nonce}">window.${webViewContextName} = ${initialData};</script></head>`,
 		);
 	panel.webview.html = html;
 	if (onDidReceiveMessage) {

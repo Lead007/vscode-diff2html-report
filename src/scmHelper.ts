@@ -49,25 +49,50 @@ export async function execCmdAsync(
  */
 export async function runGitDiffCommand(path: string, paras: string[]): Promise<string> {
     try {
-		const { stdout, stderr } = await execCmdAsync(path,
-			'git',
-			['diff', ...paras],
-		);
+        const { stdout, stderr } = await execCmdAsync(path,
+            'git',
+            ['diff', ...paras],
+        );
 
-		if (stderr.length && stderr.includes('warning:')) {
-			const errString = stderr;
-			if (!errString.includes('warning:')) {
-				vscode.window.showErrorMessage(localize('diff2html-report.commandErrorText', errString));
-				return '';
-			}
-		}
-		if (stdout.length === 0) {
-			vscode.window.showInformationMessage(localize('diff2html-report.commandNoDiffText'));
-			return '';
-		}
-		return stdout;
-	} catch (error) {
-		vscode.window.showErrorMessage(localize('diff2html-report.commandErrorText', String(error)));
-		return '';
-	}
+        if (stderr.length && stderr.includes('warning:')) {
+            const errString = stderr;
+            if (!errString.includes('warning:')) {
+                vscode.window.showErrorMessage(localize('diff2html-report.commandErrorText', errString));
+                return '';
+            }
+        }
+        if (stdout.length === 0) {
+            vscode.window.showInformationMessage(localize('diff2html-report.commandNoDiffText'));
+            return '';
+        }
+        return stdout;
+    } catch (error) {
+        vscode.window.showErrorMessage(localize('diff2html-report.commandErrorText', String(error)));
+        return '';
+    }
+}
+
+export async function getLineCount(path: string, base: string, cur: string, enableOptionsStr: string[])
+    : Promise<[totalAdded: number, totalDeleted: number]> {
+    // 计算行数
+    const lineCountResult = await runGitDiffCommand(path, [base, cur, '--numstat', ...enableOptionsStr]);
+    if (!lineCountResult) {
+        return [0, 0];
+    }
+
+    const lineCountForFile = lineCountResult.trim().split('\n').map(line => {
+        const parts = line.split('\t');
+        if (parts.length >= 3) {
+            return {
+                added: parts[0] === '-' ? 0 : parseInt(parts[0], 10),
+                deleted: parts[1] === '-' ? 0 : parseInt(parts[1], 10),
+                file: parts[2],
+            };
+        }
+        return null;
+    }).filter(item => item !== null) as { added: number, deleted: number, file: string }[];
+
+    const totalAdded = lineCountForFile.reduce((sum, item) => sum + item.added, 0);
+    const totalDeleted = lineCountForFile.reduce((sum, item) => sum + item.deleted, 0);
+    return [totalAdded, totalDeleted];
 }

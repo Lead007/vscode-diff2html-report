@@ -3,7 +3,7 @@
   "displayName": "diff2html-report",
   "icon": "assets/icon.png",
   "description": "A Git diff report generator For VSCode.",
-  "version": "0.6.3",
+  "version": "0.7.0",
   "license": "MIT",
   "publisher": "Lead007",
   "engines": {
@@ -60,26 +60,26 @@
           "default": 67108864,
           "description": "%diff2html-report.configuration.maxGitDiffFileSize%"
         },
-        "diff2html-report.functionDiffLineThreshold": {
+        "diff2html-report.symbolDiffLineThreshold": {
           "type": "integer",
           "minimum": 0,
           "default": 30,
-          "description": "%diff2html-report.configuration.functionDiffLineThreshold%"
+          "description": "%diff2html-report.configuration.symbolDiffLineThreshold%"
         },
-        "diff2html-report.functionDiffChangePercentage": {
+        "diff2html-report.symbolDiffChangePercentage": {
           "type": "number",
           "minimum": 0,
           "maximum": 100,
           "default": 30,
-          "description": "%diff2html-report.configuration.functionDiffChangePercentage%"
+          "description": "%diff2html-report.configuration.symbolDiffChangePercentage%"
         },
-        "diff2html-report.functionDiffContextLines": {
+        "diff2html-report.symbolDiffContextLines": {
           "type": "integer",
           "minimum": 0,
           "default": 3,
-          "description": "%diff2html-report.configuration.functionDiffContextLines%"
+          "description": "%diff2html-report.configuration.symbolDiffContextLines%"
         },
-        "diff2html-report.functionDiffSymbolKinds": {
+        "diff2html-report.symbolDiffSymbolKinds": {
           "type": "array",
           "items": {
             "type": "string",
@@ -113,17 +113,14 @@
             ]
           },
           "default": [
+            "Class",
             "Function",
             "Method",
             "Constructor",
-            "Operator"
+            "Operator",
+            "Struct"
           ],
-          "markdownDescription": "%diff2html-report.configuration.functionDiffSymbolKinds%"
-        },
-        "diff2html-report.drawLineCount": {
-          "type": "boolean",
-          "default": true,
-          "description": "%diff2html-report.configuration.drawLineCount%"
+          "markdownDescription": "%diff2html-report.configuration.symbolDiffSymbolKinds%"
         },
         "diff2html-report.defaultViewType": {
           "type": "string",
@@ -187,6 +184,7 @@
     "@typescript-eslint/eslint-plugin": "^8.39.0",
     "@typescript-eslint/parser": "^8.39.0",
     "@vitejs/plugin-vue": "^6.0.1",
+    "@vscode/codicons": "^0.0.46-24",
     "@vscode/test-cli": "^0.0.11",
     "@vscode/test-electron": "^2.5.2",
     "element-plus": "^2.11.4",

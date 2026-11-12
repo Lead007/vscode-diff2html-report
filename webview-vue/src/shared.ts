@@ -15,6 +15,7 @@ export interface SharedLabels {
     darkMode: string;
     exportReport: string;
 	reportExportUnavailable: string;
+	lineCountContent: string;
 }
 
 export function formatLabel(template: string, ...values: string[]): string {

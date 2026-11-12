@@ -96,9 +96,97 @@ suite('Changed function symbols', () => {
 			files[0].functions.map(fn => [fn.name, fn.kind]),
 			[['newName', 'modified']]
 		);
+		assert.strictEqual(files[0].functions[0].symbolKind, vscode.SymbolKind.Function);
 		const diffLines = files[0].functions[0].diffBlocks.flatMap(block => block.lines);
 		assert.ok(diffLines.some(line => line.type === 'delete' && line.content.includes('oldName')));
 		assert.ok(diffLines.some(line => line.type === 'insert' && line.content.includes('newName')));
+	});
+
+	test('reports a changed parent function instead of its changed nested function', async () => {
+		symbolProvider.dispose();
+		symbolProvider = vscode.languages.registerDocumentSymbolProvider(
+			{ language: 'plaintext', scheme: 'file' },
+			{
+				provideDocumentSymbols(document) {
+					const text = document.getText();
+					const outerIndex = text.indexOf('function outer');
+					const innerIndex = text.indexOf('function inner');
+					if (outerIndex < 0 || innerIndex < 0) {
+						return [];
+					}
+
+					const outerEnd = text.lastIndexOf('}') + 1;
+					const innerClosingBrace = text.indexOf('\n  }', innerIndex);
+					const innerEnd = innerClosingBrace < 0 ? text.length : innerClosingBrace + 4;
+					const outerRange = new vscode.Range(
+						document.positionAt(outerIndex),
+						document.positionAt(outerEnd)
+					);
+					const innerRange = new vscode.Range(
+						document.positionAt(innerIndex),
+						document.positionAt(innerEnd)
+					);
+					const outer = new vscode.DocumentSymbol(
+						'outer',
+						'',
+						vscode.SymbolKind.Function,
+						outerRange,
+						new vscode.Range(
+							document.positionAt(outerIndex),
+							document.positionAt(outerIndex + 'function outer'.length)
+						)
+					);
+					outer.children.push(new vscode.DocumentSymbol(
+						'inner',
+						'',
+						vscode.SymbolKind.Function,
+						innerRange,
+						new vscode.Range(
+							document.positionAt(innerIndex),
+							document.positionAt(innerIndex + 'function inner'.length)
+						)
+					));
+					return [outer];
+				}
+			}
+		);
+
+		const originalSource = [
+			'function outer() {',
+			'  function inner() {',
+			'    return 1;',
+			'  }',
+			'  return inner();',
+			'}',
+			''
+		].join('\n');
+		await fs.writeFile(path.join(repositoryPath, 'sample.txt'), originalSource);
+		await runGit(['add', 'sample.txt']);
+		await runGit(['commit', '-qm', 'nested function base']);
+		const nestedBaseRevision = (await runGit(['rev-parse', 'HEAD'])).trim();
+
+		await fs.writeFile(
+			path.join(repositoryPath, 'sample.txt'),
+			originalSource.replace('return 1;', 'return 2;')
+		);
+		await runGit(['add', 'sample.txt']);
+		await runGit(['commit', '-qm', 'change nested function']);
+		const nestedCurrentRevision = (await runGit(['rev-parse', 'HEAD'])).trim();
+		const { stdout: diff } = await execFileAsync('git', ['diff', nestedBaseRevision, nestedCurrentRevision], {
+			cwd: repositoryPath,
+			encoding: 'utf8'
+		});
+		const files = await findChangedFunctions(
+			repositoryPath,
+			diff2html.parse(diff),
+			nestedBaseRevision,
+			nestedCurrentRevision,
+		);
+
+		assert.deepStrictEqual(
+			files[0].functions.map(fn => [fn.name, fn.kind]),
+			[['outer', 'modified']]
+		);
 	});
 
 	test('analyzes files concurrently while preserving input order and reporting completed progress', async () => {
@@ -128,8 +216,8 @@ suite('Changed function symbols', () => {
 
 	test('includes configured document symbol kinds in function-level changes', async () => {
 		const configuration = vscode.workspace.getConfiguration('diff2html-report');
-		const previousGlobalValue = configuration.inspect<string[]>('functionDiffSymbolKinds')?.globalValue;
-		await configuration.update('functionDiffSymbolKinds', ['Class'], vscode.ConfigurationTarget.Global);
+		const previousGlobalValue = configuration.inspect<string[]>('symbolDiffSymbolKinds')?.globalValue;
+		await configuration.update('symbolDiffSymbolKinds', ['Class'], vscode.ConfigurationTarget.Global);
 		try {
 			await fs.writeFile(
 				path.join(repositoryPath, 'sample.txt'),
@@ -161,8 +249,9 @@ suite('Changed function symbols', () => {
 				files[0].functions.map(fn => [fn.name, fn.kind]),
 				[['Example', 'modified']]
 			);
+			assert.strictEqual(files[0].functions[0].symbolKind, vscode.SymbolKind.Class);
 		} finally {
-			await configuration.update('functionDiffSymbolKinds', previousGlobalValue, vscode.ConfigurationTarget.Global);
+			await configuration.update('symbolDiffSymbolKinds', previousGlobalValue, vscode.ConfigurationTarget.Global);
 		}
 	});
 

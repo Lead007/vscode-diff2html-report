@@ -1,7 +1,6 @@
 import { SharedLabels } from "../shared";
 
 interface LegacyDiffPreviewLabels extends SharedLabels {
-	lineCountContent: string;
 }
 
 export interface LegacyDiffPreviewData {

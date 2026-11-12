@@ -30,7 +30,7 @@ export async function exportHtml(extensionUri: vscode.Uri, defaultFileName: stri
         }, async (progress) => {
             progress.report({ message: localize('diff2html-report.progress.exportingReport') });
 
-            const htmlPath = vscode.Uri.joinPath(extensionUri, 'webview', 'export-page.html');
+            const htmlPath = vscode.Uri.joinPath(extensionUri, 'webview', 'export-page.mustache');
             const tplBytes = await vscode.workspace.fs.readFile(htmlPath);
             const tpl = new TextDecoder().decode(tplBytes);
 

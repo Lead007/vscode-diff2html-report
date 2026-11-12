@@ -5,10 +5,11 @@ import { Check, Delete, Document, Download, Edit } from '@element-plus/icons-vue
 import DiffFile from './DiffFile.vue';
 import EntryTree from './EntryTree.vue';
 import ReportPreview from './ReportPreview.vue';
-import { getRangeStartLine, getDiffFileId, ChangeEntry, ChangeItem, DiffReviewData } from './types.js';
+import { getChangedFunctionId, getDiffFileId, ChangeEntry, ChangeItem, DiffReviewData } from './types.js';
 import { formatLabel, getExportStyles } from '../shared.js';
 import { ExportContent } from '../../../src/htmlTemplate';
 import DiffFileList from './DiffFileList.vue';
+import type { ChangedFunction } from '../../../src/functionSymbols';
 
 // 扩展宿主传入的本次 Diff 文件和函数数据。
 const props = defineProps<DiffReviewData>();
@@ -26,12 +27,7 @@ const diffFunctionsFiles = computed(() => diffFunctions.value.map((file) => ({
 	...file,
 	functions: (file.functions ?? []).map((fn, index) => ({
 		...fn,
-		id: JSON.stringify([
-			file.path,
-			fn.kind,
-			fn.name,
-			getRangeStartLine(fn.newRange) ?? getRangeStartLine(fn.oldRange) ?? index,
-		])
+		id: getChangedFunctionId(file.path, fn, index),
 	}))
 })),
 );
@@ -102,18 +98,25 @@ function cloneChangeItem(item: ChangeItem): ChangeItem {
 function changeSelectedFunctionIds(filePath: string, ids: string[], selected: boolean) {
 	const file = diffFunctionsFiles.value.find(item => item.path === filePath);
 	if (!file) return;
+	const selectedFunctions = new Map<string, ChangedFunction>();
+	for (const id of ids) {
+		const fn = file.functions.find(fn => fn.id === id);
+		if (fn) {
+			selectedFunctions.set(id, fn);
+		} else {
+			console.error(`Unable to find selected function '${id}' in '${filePath}'.`);
+		}
+	}
+
 	const entry = activeEntries.value.find(item => item.filePath == filePath);
 	if (entry) {
 		if (!entry.functions) {
 			entry.functions = new Map();
 		}
 		if (selected) {
-			// 并集：把 ids 中不存在的添加进去
-			for (const id of ids) {
-				const fn = file.functions.find(fn => fn.id === id);
-				if (fn) {
-					entry.functions.set(id, fn);
-				}
+			// 并集：添加匹配到的函数。
+			for (const [id, fn] of selectedFunctions) {
+				entry.functions.set(id, fn);
 			}
 		} else {
 			// 差集：从已有集合中移除 ids 里存在的
@@ -127,14 +130,12 @@ function changeSelectedFunctionIds(filePath: string, ids: string[], selected: bo
 				}
 			}
 		}
-	} else if (selected && ids.length > 0) {
-		// 不存在且是选中操作 → 新建一条
+	} else if (selected && selectedFunctions.size > 0) {
+		// 不存在且有匹配函数 → 新建一条。
 		activeEntries.value.push({
 			filePath,
-			functions: new Map(
-				ids.map(id => [id, file.functions.find(fn => fn.id === id)!] as const).
-					filter(([, fn]) => fn !== undefined)),
-		})
+			functions: selectedFunctions,
+		});
 	}
 }
 
@@ -351,6 +352,7 @@ function exportReport(darkMode: boolean): void {
 <template>
 	<ReportPreview v-if="isPreviewingReport" :items="changeItems" :files="diffFunctionsFiles" :labels="props.labels"
 		:initial-dark-mode="initialDarkMode" :view-type="props.configs.viewType"
+		:total-added="props.totalAdded" :total-deleted="props.totalDeleted"
 		@back="isPreviewingReport = false" @export="exportReport" />
 	<div v-else class="min-h-screen">
 		<header class="flex items-center justify-between px-4 py-3">
@@ -377,19 +379,23 @@ function exportReport(darkMode: boolean): void {
 				<div>
 					<h1 class="text-3xl font-bold review-text-primary mb-2">{{ props.labels.pageTitle }}</h1>
 					<p class="review-text-muted">{{ props.labels.pageDescription }}</p>
+					<p class="text-sm review-text-muted">
+						{{ formatLabel(props.labels.lineCountContent, String(props.totalAdded),
+							String(props.totalDeleted)) }}
+					</p>
 				</div>
 			</div>
 
 			<DiffFileList :diff-files="diffFiles" :labels="props.labels" @scroll-to-diff-file="scrollToDiffFile" />
 
-			<el-row gutter="20" class="diff-columns">
-				<el-col :span="16" class="diff-column">
+			<el-splitter gutter="20" class="diff-columns">
+				<el-splitter-panel :collapsible="true" size="66%" class="diff-column mr-4">
 					<el-card class="diff-panel" shadow="never">
 						<template #header>
 							<div class="min-h-[34px] flex items-center justify-between">
 								<div>
-									<strong>{{ props.labels.fileFunctions }} <el-tag round>{{ diffFunctionsCount }}</el-tag></strong>
-									<div class="text-xs">{{ editingChangeItemId === null ? props.labels.selectFunctionsHint :
+									<strong>{{ props.labels.fileSymbols }} <el-tag round>{{ diffFunctionsCount }}</el-tag></strong>
+									<div class="text-xs">{{ editingChangeItemId === null ? props.labels.selectSymbolsHint :
 										props.labels.updateSelectionHint }}</div>
 								</div>
 								<span class="text-xs">{{ formatLabel(props.labels.selectedCount, String(selectedCount)) }}</span>
@@ -405,8 +411,8 @@ function exportReport(darkMode: boolean): void {
 							</div>
 						</template>
 					</el-card>
-				</el-col>
-				<el-col :span="8" class="diff-column">
+				</el-splitter-panel>
+				<el-splitter-panel :collapsible="true" class="diff-column ml-4">
 					<el-card
 						class="[&>.el-card__header]:px-[17px] [&>.el-card__header]:py-[14px] [&>.el-card__body]:p-4"
 						shadow="never">
@@ -441,7 +447,7 @@ function exportReport(darkMode: boolean): void {
 									<div
 										class="mb-[15px] rounded-lg border border-dashed review-border review-surface-subtle p-[11px]">
 										<div class="mb-[7px] text-xs font-bold review-text-primary">{{
-											props.labels.relatedFilesAndFunctions }} <span
+											props.labels.relatedFilesAndSymbols }} <span
 												class="review-text-danger">*</span>
 										</div>
 										<EntryTree v-if="selectedEntries.length !== 0" :entries="selectedEntries"
@@ -449,7 +455,7 @@ function exportReport(darkMode: boolean): void {
 											@remove-entry="(filePath) => changeSelectedPath(filePath, false)"
 											@remove-function="(filePath, functionId) => changeSelectedFunctionIds(filePath, [functionId], false)" />
 										<div v-else class="mt-1 text-xs review-text-muted">{{
-											props.labels.selectFunctionHint }}</div>
+											props.labels.selectSymbolHint }}</div>
 									</div>
 									<el-button type="primary" class="!w-full" @click="addChangeItem">＋ {{ props.labels.addChangeItem }}</el-button>
 								</el-form>
@@ -466,8 +472,8 @@ function exportReport(darkMode: boolean): void {
 							<el-collapse-item v-for="item in changeItems" :key="item.id"
 								:name="`change-${item.id}`" class="mt-2">
 								<template #title>
-									<div class="flex min-w-0 flex-1 items-center justify-between gap-2 pr-2">
-										<strong class="min-w-0 truncate text-xs">{{ item.title }}</strong>
+									<div class="flex min-w-0 flex-1 items-center gap-2 pr-2">
+										<strong class="min-w-0 flex-1 truncate text-xs" :title="item.title">{{ item.title }}</strong>
 										<div class="flex shrink-0 items-center gap-0" @click.stop>
 											<el-button v-if="editingChangeItemId !== item.id" text :icon="Edit" class="!ml-0"
 												:aria-label="props.labels.editChangeItem" :title="props.labels.editChangeItem" @click.stop="startEditing(item)" />
@@ -486,9 +492,9 @@ function exportReport(darkMode: boolean): void {
 										:placeholder="props.labels.changeDescription" />
 									<div v-if="editingChangeItemId === item.id" class="mt-3">
 										<div class="mb-1 text-xs font-bold review-text-primary">{{
-											props.labels.relatedFilesAndFunctions }}</div>
+											props.labels.relatedFilesAndSymbols }}</div>
 										<div v-if="item.entries.length === 0" class="text-xs review-text-muted">{{
-											props.labels.selectFunctionHint }}
+											props.labels.selectSymbolHint }}
 										</div>
 										<EntryTree v-else :entries="item.entries" :can-edit="true"
 											:labels="props.labels"
@@ -506,8 +512,8 @@ function exportReport(darkMode: boolean): void {
 							</el-collapse-item>
 						</el-collapse>
 					</el-card>
-				</el-col>
-			</el-row>
+				</el-splitter-panel>
+			</el-splitter>
 
 			<div class="workspace">
 

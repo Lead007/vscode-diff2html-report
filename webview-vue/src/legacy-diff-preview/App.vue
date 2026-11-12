@@ -82,7 +82,7 @@ function exportHtml(): void {
 		<main id="diff-content" class="report-theme mx-auto min-h-screen max-w-8xl p-4 review-surface review-text-primary md:p-8">
 			<div class="mb-5">
 				<h1 class="mb-2 text-2xl font-bold">{{ props.labels.header }}</h1>
-				<p class="text-xs review-text-muted">
+				<p class="text-sm review-text-muted">
 					{{ formatLabel(props.labels.lineCountContent, String(props.totalAdded), String(props.totalDeleted)) }}
 				</p>
 			</div>

@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { getFileIcon } from 'diff2html/lib/render-utils';
+import '@vscode/codicons/dist/codicon.css';
 import { LineType } from 'diff2html/lib/types';
 import type { DiffBlock } from 'diff2html/lib/types';
 import type { ChangedFileFunctions, ChangedFunction } from '../../../src/functionSymbols';
 import { alignDiffLines } from '../../../src/diffUtils';
 import DiffLineByLine from './DiffLineByLine.vue';
-import { getRangeStartLine } from './types';
+import { getChangedFunctionId, getRangeStartLine } from './types';
 import type { ChangeEntry, DiffReviewLabels } from './types';
 import DiffSideBySide from './DiffSideBySide.vue';
 import { formatLabel } from '../shared';
@@ -29,15 +30,6 @@ const nonFunctionDiffBlocks = computed(() => props.item.nonFunctionDiffBlocks ??
 type DisplayItem =
     | { type: 'function'; key: string; line: number; fn: ChangedFunction; functionIndex: number }
     | { type: 'file'; key: string; line: number; block: DiffBlock };
-
-function getFunctionId(fn: ChangedFunction, functionIndex: number): string {
-    return JSON.stringify([
-        props.item.path,
-        fn.kind,
-        fn.name,
-        getRangeStartLine(fn.newRange) ?? getRangeStartLine(fn.oldRange) ?? functionIndex,
-    ]);
-}
 
 function getFileBlockLine(block: DiffBlock): number {
     const newLines = block.lines.flatMap(line =>
@@ -64,6 +56,40 @@ function getFunctionBadge(kind: 'added' | 'deleted' | 'modified') {
     }
 }
 
+const symbolIconMap: Record<number, string> = {
+    0: 'symbol-file',
+    1: 'symbol-module',
+    2: 'symbol-namespace',
+    3: 'symbol-package',
+    4: 'symbol-class',
+    5: 'symbol-method',
+    6: 'symbol-property',
+    7: 'symbol-field',
+    8: 'symbol-constructor',
+    9: 'symbol-enum',
+    10: 'symbol-interface',
+    11: 'symbol-function',
+    12: 'symbol-variable',
+    13: 'symbol-constant',
+    14: 'symbol-string',
+    15: 'symbol-numeric',
+    16: 'symbol-boolean',
+    17: 'symbol-array',
+    18: 'symbol-object',
+    19: 'symbol-key',
+    20: 'symbol-null',
+    21: 'symbol-enum-member',
+    22: 'symbol-structure',
+    23: 'symbol-event',
+    24: 'symbol-operator',
+    25: 'symbol-type-parameter',
+};
+
+function getCodiconClass(kind: number): string {
+    const iconName = symbolIconMap[kind] || 'symbol-misc';
+    return `codicon codicon-${iconName}`;
+}
+
 const displayItems = computed<DisplayItem[]>(() => [
     ...nonFunctionDiffBlocks.value.map((block, index) => ({
         type: 'file' as const,
@@ -73,7 +99,7 @@ const displayItems = computed<DisplayItem[]>(() => [
     })),
     ...functions.value.map((fn, index) => ({
         type: 'function' as const,
-        key: `function:${getFunctionId(fn, index)}`,
+        key: `function:${getChangedFunctionId(props.item.path, fn, index)}`,
         line: (getRangeStartLine(fn.newRange) ?? getRangeStartLine(fn.oldRange) ?? 0) + 1,
         fn,
         functionIndex: index,
@@ -82,10 +108,10 @@ const displayItems = computed<DisplayItem[]>(() => [
 
 const allFunctionsSelected = computed(() =>
     functions.value.length > 0 &&
-    functions.value.every((fn, index) => props.entry?.functions?.has(getFunctionId(fn, index))),
+    functions.value.every((fn, index) => props.entry?.functions?.has(getChangedFunctionId(props.item.path, fn, index))),
 );
 const someFunctionsSelected = computed(() =>
-    functions.value.some((fn, index) => props.entry?.functions?.has(getFunctionId(fn, index))),
+    functions.value.some((fn, index) => props.entry?.functions?.has(getChangedFunctionId(props.item.path, fn, index))),
 );
 
 function toggleFileSelection(selected: boolean): void {
@@ -93,12 +119,12 @@ function toggleFileSelection(selected: boolean): void {
         emit('update:selectedPath', selected);
         return;
     }
-    const fileFunctionIds = functions.value.map((fn, index) => getFunctionId(fn, index));
+    const fileFunctionIds = functions.value.map((fn, index) => getChangedFunctionId(props.item.path, fn, index));
     emit('update:selectedFunctionIds', fileFunctionIds, selected);
 }
 
 function toggleFunctionSelection(fn: ChangedFunction, functionIndex: number, selected: boolean): void {
-    const id = getFunctionId(fn, functionIndex);
+    const id = getChangedFunctionId(props.item.path, fn, functionIndex);
     emit('update:selectedFunctionIds', [id], selected);
 }
 
@@ -124,8 +150,9 @@ function toggleFunctionSelection(fn: ChangedFunction, functionIndex: number, sel
                 <span class="ml-3 shrink-0 review-text-deleted font-medium">-{{ props.item.diffInfo.deletedLines }}</span>
                 <el-checkbox v-if="!props.displayOnly && functions.length > 0" class="ml-3 shrink-0" :model-value="allFunctionsSelected"
                     :indeterminate="someFunctionsSelected && !allFunctionsSelected"
-                    :aria-label="formatLabel(props.labels.selectAllFunctionsInFile, props.item.path)" @change="toggleFileSelection($event === true)" />
+                    :aria-label="formatLabel(props.labels.selectAllSymbolsInFile, props.item.path)" @change="toggleFileSelection($event === true)" />
                <el-checkbox v-else-if="!props.displayOnly" class="ml-3 shrink-0" :model-value="props.entry?.filePath == props.item.path"
+                    :title="formatLabel(props.labels.selectFile, props.item.path)"
                     :aria-label="formatLabel(props.labels.selectFile, props.item.path)" @change="toggleFileSelection($event === true)" />
             </div>
         </template>
@@ -180,18 +207,26 @@ function toggleFunctionSelection(fn: ChangedFunction, functionIndex: number, sel
                             <div
                                 class="flex items-center gap-2 border-b review-border review-function-header px-4 py-2.5">
                                 <span
-                                    class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md review-surface-accent font-mono text-sm font-bold review-text-accent"
-                                    aria-hidden="true">ƒ</span>
-                                <span class="min-w-0 flex-1 truncate font-mono text-sm font-semibold review-text-primary"
-                                    :title="displayItem.fn.name">{{ displayItem.fn.name }}</span>
-                               <span v-for="badge in [getFunctionBadge(displayItem.fn.kind)]" :key="badge.text"
+                                    class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md review-text-accent"
+                                    aria-hidden="true">
+                                    <span :class="getCodiconClass(displayItem.fn.symbolKind)" class="text-base" />
+                                </span>
+                                <span class="flex min-w-0 flex-1 items-baseline gap-2">
+                                    <span class="truncate font-mono text-sm font-semibold review-text-primary"
+                                        :title="displayItem.fn.name">{{ displayItem.fn.name }}</span>
+                                    <span v-if="displayItem.fn.detail"
+                                        class="min-w-0 truncate text-xs font-normal review-text-muted"
+                                        :title="displayItem.fn.detail">{{ displayItem.fn.detail }}</span>
+                                </span>
+                                <span v-for="badge in [getFunctionBadge(displayItem.fn.kind)]" :key="badge.text"
                                     :class="badge.class"
                                     class="shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide">
                                     {{ badge.text }}
                                 </span>
                                 <el-checkbox v-if="!props.displayOnly" class="ml-2 shrink-0"
-                                    :model-value="props.entry?.functions?.has(getFunctionId(displayItem.fn, displayItem.functionIndex))"
-                                    :aria-label="formatLabel(props.labels.selectFunction, displayItem.fn.name)"
+                                    :model-value="props.entry?.functions?.has(getChangedFunctionId(props.item.path, displayItem.fn, displayItem.functionIndex))"
+                                    :title="formatLabel(props.labels.selectSymbol, displayItem.fn.name)"
+                                    :aria-label="formatLabel(props.labels.selectSymbol, displayItem.fn.name)"
                                     @change="toggleFunctionSelection(displayItem.fn, displayItem.functionIndex, $event === true)" />
                             </div>
                             <DiffLineByLine v-if="props.viewType === 'line-by-line'" :item="alignDiffLines(displayItem.fn.diffBlocks ?? [])" />

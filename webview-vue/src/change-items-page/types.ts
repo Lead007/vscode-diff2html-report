@@ -28,11 +28,24 @@ export function getDiffFileId(filePath: string): string {
 	return `diff-file-${encodeURIComponent(filePath)}`;
 }
 
+export function getChangedFunctionId(filePath: string, fn: ChangedFunction, fallbackIndex: number): string {
+	return JSON.stringify([
+		filePath,
+		fn.kind,
+		fn.name,
+		fn.detail,
+		fn.symbolKind,
+		getRangeStartLine(fn.newRange) ?? getRangeStartLine(fn.oldRange) ?? fallbackIndex,
+	]);
+}
+
 export interface DiffReviewData {
 	diffInfo: DiffFile[];
 	changedFunctions: ChangedFileFunctions[];
 	labels: DiffReviewLabels;
 	configs: DiffReviewConfigs;
+	totalAdded: number,
+	totalDeleted: number,
 }
 
 export interface DiffReviewLabels extends SharedLabels {
@@ -50,8 +63,8 @@ export interface DiffReviewLabels extends SharedLabels {
 	pageTitle: string;
 	pageDescription: string;
 	filesChanged: string;
-	fileFunctions: string;
-	selectFunctionsHint: string;
+	fileSymbols: string;
+	selectSymbolsHint: string;
 	updateSelectionHint: string;
 	selectedCount: string;
 	changeItemCount: string;
@@ -62,8 +75,8 @@ export interface DiffReviewLabels extends SharedLabels {
 	changeDescription: string;
 	titlePlaceholder: string;
 	descriptionPlaceholder: string;
-	relatedFilesAndFunctions: string;
-	selectFunctionHint: string;
+	relatedFilesAndSymbols: string;
+	selectSymbolHint: string;
 	addedChangeItems: string;
 	emptyChangeItems: string;
 	editChangeItem: string;
@@ -87,9 +100,9 @@ export interface DiffReviewLabels extends SharedLabels {
 	deleted: string;
 	changed: string;
 	renamed: string;
-	selectAllFunctionsInFile: string;
+	selectAllSymbolsInFile: string;
 	selectFile: string;
-	selectFunction: string;
+	selectSymbol: string;
 	fileTooBig: string;
 	fileIsBinary: string;
 	fileWithoutChanges: string;
