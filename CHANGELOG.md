@@ -4,7 +4,11 @@ All notable changes to the "diff2html-report" extension will be documented in th
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
-## [0.7.0] - 2026-11-11
+## [0.7.1] - 2026-11-12
+
+### Added
+
+- In the change page, add an el-splitter between the diff files and change items cards to allow resizing both panels.
 
 ### Changed
 
@@ -119,7 +123,7 @@ Fix the bug that on the Diff Review page, the old and new line numbers may be ar
 
 Initial release.
 
-[0.7.0]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.7.0
+[0.7.1]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.7.1
 [0.6.2]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.6.2
 [0.6.0]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.6.0
 [0.5.0]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.5.0

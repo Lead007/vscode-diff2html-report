@@ -388,8 +388,8 @@ function exportReport(darkMode: boolean): void {
 
 			<DiffFileList :diff-files="diffFiles" :labels="props.labels" @scroll-to-diff-file="scrollToDiffFile" />
 
-			<el-row gutter="20" class="diff-columns">
-				<el-col :span="16" class="diff-column">
+			<el-splitter gutter="20" class="diff-columns">
+				<el-splitter-panel :collapsible="true" size="66%" class="diff-column mr-4">
 					<el-card class="diff-panel" shadow="never">
 						<template #header>
 							<div class="min-h-[34px] flex items-center justify-between">
@@ -411,8 +411,8 @@ function exportReport(darkMode: boolean): void {
 							</div>
 						</template>
 					</el-card>
-				</el-col>
-				<el-col :span="8" class="diff-column">
+				</el-splitter-panel>
+				<el-splitter-panel :collapsible="true" class="diff-column ml-4">
 					<el-card
 						class="[&>.el-card__header]:px-[17px] [&>.el-card__header]:py-[14px] [&>.el-card__body]:p-4"
 						shadow="never">
@@ -512,8 +512,8 @@ function exportReport(darkMode: boolean): void {
 							</el-collapse-item>
 						</el-collapse>
 					</el-card>
-				</el-col>
-			</el-row>
+				</el-splitter-panel>
+			</el-splitter>
 
 			<div class="workspace">
 
