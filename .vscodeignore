@@ -12,3 +12,5 @@ vsc-extension-quickstart.md
 **/*.ts
 **/.vscode-test.*
 dist/test/**
+# Optional dependency for diff2html, but already packaged into diff2html
+node_modules/highlight.js/**

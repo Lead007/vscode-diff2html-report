@@ -4,6 +4,18 @@ All notable changes to the "diff2html-report" extension will be documented in th
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.7.2] - 2026-11-15
+
+### Added
+
+- When more than one workspace folder is open, the extension now asks you to choose the workspace the report is generated for instead of always using the first one. If only one workspace folder is open, the report is generated for it directly.
+
+### Changed
+
+- Refined several fields in `package.json` so the extension's metadata is clearer and more accurate.
+
+- Reduced the packaged extension size from about 10.3 MB to about 1.7 MB. `vue` is now a development dependency, since the webview ships prebuilt and self-contained assets, and the optional `highlight.js` files pulled in by `diff2html` are no longer packaged.
+
 ## [0.7.1] - 2026-11-12
 
 ### Added

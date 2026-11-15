@@ -11,6 +11,8 @@
     "diff2html-report.configuration.defaultViewType": "Default view type for diff reports.",
     "diff2html-report.command.generateDiffReport": "Generate Diff Report",
     "diff2html-report.command.generateChangeItemReport": "Generate Change Item Report",
+    "diff2html-report.selectRepo.errorNoGitRepo": "Cannot execute command: No git repository found in the current workspace.",
+    "diff2html-report.selectRepo.placeHolder": "Select a git repository",
     "diff2html-report.commitOption.description.head": "Current HEAD",
     "diff2html-report.commitOption.description.staged": "Staged",
     "diff2html-report.commitOption.description.inputPrompt": "Manually input",
@@ -106,7 +108,5 @@
     "diff2html-report.progress.generatingReport": "Generating diff report...",
     "diff2html-report.progress.exportingReport": "Exporting diff report...",
     "diff2html-report.progress.analyzingSymbols": "Analyzing changed symbols...",
-    "diff2html-report.progress.analyzingSymbolsProgress": "Analyzing changed symbols in file \"{0}\"... ({1}/{2})",
-    "diff2html-report.webview.css.diff2html.online": "https://cdn.jsdelivr.net/npm/diff2html/bundles/css/diff2html.min.css",
-    "diff2html-report.webview.js.diff2html.online": "https://cdn.jsdelivr.net/npm/diff2html/bundles/js/diff2html.min.js"
+    "diff2html-report.progress.analyzingSymbolsProgress": "Analyzing changed symbols in file \"{0}\"... ({1}/{2})"
 }

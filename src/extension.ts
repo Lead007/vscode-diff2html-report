@@ -3,7 +3,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import { getGitRefs, getSelection, selectCommit, selectDiffOptions } from './selection';
+import { getGitRefs, getSelection, selectCommit, selectDiffOptions, selectRepo } from './selection';
 import * as diff2html from 'diff2html';
 import type { OutputFormatType } from 'diff2html/lib/types';
 import { ExportContent, ExportData, exportHtml } from './htmlTemplate';
@@ -51,10 +51,6 @@ export function activate(context: vscode.ExtensionContext) {
 
 	const git = gitExtension.exports.getAPI(1);
 
-	// npm包中的样式和脚本
-	const uri_diff2html_ui_css = vscode.Uri.joinPath(context.extensionUri, 'node_modules', 'diff2html', 'bundles', 'css', 'diff2html.min.css');
-	const uri_diff2html_ui_js = vscode.Uri.joinPath(context.extensionUri, 'node_modules', 'diff2html', 'bundles', 'js', 'diff2html-ui.min.js');
-
 	context.subscriptions.push(logger);
 	// 在 SCM 提供者上注册命令
 	context.subscriptions.push(
@@ -62,10 +58,12 @@ export function activate(context: vscode.ExtensionContext) {
 			appendLog(`Command 'diff2html-report.generateDiffReport' executing...`);
 			const extensionConfig = vscode.workspace.getConfiguration('diff2html-report');
 			// 获取当前仓库
-			const repo = git.repositories[0];
-			if (!repo) { return; }
+			const selectedRepoPath = await selectRepo(git.repositories.map((repo: any) => repo.rootUri.fsPath));
+			if (!selectedRepoPath) {
+				return;
+			}
 
-			const selected = await selectTwoCommits(repo.rootUri.fsPath);
+			const selected = await selectTwoCommits(selectedRepoPath);
 
 			if (!selected) {
 				return;
@@ -81,7 +79,7 @@ export function activate(context: vscode.ExtensionContext) {
 			}, async (progress) => {
 				progress.report({ message: localize('diff2html-report.progress.executingDiff') });
 
-				const diffContent = await runGitDiffCommand(repo.rootUri.fsPath, [selectedBase.label, selectedCur.label, ...enableOptionsStr]);
+				const diffContent = await runGitDiffCommand(selectedRepoPath, [selectedBase.label, selectedCur.label, ...enableOptionsStr]);
 				if (!diffContent) {
 					return;
 				}
@@ -103,7 +101,7 @@ export function activate(context: vscode.ExtensionContext) {
 				return;
 			}
 
-			const [totalAdded, totalDeleted] = await getLineCount(repo.rootUri.fsPath, selectedBase.label, selectedCur.label, enableOptionsStr);
+			const [totalAdded, totalDeleted] = await getLineCount(selectedRepoPath, selectedBase.label, selectedCur.label, enableOptionsStr);
 
 			// 生成最终的webview html内容
 			const webViewContext = {
@@ -138,10 +136,12 @@ export function activate(context: vscode.ExtensionContext) {
 			appendLog(`Command 'diff2html-report.generateChangeItemReport' executing...`);
 			const extensionConfig = vscode.workspace.getConfiguration('diff2html-report');
 			// 获取当前仓库
-			const repo = git.repositories[0];
-			if (!repo) { return; }
+			const selectedRepoPath = await selectRepo(git.repositories.map((repo: any) => repo.rootUri.fsPath));
+			if (!selectedRepoPath) {
+				return;
+			}
 
-			const selected = await selectTwoCommits(repo.rootUri.fsPath);
+			const selected = await selectTwoCommits(selectedRepoPath);
 
 			if (!selected) {
 				return;
@@ -157,12 +157,12 @@ export function activate(context: vscode.ExtensionContext) {
 			}, async (progress) => {
 				progress.report({ message: localize('diff2html-report.progress.executingDiff') });
 
-				const diffContent = await runGitDiffCommand(repo.rootUri.fsPath, [selectedBase.label, selectedCur.label, ...enableOptionsStr]);
+				const diffContent = await runGitDiffCommand(selectedRepoPath, [selectedBase.label, selectedCur.label, ...enableOptionsStr]);
 				if (!diffContent) {
 					return;
 				}
 
-				const [totalAdded, totalDeleted] = await getLineCount(repo.rootUri.fsPath, selectedBase.label, selectedCur.label, enableOptionsStr);
+				const [totalAdded, totalDeleted] = await getLineCount(selectedRepoPath, selectedBase.label, selectedCur.label, enableOptionsStr);
 
 				progress.report({ message: localize('diff2html-report.progress.analyzingSymbols') });
 
@@ -170,7 +170,7 @@ export function activate(context: vscode.ExtensionContext) {
 				let changedFunctions: ChangedFileFunctions[];
 				try {
 					changedFunctions = await findChangedFunctions(
-						repo.rootUri.fsPath,
+						selectedRepoPath,
 						diffInfo,
 						selectedBase.label,
 						selectedCur.label,
