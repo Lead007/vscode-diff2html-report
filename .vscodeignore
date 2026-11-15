@@ -12,3 +12,5 @@ vsc-extension-quickstart.md
 **/*.ts
 **/.vscode-test.*
 dist/test/**
+# diff2html的可选依赖，但已经被打包到diff2html中
+node_modules/highlight.js/**
