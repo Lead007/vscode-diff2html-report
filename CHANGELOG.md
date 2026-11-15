@@ -4,6 +4,12 @@ All notable changes to the "diff2html-report" extension will be documented in th
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.7.2] - 2026-11-15
+
+### Added
+
+- When more than one workspace folder is open, the extension now asks you to choose the workspace the report is generated for instead of always using the first one. If only one workspace folder is open, the report is generated for it directly.
+
 ## [0.7.1] - 2026-11-12
 
 ### Added
@@ -123,6 +129,7 @@ Fix the bug that on the Diff Review page, the old and new line numbers may be ar
 
 Initial release.
 
+[0.7.2]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.7.2
 [0.7.1]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.7.1
 [0.6.2]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.6.2
 [0.6.0]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.6.0

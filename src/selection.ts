@@ -1,9 +1,10 @@
 import * as vscode from 'vscode';
 import { localize } from 'vscode-nls-i18n';
 import { execCmdAsync } from './scmHelper';
+import path from 'path';
 
 
-export interface RefInfo{
+export interface RefInfo {
     commit: string;
     name: string;
     type: number;
@@ -16,48 +17,48 @@ export interface RefInfo{
  * @returns 引用信息数组
  */
 export async function getGitRefs(path: string): Promise<RefInfo[]> {
-	try {
-		const { stdout } = await execCmdAsync(path, 'git', [
-			'for-each-ref',
-			'--format=%(refname)%00%(objectname)%00%(*objectname)%00%(subject)%00%(*subject)%00%(symref)',
-			'refs/heads',
-			'refs/remotes',
-			'refs/tags'
-		], 'utf8');
+    try {
+        const { stdout } = await execCmdAsync(path, 'git', [
+            'for-each-ref',
+            '--format=%(refname)%00%(objectname)%00%(*objectname)%00%(subject)%00%(*subject)%00%(symref)',
+            'refs/heads',
+            'refs/remotes',
+            'refs/tags'
+        ], 'utf8');
 
-		return stdout.split(/\r?\n/).filter(Boolean).flatMap(line => {
-			const [fullName, objectName, peeledObjectName, subject, peeledSubject, symbolicRef] = line.split('\0');
-			if (symbolicRef) {
-				return [];
-			}
+        return stdout.split(/\r?\n/).filter(Boolean).flatMap(line => {
+            const [fullName, objectName, peeledObjectName, subject, peeledSubject, symbolicRef] = line.split('\0');
+            if (symbolicRef) {
+                return [];
+            }
 
-			let name: string;
-			let type: number;
-			if (fullName.startsWith('refs/heads/')) {
-				name = fullName.slice('refs/heads/'.length);
-				type = 0;
-			} else if (fullName.startsWith('refs/remotes/')) {
-				name = fullName.slice('refs/remotes/'.length);
-				type = 1;
-			} else if (fullName.startsWith('refs/tags/')) {
-				name = fullName.slice('refs/tags/'.length);
-				type = 2;
-			} else {
-				return [];
-			}
+            let name: string;
+            let type: number;
+            if (fullName.startsWith('refs/heads/')) {
+                name = fullName.slice('refs/heads/'.length);
+                type = 0;
+            } else if (fullName.startsWith('refs/remotes/')) {
+                name = fullName.slice('refs/remotes/'.length);
+                type = 1;
+            } else if (fullName.startsWith('refs/tags/')) {
+                name = fullName.slice('refs/tags/'.length);
+                type = 2;
+            } else {
+                return [];
+            }
 
-			return [{
-				name,
-				type,
-				commit: peeledObjectName || objectName,
-				subject: peeledSubject || subject
-			}];
-		});
-	} catch (error) {
-		const message = String(error);
-		vscode.window.showErrorMessage(localize('diff2html-report.commandErrorText', message));
-		throw error;
-	}
+            return [{
+                name,
+                type,
+                commit: peeledObjectName || objectName,
+                subject: peeledSubject || subject
+            }];
+        });
+    } catch (error) {
+        const message = String(error);
+        vscode.window.showErrorMessage(localize('diff2html-report.commandErrorText', message));
+        throw error;
+    }
 }
 
 /**
@@ -138,4 +139,25 @@ export async function selectDiffOptions(extensionConfig: vscode.WorkspaceConfigu
     }
 
     return enableOptionsStr;
+}
+
+export async function selectRepo(repos: string[]): Promise<string | undefined> {
+    if (repos.length === 0) {
+        vscode.window.showErrorMessage(localize('diff2html-report.selectRepo.errorNoGitRepo'));
+        return;
+    }
+    if (repos.length === 1) {
+        return repos[0];
+    }
+
+    const items = repos.map(repo => ({ label: path.basename(repo), detail: repo }));
+    let selected = await vscode.window.showQuickPick(items, {
+        placeHolder: localize('diff2html-report.selectRepo.placeHolder'),
+        ignoreFocusOut: true,
+    });
+
+    if (!selected) {
+        return;
+    }
+    return selected.detail;
 }
