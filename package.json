@@ -2,14 +2,18 @@
   "name": "diff2html-report",
   "displayName": "diff2html-report",
   "icon": "assets/icon.png",
-  "description": "A Git diff report generator For VSCode.",
+  "galleryBanner": {
+    "color": "#1F2430",
+    "theme": "dark"
+  },
+  "description": "Turn git diff into a shareable HTML report for review, delivery and release notes. Fully local, works offline.",
   "version": "0.7.2",
   "license": "MIT",
   "publisher": "Lead007",
   "engines": {
     "vscode": "^1.68.0"
   },
-  "homepage": "https://github.com/Lead007/vscode-diff2html-report/blob/main/README.md",
+  "homepage": "https://github.com/Lead007/vscode-diff2html-report/#readme",
   "bugs": {
     "url": "https://github.com/Lead007/vscode-diff2html-report/issues"
   },
@@ -18,15 +22,24 @@
     "url": "https://github.com/Lead007/vscode-diff2html-report"
   },
   "keywords": [
-    "git",
-    "diff",
-    "report"
+    "git diff",
+    "diff report",
+    "code review",
+    "html report",
+    "change report",
+    "pr review",
+    "export diff",
+    "release notes",
+    "changelog",
+    "symbol diff"
   ],
   "categories": [
     "Other"
   ],
   "activationEvents": [
-    "onCommand:extension.showGitCommit"
+    "onCommand:extension.showGitCommit",
+    "onCommand:diff2html-report.generateDiffReport",
+    "onCommand:diff2html-report.generateChangeItemReport"
   ],
   "main": "./dist/extension.js",
   "contributes": {
@@ -47,7 +60,7 @@
         },
         "diff2html-report.filter": {
           "type": "array",
-          "default": "",
+          "default": [],
           "description": "%diff2html-report.configuration.filter%"
         },
         "diff2html-report.encoding": {
@@ -58,6 +71,7 @@
         "diff2html-report.maxGitDiffFileSize": {
           "type": "number",
           "default": 67108864,
+          "minimum": 0,
           "description": "%diff2html-report.configuration.maxGitDiffFileSize%"
         },
         "diff2html-report.symbolDiffLineThreshold": {
@@ -172,7 +186,8 @@
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src",
     "test": "vscode-test",
-    "release": "vsce package"
+    "release": "vsce package",
+    "publish": "vsce publish"
   },
   "devDependencies": {
     "@element-plus/icons-vue": "^2.3.2",

@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 - When more than one workspace folder is open, the extension now asks you to choose the workspace the report is generated for instead of always using the first one. If only one workspace folder is open, the report is generated for it directly.
 
+### Changed
+
+- Refined several fields in `package.json` so the extension's metadata is clearer and more accurate.
+
 ## [0.7.1] - 2026-11-12
 
 ### Added
