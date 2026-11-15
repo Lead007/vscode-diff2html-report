@@ -51,10 +51,6 @@ export function activate(context: vscode.ExtensionContext) {
 
 	const git = gitExtension.exports.getAPI(1);
 
-	// npm包中的样式和脚本
-	const uri_diff2html_ui_css = vscode.Uri.joinPath(context.extensionUri, 'node_modules', 'diff2html', 'bundles', 'css', 'diff2html.min.css');
-	const uri_diff2html_ui_js = vscode.Uri.joinPath(context.extensionUri, 'node_modules', 'diff2html', 'bundles', 'js', 'diff2html-ui.min.js');
-
 	context.subscriptions.push(logger);
 	// 在 SCM 提供者上注册命令
 	context.subscriptions.push(
