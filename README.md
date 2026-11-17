@@ -47,6 +47,7 @@ This extension contributes the following settings:
 * `diff2html-report.defaultDiffOptions`: Set a group of default `git diff` options when generating the diff report.
 * `diff2html-report.filter`: Set a group of filter strings to include only specific files in the diff report.
 * `diff2html-report.encoding`: The character set encoding used when retrieving a specific version of repository files (e.g. in the Diff View). A list of all supported encodings can be found [here](https://github.com/ashtuchkin/iconv-lite/wiki/Supported-Encodings).
+* `diff2html-report.recentCommitCount`: Number of recent commits to display in the commit selection dropdown. The default value is 5.
 * `diff2html-report.maxGitDiffFileSize`: Maximum file size (in bytes) for the git diff output. The default value is 64MB.
 * `diff2html-report.symbolDiffLineThreshold`: Show the full symbol content when its length is at or below this line count. The default is 30.
 * `diff2html-report.symbolDiffChangePercentage`: Show the full symbol content for a larger change when changed lines reach this percentage of the symbol content length. The default is 30.
@@ -136,6 +137,7 @@ See [CHANGELOG](https://github.com/Lead007/vscode-diff2html-report/blob/main/CHA
 * `diff2html-report.defaultDiffOptions`：生成差异报告时默认选中的 `git diff` 选项。
 * `diff2html-report.filter`：设置文件筛选参数，仅在差异报告中包含指定文件。可使用 Git pathspec，例如 `["--", "src/"]`。
 * `diff2html-report.encoding`：读取仓库文件特定版本时使用的字符编码（例如获取差异内容时）。默认值为 `utf8`。支持的编码列表见 [iconv-lite 文档](https://github.com/ashtuchkin/iconv-lite/wiki/Supported-Encodings)。
+* `diff2html-report.configuration.recentCommitCount`: 在提交选择下拉列表中显示的最近提交数。默认值为5。
 * `diff2html-report.maxGitDiffFileSize`：`git diff` 输出的最大大小，单位为字节，默认值为 64 MB。
 * `diff2html-report.symbolDiffLineThreshold`：符号行数小于或等于该值时，在符号级差异中显示完整内容，默认值为 30。
 * `diff2html-report.symbolDiffChangePercentage`：较长内容的符号的变更行数达到此比例时，显示完整符号内容，默认值为 30%。
