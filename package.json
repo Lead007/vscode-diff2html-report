@@ -37,7 +37,6 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:extension.showGitCommit",
     "onCommand:diff2html-report.generateDiffReport",
     "onCommand:diff2html-report.generateChangeItemReport"
   ],
@@ -156,12 +155,22 @@
     },
     "commands": [
       {
+        "command": "diff2html-report.showMenu",
+        "title": "%diff2html-report.command.showMenu%",
+        "icon": "$(collection)",
+        "enablement": "scmProvider == git"
+      },
+      {
         "command": "diff2html-report.generateDiffReport",
-        "title": "%diff2html-report.command.generateDiffReport%"
+        "title": "%diff2html-report.command.generateDiffReport%",
+        "icon": "$(git-compare)",
+        "enablement": "scmProvider == git"
       },
       {
         "command": "diff2html-report.generateChangeItemReport",
-        "title": "%diff2html-report.command.generateChangeItemReport%"
+        "title": "%diff2html-report.command.generateChangeItemReport%",
+        "icon": "$(checklist)",
+        "enablement": "scmProvider == git"
       }
     ],
     "menus": {
@@ -169,12 +178,17 @@
         {
           "command": "diff2html-report.generateDiffReport",
           "when": "scmProvider == git",
-          "group": "inline"
+          "group": "z_export@2"
         },
         {
           "command": "diff2html-report.generateChangeItemReport",
           "when": "scmProvider == git",
-          "group": "inline"
+          "group": "z_export@1"
+        },
+        {
+          "command": "diff2html-report.showMenu",
+          "when": "scmProvider == git",
+          "group": "navigation@9"
         }
       ]
     }

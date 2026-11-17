@@ -12,6 +12,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 - Display some recent commits in the commit selection dropdown. The max count is set by configuration `diff2html-report.recentCommitCount`.
 
+- Add a button at the navigation bar of scm title to call the two commands.
+
 ### Changed
 
 - Refined several fields in `package.json` so the extension's metadata is clearer and more accurate.
