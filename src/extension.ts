@@ -3,7 +3,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import { getGitRefs, getSelection, selectCommit, selectDiffOptions, selectRepo } from './selection';
+import { getGitRefs, getRecentCommit, getSelection, selectCommit, selectDiffOptions, selectRepo } from './selection';
 import * as diff2html from 'diff2html';
 import type { OutputFormatType } from 'diff2html/lib/types';
 import { ExportContent, ExportData, exportHtml } from './htmlTemplate';
@@ -220,6 +220,7 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 async function selectTwoCommits(repoPath: string): Promise<{ base: vscode.QuickPickItem, current: vscode.QuickPickItem, options: string[] } | undefined> {
+	const extensionConfig = vscode.workspace.getConfiguration('diff2html-report');
 	// 显示进度窗口并获取引用
 	const commits = await vscode.window.withProgress({
 		location: vscode.ProgressLocation.Notification,
@@ -242,6 +243,15 @@ async function selectTwoCommits(repoPath: string): Promise<{ base: vscode.QuickP
 			isCustom: true
 		};
 
+		// 最近的提交
+		const recentCommitCount = extensionConfig.get<number>('recentCommitCount') || 5;
+		const recentCommits = await getRecentCommit(repoPath, recentCommitCount);
+		const recentCommitItems = recentCommits.map((commit, index) => ({
+			label: `HEAD~${index + 1}`,
+			description: commit.refs ? `${commit.hash} (${commit.refs})` : commit.hash,
+			detail: commit.message
+		}));
+
 		// 获取分支和标签
 		const localBranches = await Promise.all(refs
 			.filter(ref => ref.type === 0) // 本地分支
@@ -254,7 +264,7 @@ async function selectTwoCommits(repoPath: string): Promise<{ base: vscode.QuickP
 		const tags = await Promise.all(refs
 			.filter(ref => ref.type === 2) // Tag
 			.map(ref => getSelection(ref, localize('diff2html-report.commitOption.description.tag'))));
-		return [head, input, ...localBranches, ...remoteBranches, ...tags];
+		return [head, input, ...recentCommitItems, ...localBranches, ...remoteBranches, ...tags];
 	});
 
 	// 选择基线版本
@@ -278,7 +288,6 @@ async function selectTwoCommits(repoPath: string): Promise<{ base: vscode.QuickP
 	}
 
 	// 选择git diff参数
-	const extensionConfig = vscode.workspace.getConfiguration('diff2html-report');
 	const options = await selectDiffOptions(extensionConfig);
 
 	return { base, current, options };

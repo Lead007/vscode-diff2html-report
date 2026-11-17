@@ -61,6 +61,26 @@ export async function getGitRefs(path: string): Promise<RefInfo[]> {
     }
 }
 
+export async function getRecentCommit(path: string, count: number) {
+    try {
+        const { stdout } = await execCmdAsync(path, 'git', [
+            'log',
+            `-n ${count}`,
+            '--skip=1',
+            '--format=%h%x00%s%x00%D'
+        ], 'utf8');
+
+        return stdout.split(/\r?\n/).filter(Boolean).flatMap(line => {
+            const [hash, message, refs] = line.split('\0');
+            return [{ hash, message, refs }];
+        });
+    } catch (error) {
+        const message = String(error);
+        vscode.window.showErrorMessage(localize('diff2html-report.commandErrorText', message));
+        throw error;
+    }
+}
+
 /**
  * 生成某个ref对应的选择项
  * @param ref git ref信息
