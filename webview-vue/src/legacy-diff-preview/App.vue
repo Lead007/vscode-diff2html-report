@@ -43,7 +43,7 @@ function exportHtml(): void {
 	}
 
 	const exportContent: ExportContent = {
-		title: props.labels.reportTitle,
+		title: props.labels.header,
 		styles: styles,
 		htmlContent: reportContent.outerHTML,
 		darkMode: darkMode.value
