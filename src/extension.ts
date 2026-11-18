@@ -108,7 +108,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 			const htmlContent = await vscode.window.withProgress({
 				location: vscode.ProgressLocation.Notification,
-				cancellable: false
+				cancellable: true
 			}, async (progress) => {
 				progress.report({ message: localize('diff2html-report.progress.executingDiff') });
 
@@ -186,7 +186,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 			const webViewContext = await vscode.window.withProgress({
 				location: vscode.ProgressLocation.Notification,
-				cancellable: false
+				cancellable: true
 			}, async (progress) => {
 				progress.report({ message: localize('diff2html-report.progress.executingDiff') });
 
@@ -257,7 +257,7 @@ async function selectTwoCommits(repoPath: string): Promise<{ base: vscode.QuickP
 	// 显示进度窗口并获取引用
 	const commits = await vscode.window.withProgress({
 		location: vscode.ProgressLocation.Notification,
-		cancellable: false
+		cancellable: true
 	}, async (progress) => {
 		progress.report({ message: localize('diff2html-report.progress.loadingRefs') });
 		const refs = await getGitRefs(repoPath);
