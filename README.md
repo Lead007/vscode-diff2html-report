@@ -19,7 +19,7 @@ Everything runs on your machine: your own Git installation produces the diff, th
 turns it into an artifact you can actually hand to someone:
 
 - **30-second start** — open a repository → click the icon in the **Source Control** title bar → pick a base and a current revision → preview → **Export HTML**.
-- **Code review** — a PR is too large to read in the browser tab? Export the diff as one page and review it offline, or attach it to the review.
+- **Code review** — a PR is too large to read in the browser tab? Export the diff as one page and review it offline, or attach it to the review. Select the **merge base** as the base revision so the report shows only the branch's changes.
 - **Delivery & handover** — give the client or the next team a readable list of what changed, with notes, instead of a wall of `+`/`-` lines.
 - **Release notes & audit** — keep a per-release HTML record of the changes, with symbol-level grouping and written explanations.
 - **Offline and restricted networks** — no CDN, no telemetry, no outbound requests. Preview and export work with the network cable unplugged, which makes the extension usable on air-gapped machines, behind corporate proxies, and in finance, government and enterprise environments.
@@ -71,7 +71,7 @@ symbols it returns.
 
 Open a Git repository in VS Code. Both report commands are available from the Git repository's title menu in the **Source Control** view.
 
-For either command, select a base revision and a current revision from the available branches or tags. You can also enter a branch name, tag, or commit hash manually. The current revision can be **Staged** to compare the base revision with staged changes. Then choose any `git diff` options to apply.
+For either command, select a base revision and a current revision from the available branches or tags. You can also enter a branch name, tag, or commit hash manually. The current revision can be **Staged** to compare the base revision with staged changes. Then choose any `git diff` options to apply. Reports compare the two revisions directly with `git diff <base> <current>` (two-dot), not their merge base; for a branch review, choose the merge base as the base revision.
 
 ### Generate Diff Report
 
@@ -94,15 +94,15 @@ For either command, select a base revision and a current revision from the avail
 | Setting | Default | Description |
 |---|---|---|
 | `diff2html-report.defaultDiffOptions` | — | Default `git diff` options pre-selected when generating a report. Supported: `-b`, `-w`, `-M`, `-C`. |
-| `diff2html-report.filter` | — | `git diff` pathspec arguments to limit the report to specific files or folders, e.g. `["--", "src/"]` or `["--", "*.cpp"]`. |
+| `diff2html-report.filter` | — | Extra arguments appended verbatim, in order, to `git diff <base> <current>` after the options selected in the picker. Put `--` before pathspecs, e.g. `["--", "src/"]` or `["--", "*.cpp"]`; other `git diff` options are passed through as well, e.g. `["--diff-filter=M"]`. |
 | `diff2html-report.encoding` | `utf8` | Charset used when reading a specific version of repository files. Supported list: [iconv-lite](https://github.com/ashtuchkin/iconv-lite/wiki/Supported-Encodings). |
 | `diff2html-report.recentCommitCount` | 5 | Number of recent commits to display in the commit selection dropdown. |
-| `diff2html-report.maxGitDiffFileSize` | `67108864` (64 MB) | Maximum size of the `git diff` output. |
+| `diff2html-report.maxGitDiffFileSize` | `67108864` (64 MiB) | Maximum output size (in bytes) of a single Git command (`diff`, `log`, `for-each-ref`, `show`). If a command exceeds it, that command fails and report generation stops; raise the value if needed. |
 | `diff2html-report.symbolDiffLineThreshold` | `30` | Symbols at or below this line count are shown in full in symbol-level diffs. |
 | `diff2html-report.symbolDiffChangePercentage` | `30` | Long symbols are shown in full when changed lines reach this percentage of their length. |
 | `diff2html-report.symbolDiffContextLines` | `3` | Unchanged context lines around changes in long symbols with a small change percentage. |
 | `diff2html-report.symbolDiffSymbolKinds` | `Class`, `Function`, `Method`, `Constructor`, `Operator`, `Struct` | VS Code document symbol kinds included in symbol-level analysis. |
-| `diff2html-report.defaultViewType` | `side-by-side` | Default view type in exported reports. |
+| `diff2html-report.defaultViewType` | `side-by-side` | View type used by the Diff preview and exported reports. The change-item review page always uses `line-by-line`. |
 
 ## Q&A
 
@@ -110,9 +110,9 @@ For either command, select a base revision and a current revision from the avail
 
 Set `diff2html-report.encoding` in VS Code settings to match the encoding of your repository files. The default is `utf8`; for example, use `gbk` for GBK-encoded files.
 
-### How can I limit the report to specific folders or file types?
+### How can I limit the report or pass extra `git diff` arguments?
 
-Set `diff2html-report.filter` to an array of `git diff` pathspec arguments. For example, use `["--", "src/"]` to include a folder or `["--", "*.cpp"]` to include files matching a pattern.
+Set `diff2html-report.filter` to an array of arguments. Every item is appended verbatim, in order, to `git diff <base> <current>` after the options selected in the picker. Use `--` before pathspecs, for example `["--", "src/"]` to include a folder or `["--", "*.cpp"]` to include files matching a pattern; other `git diff` options such as `["--diff-filter=M"]` are passed through as well.
 
 ### What if I can't find the base or current revision in the list?
 
@@ -134,9 +134,9 @@ extension's symbol support.
 
 ## Limitations
 
-- **Two-dot comparison** — reports compare the two selected revisions directly (`git diff <base> <current>`), not their merge base. For a PR-style review, choose the merge base as the base revision.
+- **Two-dot comparison** — reports run `git diff <base> <current>` (two-dot), comparing the two trees directly rather than their merge base. For a PR-style review, choose the merge base as the base revision; otherwise changes made on the target branch after divergence appear as reverse differences.
 - **Binary files** — binary files keep their file entries, but their contents are not shown.
-- **Diff size** — if the Git output exceeds `diff2html-report.maxGitDiffFileSize`, the entire report generation fails; raise the setting if needed.
+- **Diff size** — if the output of any Git command (`diff`, `log`, `for-each-ref`, `show`) exceeds `diff2html-report.maxGitDiffFileSize` (bytes), that command fails and the entire report generation stops; raise the setting if needed.
 - **Heuristic symbol pairing** — symbol-level changes are matched heuristically, so renamed or heavily modified symbols may be grouped incorrectly.
 - **Session-only change items** — change items exist only in the current webview session; anything not exported is lost when the panel is closed.
 - **Review layout** — the Diff Review page always uses the line-by-line view, even when `diff2html-report.defaultViewType` is set to `side-by-side`.

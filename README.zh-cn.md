@@ -20,7 +20,7 @@
 `git diff` 适合自己看，不适合给别人看。这个扩展把它变成一份可以直接交付的产物：
 
 - **30 秒上手**：打开仓库 → 源代码管理标题栏点图标 → 选基准/当前版本 → 预览 → 导出 HTML
-- **代码评审** —— PR 太大，浏览器里读不下去？导出成一份页面，离线慢慢看，或附在评审里。
+- **代码评审** —— PR 太大，浏览器里读不下去？导出成一份页面，离线慢慢看，或附在评审里。把 **merge base** 选为基准版本，报告就只包含分支自身的改动。
 - **交付与交接** —— 给甲方或下一个团队一份可读的改动清单，带说明，而不是一堆 `+`/`-`。
 - **发布记录与审计** —— 每个版本留一份 HTML 变更记录，按符号分组，附上文字说明。
 - **内网 / 受限环境** —— 不依赖 CDN、不收集遥测、不发起任何外部请求。拔掉网线也能预览和导出，适合隔离网络、金融和政企环境。
@@ -68,7 +68,7 @@
 
 在 VS Code 中打开 Git 仓库。两个报告命令都可以从 **源代码管理** 视图中该仓库的标题菜单启动。
 
-运行任一命令时，先选择基准版本和当前版本（可选分支或标签），也可以手动输入分支名、标签名或提交哈希。当前版本还可以选择 **暂存区** ，以比较基准版本与已暂存的更改。之后可选择要应用的 `git diff` 选项。
+运行任一命令时，先选择基准版本和当前版本（可选分支或标签），也可以手动输入分支名、标签名或提交哈希。当前版本还可以选择 **暂存区** ，以比较基准版本与已暂存的更改。之后可选择要应用的 `git diff` 选项。报告使用 `git diff <base> <current>` 直接比较两个版本（two-dot），而不是它们的 merge base；评审分支时请把 merge base 选为基准版本。
 
 ### 生成差异报告
 
@@ -91,15 +91,15 @@
 | 设置 | 默认值 | 说明 |
 |---|---|---|
 | `diff2html-report.defaultDiffOptions` | — | 生成报告时默认选中的 `git diff` 选项，支持 `-b`、`-w`、`-M`、`-C`。 |
-| `diff2html-report.filter` | — | 使用 Git pathspec 限制报告范围，例如 `["--", "src/"]` 或 `["--", "*.cpp"]`。 |
+| `diff2html-report.filter` | — | 按顺序原样追加到 `git diff <base> <current>` 的额外参数（在选择器中选中的选项之后）。路径前请加 `--`，例如 `["--", "src/"]` 或 `["--", "*.cpp"]`；也可以传其他 `git diff` 选项，例如 `["--diff-filter=M"]`。 |
 | `diff2html-report.encoding` | `utf8` | 读取仓库文件特定版本时使用的字符编码，支持列表见 [iconv-lite](https://github.com/ashtuchkin/iconv-lite/wiki/Supported-Encodings)。 |
 | `diff2html-report.recentCommitCount` | 5 | 在提交选择下拉列表中显示的最近提交数。|
-| `diff2html-report.maxGitDiffFileSize` | `67108864`（64 MB） | `git diff` 输出的最大大小。 |
+| `diff2html-report.maxGitDiffFileSize` | `67108864`（64 MiB） | 单次 Git 命令（`diff`、`log`、`for-each-ref`、`show`）输出的最大字节数。超出时该命令会失败，报告生成随之中断；可按需调大。 |
 | `diff2html-report.symbolDiffLineThreshold` | `30` | 符号行数小于或等于该值时，在符号级差异中显示完整内容。 |
 | `diff2html-report.symbolDiffChangePercentage` | `30` | 较长内容的符号的变更行数达到此比例时，显示完整符号内容。 |
 | `diff2html-report.symbolDiffContextLines` | `3` | 内容长的符号仅有少量变更时，在变更周围显示的未修改上下文行数。 |
 | `diff2html-report.symbolDiffSymbolKinds` | `Class`、`Function`、`Method`、`Constructor`、`Operator`、`Struct` | 符号级分析包含的 VS Code 文档符号类型。 |
-| `diff2html-report.defaultViewType` | `side-by-side` | 导出报告中显示差异行的默认视图类型。 |
+| `diff2html-report.defaultViewType` | `side-by-side` | Diff 预览和导出报告使用的视图类型；更改项评审页始终使用 `line-by-line`。 |
 
 ## 常见问题
 
@@ -107,9 +107,9 @@
 
 在 VS Code 设置中将 `diff2html-report.encoding` 改为与仓库文件相符的编码。默认值为 `utf8`；例如，GBK 编码的文件可以设置为 `gbk`。
 
-### 如何只报告指定文件夹或文件类型？
+### 如何限制报告范围或传递其他 `git diff` 参数？
 
-将 `diff2html-report.filter` 设置为 Git `diff` 的 pathspec 参数数组。例如，`["--", "src/"]` 可筛选 `src` 文件夹，`["--", "*.cpp"]` 可筛选匹配该模式的文件。
+将 `diff2html-report.filter` 设置为参数数组。数组中的每一项都会按顺序原样追加到 `git diff <base> <current>`（在选择器中选中的选项之后）。路径前请加 `--`，例如 `["--", "src/"]` 可筛选 `src` 文件夹，`["--", "*.cpp"]` 可筛选匹配该模式的文件；其他 `git diff` 选项（如 `["--diff-filter=M"]`）也会原样传给 Git。
 
 ### 如果在列表中找不到基准版本或当前版本怎么办？
 
@@ -130,9 +130,9 @@ Python、Rust 等通常可用，具体覆盖范围取决于语言扩展的符号
 
 ## 已知限制
 
-- **two-dot 比较** —— 报告直接比较所选的两个版本（`git diff <base> <current>`），而不是它们的 merge base。需要 PR 式评审时，请把 merge base 作为基准版本。
+- **two-dot 比较** —— 报告执行 `git diff <base> <current>`（two-dot），直接比较两个版本的树，而不是它们的 merge base。需要 PR 式评审时，请把 merge base 作为基准版本；否则目标分支在分叉后的改动会以反向差异出现在报告里。
 - **二进制文件** —— 二进制文件只保留文件条目，不展示文件内容。
-- **差异大小** —— Git 输出超过 `diff2html-report.maxGitDiffFileSize` 时，整次报告生成会失败；可适当调大该设置。
+- **差异大小** —— 任一 Git 命令（`diff`、`log`、`for-each-ref`、`show`）的输出超过 `diff2html-report.maxGitDiffFileSize`（字节）时，该命令会失败，整次报告生成随之中断；可适当调大该设置。
 - **符号配对** —— 符号级变更是启发式配对，重命名或大幅修改的符号可能被归错。
 - **更改项仅限当前会话** —— 更改项只存在于当前 webview 会话中，关闭面板后未导出的内容会丢失。
 - **评审布局** —— 即使 `diff2html-report.defaultViewType` 设为 `side-by-side`，评审编辑页仍固定使用 line-by-line 视图。
