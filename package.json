@@ -1,13 +1,13 @@
 {
   "name": "diff2html-report",
-  "displayName": "diff2html-report",
+  "displayName": "%diff2html-report.displayName%",
   "icon": "assets/icon.png",
   "galleryBanner": {
     "color": "#1F2430",
     "theme": "dark"
   },
-  "description": "Turn git diff into a shareable HTML report for review, delivery and release notes. Fully local, works offline.",
-  "version": "0.7.2",
+  "description": "%diff2html-report.description%",
+  "version": "0.7.3",
   "license": "MIT",
   "publisher": "Lead007",
   "engines": {
@@ -21,22 +21,35 @@
     "type": "git",
     "url": "https://github.com/Lead007/vscode-diff2html-report"
   },
+  "badges": [
+    {
+      "url": "https://github.com/Lead007/vscode-diff2html-report/actions",
+      "href": "https://github.com/Lead007/vscode-diff2html-report/actions",
+      "description": "Build Status"
+    }
+  ],
   "keywords": [
     "git diff",
     "diff report",
     "code review",
+    "code review report",
     "html report",
     "change report",
     "pr review",
     "export diff",
     "release notes",
     "changelog",
-    "symbol diff"
+    "symbol diff",
+    "compare branches",
+    "diff viewer",
+    "diff2html"
   ],
   "categories": [
-    "Other"
+    "Other",
+    "Visualization"
   ],
   "activationEvents": [
+    "onCommand:diff2html-report.showMenu",
     "onCommand:diff2html-report.generateDiffReport",
     "onCommand:diff2html-report.generateChangeItemReport"
   ],
@@ -77,7 +90,7 @@
         "diff2html-report.maxGitDiffFileSize": {
           "type": "number",
           "default": 67108864,
-          "minimum": 0,
+          "minimum": 1,
           "description": "%diff2html-report.configuration.maxGitDiffFileSize%"
         },
         "diff2html-report.symbolDiffLineThreshold": {
