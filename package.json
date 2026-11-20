@@ -65,8 +65,7 @@
             "-b": false,
             "-w": false,
             "-M": false,
-            "-C": false,
-            "--submodule": false
+            "-C": false
           },
           "markdownDescription": "%diff2html-report.configuration.defaultDiffOptions%"
         },

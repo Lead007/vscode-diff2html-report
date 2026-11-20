@@ -90,7 +90,7 @@
 
 | 设置 | 默认值 | 说明 |
 |---|---|---|
-| `diff2html-report.defaultDiffOptions` | — | 生成报告时默认选中的 `git diff` 选项，支持 `-b`、`-w`、`-M`、`-C`、`--submodule`。 |
+| `diff2html-report.defaultDiffOptions` | — | 生成报告时默认选中的 `git diff` 选项，支持 `-b`、`-w`、`-M`、`-C`。 |
 | `diff2html-report.filter` | — | 使用 Git pathspec 限制报告范围，例如 `["--", "src/"]` 或 `["--", "*.cpp"]`。 |
 | `diff2html-report.encoding` | `utf8` | 读取仓库文件特定版本时使用的字符编码，支持列表见 [iconv-lite](https://github.com/ashtuchkin/iconv-lite/wiki/Supported-Encodings)。 |
 | `diff2html-report.recentCommitCount` | 5 | 在提交选择下拉列表中显示的最近提交数。|

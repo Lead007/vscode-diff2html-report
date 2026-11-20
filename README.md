@@ -93,7 +93,7 @@ For either command, select a base revision and a current revision from the avail
 
 | Setting | Default | Description |
 |---|---|---|
-| `diff2html-report.defaultDiffOptions` | — | Default `git diff` options pre-selected when generating a report. Supported: `-b`, `-w`, `-M`, `-C`, `--submodule`. |
+| `diff2html-report.defaultDiffOptions` | — | Default `git diff` options pre-selected when generating a report. Supported: `-b`, `-w`, `-M`, `-C`. |
 | `diff2html-report.filter` | — | `git diff` pathspec arguments to limit the report to specific files or folders, e.g. `["--", "src/"]` or `["--", "*.cpp"]`. |
 | `diff2html-report.encoding` | `utf8` | Charset used when reading a specific version of repository files. Supported list: [iconv-lite](https://github.com/ashtuchkin/iconv-lite/wiki/Supported-Encodings). |
 | `diff2html-report.recentCommitCount` | 5 | Number of recent commits to display in the commit selection dropdown. |
