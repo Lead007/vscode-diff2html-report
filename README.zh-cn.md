@@ -100,6 +100,7 @@
 | `diff2html-report.symbolDiffContextLines` | `3` | 内容长的符号仅有少量变更时，在变更周围显示的未修改上下文行数。 |
 | `diff2html-report.symbolDiffSymbolKinds` | `Class`、`Function`、`Method`、`Constructor`、`Operator`、`Struct` | 符号级分析包含的 VS Code 文档符号类型。 |
 | `diff2html-report.defaultViewType` | `side-by-side` | Diff 预览和导出报告使用的视图类型；更改项评审页始终使用 `line-by-line`。 |
+| `diff2html-report.showFooter` | `true` | 是否在 Diff 预览、更改项报告预览及两者的导出报告中显示页脚；更改项评审编辑页没有页脚。 |
 
 ## 常见问题
 

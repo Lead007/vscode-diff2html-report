@@ -162,6 +162,11 @@
           ],
           "default": "side-by-side",
           "description": "%diff2html-report.configuration.defaultViewType%"
+        },
+        "diff2html-report.showFooter": {
+          "type": "boolean",
+          "default": true,
+          "description": "%diff2html-report.configuration.showFooter%"
         }
       }
     },

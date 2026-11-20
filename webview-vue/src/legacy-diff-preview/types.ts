@@ -8,4 +8,5 @@ export interface LegacyDiffPreviewData {
 	totalAdded: number,
 	totalDeleted: number,
 	labels: LegacyDiffPreviewLabels;
+	showFooter : boolean
 }

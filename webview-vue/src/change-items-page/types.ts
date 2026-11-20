@@ -112,6 +112,7 @@ export interface DiffReviewLabels extends SharedLabels {
 
 export interface DiffReviewConfigs {
 	viewType: 'line-by-line' | 'side-by-side';
+	showFooter: boolean;
 }
 
 export interface ChangeEntry {

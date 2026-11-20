@@ -5,9 +5,9 @@ import type { LegacyDiffPreviewData } from './types';
 import { formatLabel, getExportStyles } from '../shared';
 import { ElMessage } from 'element-plus';
 import { ExportContent } from '../../../src/htmlTemplate';
+import MyFooter from '../MyFooter.vue';
 
 const props = defineProps<LegacyDiffPreviewData>();
-const statusMessage = ref('');
 const vscodeApi = window.acquireVsCodeApi?.();
 
 let initialDarkMode = document.body.classList.contains('vscode-dark');
@@ -88,6 +88,9 @@ function exportHtml(): void {
 			</div>
 
 			<div v-html="props.htmlContent"></div>
+
+			<MyFooter v-if="props.showFooter" :labels="props.labels"/>
 		</main>
+
 	</div>
 </template>

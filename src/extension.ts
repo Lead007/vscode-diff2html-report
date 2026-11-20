@@ -142,6 +142,7 @@ export function activate(context: vscode.ExtensionContext) {
 				totalAdded,
 				totalDeleted,
 				labels: await getl18nWithPrefix(context.extensionUri, [WEBVIEW_PREFIX, DIFFVIEW_PREFIX]),
+				showFooter: extensionConfig.get<boolean>('showFooter')
 			};
 			showVuePage(context, 'legacy-diff-preview.html', localize('diff2html-report.webview.diffview.title'),
 				webViewContext, '__LEGACY_DIFF_PREVIEW_DATA__',
@@ -223,6 +224,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 				const configs = {
 					viewType: extensionConfig.get<string>('defaultViewType'),
+					showFooter: extensionConfig.get<boolean>('showFooter')
 				};
 				return { diffInfo, changedFunctions, labels, configs, totalAdded, totalDeleted };
 			});

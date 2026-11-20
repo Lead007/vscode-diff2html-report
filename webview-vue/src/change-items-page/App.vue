@@ -351,7 +351,7 @@ function exportReport(darkMode: boolean): void {
 
 <template>
 	<ReportPreview v-if="isPreviewingReport" :items="changeItems" :files="diffFunctionsFiles" :labels="props.labels"
-		:initial-dark-mode="initialDarkMode" :view-type="props.configs.viewType"
+		:initial-dark-mode="initialDarkMode" :configs="props.configs"
 		:total-added="props.totalAdded" :total-deleted="props.totalDeleted"
 		@back="isPreviewingReport = false" @export="exportReport" />
 	<div v-else class="min-h-screen">

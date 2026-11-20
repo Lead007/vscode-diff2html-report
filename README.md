@@ -103,6 +103,7 @@ For either command, select a base revision and a current revision from the avail
 | `diff2html-report.symbolDiffContextLines` | `3` | Unchanged context lines around changes in long symbols with a small change percentage. |
 | `diff2html-report.symbolDiffSymbolKinds` | `Class`, `Function`, `Method`, `Constructor`, `Operator`, `Struct` | VS Code document symbol kinds included in symbol-level analysis. |
 | `diff2html-report.defaultViewType` | `side-by-side` | View type used by the Diff preview and exported reports. The change-item review page always uses `line-by-line`. |
+| `diff2html-report.showFooter` | `true` | Whether to show the footer in the Diff preview, the change-item report preview, and their exported reports. The change-item review page has no footer. |
 
 ## Q&A
 
