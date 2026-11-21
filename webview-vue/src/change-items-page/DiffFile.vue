@@ -4,7 +4,7 @@ import { getFileIcon } from 'diff2html/lib/render-utils';
 import '@vscode/codicons/dist/codicon.css';
 import { LineType } from 'diff2html/lib/types';
 import type { DiffBlock } from 'diff2html/lib/types';
-import type { ChangedFileFunctions, ChangedFunction } from '../../../src/functionSymbols';
+import type { ChangedFileFunctions, ChangedFunction } from '../../../src/documentSymbols';
 import { alignDiffLines } from '../../../src/diffUtils';
 import DiffLineByLine from './DiffLineByLine.vue';
 import { getChangedFunctionId, getRangeStartLine } from './types';

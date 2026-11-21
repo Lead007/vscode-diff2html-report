@@ -7,8 +7,8 @@ import { getGitRefs, getRecentCommit, getSelection, selectCommit, selectDiffOpti
 import * as diff2html from 'diff2html';
 import type { OutputFormatType } from 'diff2html/lib/types';
 import { ExportContent, ExportData, exportHtml } from './htmlTemplate';
-import { findChangedFunctions } from './functionSymbols';
-import type { ChangedFileFunctions } from './functionSymbols';
+import { findChangedFunctions } from './documentSymbols';
+import type { ChangedFileFunctions } from './documentSymbols';
 import { init, localize } from 'vscode-nls-i18n';
 import { getLineCount, runGitDiffCommand } from './scmHelper';
 import { randomBytes } from 'crypto';

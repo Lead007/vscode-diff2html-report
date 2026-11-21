@@ -1,5 +1,5 @@
 import type { DiffFile } from 'diff2html/lib/types';
-import type { ChangedFileFunctions, ChangedFunction } from '../../../src/functionSymbols';
+import type { ChangedFileFunctions, ChangedFunction } from '../../../src/documentSymbols';
 import type { SharedLabels } from '../shared';
 import { ExportContent, ExportData } from '../../../src/htmlTemplate';
 

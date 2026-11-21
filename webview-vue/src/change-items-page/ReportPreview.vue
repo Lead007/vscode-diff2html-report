@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { Back, Download, View, Top } from '@element-plus/icons-vue';
-import type { ChangedFileFunctions } from '../../../src/functionSymbols';
+import type { ChangedFileFunctions } from '../../../src/documentSymbols';
 import DiffFile from './DiffFile.vue';
 import type { ChangeItem, DiffReviewConfigs, DiffReviewLabels } from './types';
 import { formatLabel } from '../shared';

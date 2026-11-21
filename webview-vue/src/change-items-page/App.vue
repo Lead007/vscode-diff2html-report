@@ -9,7 +9,7 @@ import { getChangedFunctionId, getDiffFileId, ChangeEntry, ChangeItem, DiffRevie
 import { formatLabel, getExportStyles } from '../shared.js';
 import { ExportContent } from '../../../src/htmlTemplate';
 import DiffFileList from './DiffFileList.vue';
-import type { ChangedFunction } from '../../../src/functionSymbols';
+import type { ChangedFunction } from '../../../src/documentSymbols';
 
 // 扩展宿主传入的本次 Diff 文件和函数数据。
 const props = defineProps<DiffReviewData>();
