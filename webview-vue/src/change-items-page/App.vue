@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { Check, Delete, Document, Download, Edit } from '@element-plus/icons-vue';
+import { Check, Delete, Document, Download, Edit, Top } from '@element-plus/icons-vue';
 import DiffFile from './DiffFile.vue';
 import EntryTree from './EntryTree.vue';
 import ReportPreview from './ReportPreview.vue';
@@ -515,10 +515,11 @@ function exportReport(darkMode: boolean): void {
 				</el-splitter-panel>
 			</el-splitter>
 
-			<div class="workspace">
-
-
-			</div>
+			<el-backtop :right="50" :bottom="100" class="review-backtop">
+				<el-icon class="text-2xl">
+					<Top />
+				</el-icon>
+			</el-backtop>
 		</main>
 	</div>
 </template>

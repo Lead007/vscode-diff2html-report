@@ -125,3 +125,8 @@ button { font-family: inherit; }
 	background-color: var(--review-surface, var(--vscode-editor-background, #1e1e1e));
 	border-color: var(--review-border, var(--vscode-panel-border, #454545));
 }
+
+.review-backtop {
+	background-color: var(--el-bg-color-overlay);
+	box-shadow: var(--el-box-shadow-lighter);
+}

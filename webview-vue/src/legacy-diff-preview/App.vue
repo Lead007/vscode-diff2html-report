@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { Download, View } from '@element-plus/icons-vue';
+import { Download, Top, View } from '@element-plus/icons-vue';
 import type { LegacyDiffPreviewData } from './types';
 import { formatLabel, getExportStyles } from '../shared';
 import { ElMessage } from 'element-plus';
@@ -91,6 +91,12 @@ function exportHtml(): void {
 
 			<MyFooter v-if="props.showFooter" :labels="props.labels"/>
 		</main>
+
+		<el-backtop :right="50" :bottom="100" class="review-backtop">
+			<el-icon class="text-2xl">
+				<Top />
+			</el-icon>
+		</el-backtop>
 
 	</div>
 </template>

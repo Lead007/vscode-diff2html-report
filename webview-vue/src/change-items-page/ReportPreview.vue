@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { Back, Download, View } from '@element-plus/icons-vue';
+import { Back, Download, View, Top } from '@element-plus/icons-vue';
 import type { ChangedFileFunctions } from '../../../src/functionSymbols';
 import DiffFile from './DiffFile.vue';
 import type { ChangeItem, DiffReviewConfigs, DiffReviewLabels } from './types';
@@ -164,5 +164,11 @@ onBeforeUnmount(() => {
 
 			<MyFooter v-if="props.configs.showFooter" :labels="props.labels"/>
 		</main>
+
+		<el-backtop :right="50" :bottom="100" class="review-backtop">
+			<el-icon class="text-2xl">
+				<Top />
+			</el-icon>
+		</el-backtop>
 	</div>
 </template>
