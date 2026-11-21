@@ -7,7 +7,7 @@
     "theme": "dark"
   },
   "description": "%description%",
-  "version": "0.7.3-patch",
+  "version": "0.8.0",
   "license": "MIT",
   "publisher": "Lead007",
   "engines": {

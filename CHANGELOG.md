@@ -4,6 +4,20 @@ All notable changes to the "diff2html-report" extension will be documented in th
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.8.0] - 2026-11-22
+
+### Added
+
+- On the Change Item page, each file-level change (the diff blocks that do not belong to any symbol) now has its own checkbox, so a single block can be associated with a change item instead of the whole file. Selected blocks are listed in the entry tree with their line number and can be removed individually. The file checkbox now selects symbols and file-level changes together.
+
+### Changed
+
+- Reworked function-level diff analysis. Affected functions are now located from the existing diff blocks, and old/new functions are paired using context lines, same-name changes within a change group, unique renames, and an anchor fallback. This avoids pairing unrelated additions and deletions in the same block by position, and changes inside nested symbols are attributed to their outermost function.
+
+### Fixed
+
+- Fixed the misalignment between the two columns of the side-by-side view in the change item preview, report and exported HTML, which happened when the old and new sides had a different number of lines because placeholder rows were not rendered.
+
 ## [0.7.3] - 2026-11-21
 
 ### Added
@@ -153,6 +167,7 @@ Fix the bug that on the Diff Review page, the old and new line numbers may be ar
 
 Initial release.
 
+[0.8.0]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.8.0
 [0.7.3]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.7.3
 [0.7.1]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.7.1
 [0.6.2]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.6.2

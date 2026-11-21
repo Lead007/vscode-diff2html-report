@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { Back, Download, View, Top } from '@element-plus/icons-vue';
-import type { ChangedFileFunctions } from '../../../src/functionSymbols';
+import type { ChangedFileFunctions } from '../../../src/documentSymbols';
 import DiffFile from './DiffFile.vue';
 import type { ChangeItem, DiffReviewConfigs, DiffReviewLabels } from './types';
 import { formatLabel } from '../shared';
@@ -34,14 +34,16 @@ const reportItems = computed(() => props.items.map(item => ({
 		}
 
 		const selectedFunctions = entry.functions ? [...entry.functions.values()] : undefined;
+		const selectedFileLevelChanges = entry.fileLevelChanges ? [...entry.fileLevelChanges.values()] : undefined;
+		// 既没有函数也没有文件级变更时表示整文件关联。
+		const wholeFileSelected = !entry.functions && !entry.fileLevelChanges;
 		return {
 			filePath: entry.filePath,
 			file: {
 				...file,
-				functions: selectedFunctions ?? file.functions,
-				nonFunctionDiffBlocks: selectedFunctions?.length
-					? []
-					: file.nonFunctionDiffBlocks,
+				functions: selectedFunctions ?? (wholeFileSelected ? file.functions : []),
+				nonFunctionDiffBlocks: selectedFileLevelChanges
+					?? (wholeFileSelected ? file.nonFunctionDiffBlocks : []),
 			},
 		};
 	}),

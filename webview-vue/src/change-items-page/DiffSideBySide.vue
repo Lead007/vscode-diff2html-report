@@ -79,6 +79,17 @@ const props = defineProps<{ item: DiffBlockParsed[] }>();
                                         </div>
                                     </td>
                                 </tr>
+                                <tr v-else>
+                                    <td
+                                        class="d2h-code-side-linenumber d2h-emptyplaceholder d2h-cntx d2h-code-side-emptyplaceholder">
+                                    </td>
+                                    <td class="d2h-cntx d2h-emptyplaceholder">
+                                        <div class="d2h-code-side-line d2h-code-side-emptyplaceholder">
+                                            <span class="d2h-code-line-prefix">&nbsp;</span>
+                                            <span class="d2h-code-line-ctn"><br /></span>
+                                        </div>
+                                    </td>
+                                </tr>
                             </template>
 
                         </template>
@@ -158,6 +169,17 @@ const props = defineProps<{ item: DiffBlockParsed[] }>();
                                                 </template>
                                                 <template v-else>{{ row.newRow.text }}</template>
                                             </span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr v-else>
+                                    <td
+                                        class="d2h-code-side-linenumber d2h-emptyplaceholder d2h-cntx d2h-code-side-emptyplaceholder">
+                                    </td>
+                                    <td class="d2h-cntx d2h-emptyplaceholder">
+                                        <div class="d2h-code-side-line d2h-code-side-emptyplaceholder">
+                                            <span class="d2h-code-line-prefix">&nbsp;</span>
+                                            <span class="d2h-code-line-ctn"><br /></span>
                                         </div>
                                     </td>
                                 </tr>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { ChangeEntry, DiffReviewLabels } from './types';
+import { getFileBlockLine } from './types';
 import { Close } from '@element-plus/icons-vue';
 
 const props = defineProps<{
@@ -11,12 +12,14 @@ const props = defineProps<{
 const emit = defineEmits<{
     'removeEntry': [filePath: string];
     'removeFunction': [filePath: string, functionId: string];
+    'removeFileLevelChange': [filePath: string, changeId: string];
 }>();
 
 interface EntryTreeNode {
     id: string;
     label: string;
     isFunction?: boolean;
+    isFileLevelChange?: boolean;
     children?: EntryTreeNode[];
 }
 const treeNodesForEntries = computed(() => {
@@ -30,11 +33,20 @@ const treeNodesForEntries = computed(() => {
                 parent: entry.filePath,
             }))
             : []
+        const fileLevelChangeNodes: EntryTreeNode[] = entry.fileLevelChanges
+            ? Array.from(entry.fileLevelChanges).map(([changeId, block]) => ({
+                id: changeId,
+                label: `${props.labels.fileLevelChanges} · L${getFileBlockLine(block)}`,
+                isFileLevelChange: true,
+                parent: entry.filePath,
+            }))
+            : []
+        const childNodes = [...functionNodes, ...fileLevelChangeNodes];
 
         return {
             id: entry.filePath,
             label: entry.filePath,
-            children: functionNodes.length > 0 ? functionNodes : undefined,
+            children: childNodes.length > 0 ? childNodes : undefined,
         }
     });
 });
@@ -53,6 +65,14 @@ const treeProps = {
                 :aria-label="data.label"
                 :title="data.label"
                 @close="emit('removeFunction', data.parent, data.id)">
+                {{ data.label }}
+            </el-tag>
+
+            <!-- 第二级：文件级变更 -->
+            <el-tag v-else-if="data.isFileLevelChange" type="info" effect="plain" :closable="props.canEdit" class="mx-1"
+                :aria-label="data.label"
+                :title="data.label"
+                @close="emit('removeFileLevelChange', data.parent, data.id)">
                 {{ data.label }}
             </el-tag>
 

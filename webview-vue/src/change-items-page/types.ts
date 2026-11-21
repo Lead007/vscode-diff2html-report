@@ -1,5 +1,6 @@
-import type { DiffFile } from 'diff2html/lib/types';
-import type { ChangedFileFunctions, ChangedFunction } from '../../../src/functionSymbols';
+import { LineType } from 'diff2html/lib/types';
+import type { DiffBlock, DiffFile } from 'diff2html/lib/types';
+import type { ChangedFileFunctions, ChangedFunction } from '../../../src/documentSymbols';
 import type { SharedLabels } from '../shared';
 import { ExportContent, ExportData } from '../../../src/htmlTemplate';
 
@@ -36,6 +37,29 @@ export function getChangedFunctionId(filePath: string, fn: ChangedFunction, fall
 		fn.detail,
 		fn.symbolKind,
 		getRangeStartLine(fn.newRange) ?? getRangeStartLine(fn.oldRange) ?? fallbackIndex,
+	]);
+}
+
+export function getFileBlockLine(block: DiffBlock): number {
+	const newLines = block.lines.flatMap(line =>
+		line.type === LineType.INSERT && line.newNumber !== undefined ? [line.newNumber] : []
+	);
+	const oldLines = block.lines.flatMap(line =>
+		line.type === LineType.DELETE && line.oldNumber !== undefined ? [line.oldNumber] : []
+	);
+	return newLines.length > 0
+		? Math.min(...newLines)
+		: oldLines.length > 0
+			? Math.min(...oldLines)
+			: Math.min(block.oldStartLine, block.newStartLine);
+}
+
+export function getFileLevelChangeId(filePath: string, block: DiffBlock, fallbackIndex: number): string {
+	return JSON.stringify([
+		filePath,
+		'file-level',
+		getFileBlockLine(block),
+		fallbackIndex,
 	]);
 }
 
@@ -103,6 +127,7 @@ export interface DiffReviewLabels extends SharedLabels {
 	selectAllSymbolsInFile: string;
 	selectFile: string;
 	selectSymbol: string;
+	selectFileLevelChange: string;
 	fileTooBig: string;
 	fileIsBinary: string;
 	fileWithoutChanges: string;
@@ -118,6 +143,7 @@ export interface DiffReviewConfigs {
 export interface ChangeEntry {
 	filePath: string;
 	functions?: Map<string, ChangedFunction>;
+	fileLevelChanges?: Map<string, DiffBlock>;
 }
 
 export interface ChangeItem {
