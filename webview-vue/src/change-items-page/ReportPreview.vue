@@ -34,14 +34,16 @@ const reportItems = computed(() => props.items.map(item => ({
 		}
 
 		const selectedFunctions = entry.functions ? [...entry.functions.values()] : undefined;
+		const selectedFileLevelChanges = entry.fileLevelChanges ? [...entry.fileLevelChanges.values()] : undefined;
+		// 既没有函数也没有文件级变更时表示整文件关联。
+		const wholeFileSelected = !entry.functions && !entry.fileLevelChanges;
 		return {
 			filePath: entry.filePath,
 			file: {
 				...file,
-				functions: selectedFunctions ?? file.functions,
-				nonFunctionDiffBlocks: selectedFunctions?.length
-					? []
-					: file.nonFunctionDiffBlocks,
+				functions: selectedFunctions ?? (wholeFileSelected ? file.functions : []),
+				nonFunctionDiffBlocks: selectedFileLevelChanges
+					?? (wholeFileSelected ? file.nonFunctionDiffBlocks : []),
 			},
 		};
 	}),

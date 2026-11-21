@@ -107,6 +107,7 @@
     "diff2html-report.webview.changeitems.selectAllSymbolsInFile": "选择文件 {0} 中的所有符号",
     "diff2html-report.webview.changeitems.selectFile": "选择文件：{0}",
     "diff2html-report.webview.changeitems.selectSymbol": "选择符号：{0}",
+    "diff2html-report.webview.changeitems.selectFileLevelChange": "选择第 {0} 行的文件级变更",
     "diff2html-report.webview.changeitems.fileIsBinary": "二进制文件没有可用的文档符号",
     "diff2html-report.webview.changeitems.fileTooBig": "文件过大，无法分析",
     "diff2html-report.webview.changeitems.fileWithoutChanges": "文件没有更改",

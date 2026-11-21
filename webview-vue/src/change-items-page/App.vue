@@ -5,11 +5,12 @@ import { Check, Delete, Document, Download, Edit, Top } from '@element-plus/icon
 import DiffFile from './DiffFile.vue';
 import EntryTree from './EntryTree.vue';
 import ReportPreview from './ReportPreview.vue';
-import { getChangedFunctionId, getDiffFileId, ChangeEntry, ChangeItem, DiffReviewData } from './types.js';
+import { getChangedFunctionId, getDiffFileId, getFileLevelChangeId, ChangeEntry, ChangeItem, DiffReviewData } from './types.js';
 import { formatLabel, getExportStyles } from '../shared.js';
 import { ExportContent } from '../../../src/htmlTemplate';
 import DiffFileList from './DiffFileList.vue';
 import type { ChangedFunction } from '../../../src/documentSymbols';
+import type { DiffBlock } from 'diff2html/lib/types';
 
 // 扩展宿主传入的本次 Diff 文件和函数数据。
 const props = defineProps<DiffReviewData>();
@@ -79,13 +80,20 @@ const activeChangeItem = computed(() => changeItems.value.find(item => item.id =
 // 左侧勾选实际修改的数据：编辑态写入条目，新增态写入表单草稿。
 const activeEntries = computed(() => activeChangeItem.value?.entries ?? selectedEntries.value);
 // 当前待选/正在编辑的关联项数量。
-const selectedCount = computed(() => activeEntries.value.reduce((sum, entry) => sum + (entry.functions ? entry.functions.size : 1), 0));
+const selectedCount = computed(() => activeEntries.value.reduce((sum, entry) => {
+	// 没有函数和文件级变更明细时表示整文件关联，计为一项。
+	if (!entry.functions && !entry.fileLevelChanges) {
+		return sum + 1;
+	}
+	return sum + (entry.functions?.size ?? 0) + (entry.fileLevelChanges?.size ?? 0);
+}, 0));
 
 // 深拷贝关联项数组及其中的函数 Map，避免草稿和已保存数据共享容器。
 function cloneEntries(entries: ChangeEntry[]): ChangeEntry[] {
 	return entries.map(entry => ({
 		...entry,
 		functions: entry.functions ? new Map(entry.functions) : undefined,
+		fileLevelChanges: entry.fileLevelChanges ? new Map(entry.fileLevelChanges) : undefined,
 	}));
 }
 
@@ -123,7 +131,8 @@ function changeSelectedFunctionIds(filePath: string, ids: string[], selected: bo
 			for (const id of ids) {
 				entry.functions.delete(id)
 			}
-			if (entry.functions.size === 0) {
+			// 函数和文件级变更都为空时，移除整个文件关联。
+			if (entry.functions.size === 0 && (entry.fileLevelChanges?.size ?? 0) === 0) {
 				const index = activeEntries.value.indexOf(entry);
 				if (index !== -1) {
 					activeEntries.value.splice(index, 1);
@@ -135,6 +144,52 @@ function changeSelectedFunctionIds(filePath: string, ids: string[], selected: bo
 		activeEntries.value.push({
 			filePath,
 			functions: selectedFunctions,
+		});
+	}
+}
+
+// 按文件增删文件级变更块关联；同一文件没有剩余内容时移除该文件项。
+function changeSelectedFileLevelChangeIds(filePath: string, ids: string[], selected: boolean) {
+	const file = diffFunctionsFiles.value.find(item => item.path === filePath);
+	if (!file) return;
+	const blocksById = new Map<string, DiffBlock>(
+		file.nonFunctionDiffBlocks.map((block, index) => [getFileLevelChangeId(filePath, block, index), block]),
+	);
+	const selectedBlocks = new Map<string, DiffBlock>();
+	for (const id of ids) {
+		const block = blocksById.get(id);
+		if (block) {
+			selectedBlocks.set(id, block);
+		} else {
+			console.error(`Unable to find selected file-level change '${id}' in '${filePath}'.`);
+		}
+	}
+
+	const entry = activeEntries.value.find(item => item.filePath == filePath);
+	if (entry) {
+		if (selected) {
+			if (!entry.fileLevelChanges) {
+				entry.fileLevelChanges = new Map();
+			}
+			for (const [id, block] of selectedBlocks) {
+				entry.fileLevelChanges.set(id, block);
+			}
+		} else {
+			for (const id of ids) {
+				entry.fileLevelChanges?.delete(id);
+			}
+			// 函数和文件级变更都为空时，移除整个文件关联。
+			if ((entry.functions?.size ?? 0) === 0 && (entry.fileLevelChanges?.size ?? 0) === 0) {
+				const index = activeEntries.value.indexOf(entry);
+				if (index !== -1) {
+					activeEntries.value.splice(index, 1);
+				}
+			}
+		}
+	} else if (selected && selectedBlocks.size > 0) {
+		activeEntries.value.push({
+			filePath,
+			fileLevelChanges: selectedBlocks,
 		});
 	}
 }
@@ -407,6 +462,7 @@ function exportReport(darkMode: boolean): void {
 								<DiffFile :item="file" :entry="activeEntries.find(entry => entry.filePath === file.path)"
 									:labels="props.labels" view-type="line-by-line"
 									@update:selected-function-ids="(ids, selected) => changeSelectedFunctionIds(file.path, ids, selected)"
+									@update:selected-file-level-change-ids="(ids, selected) => changeSelectedFileLevelChangeIds(file.path, ids, selected)"
 									@update:selected-path="(selected) => changeSelectedPath(file.path, selected)" />
 							</div>
 						</template>
@@ -453,7 +509,8 @@ function exportReport(darkMode: boolean): void {
 										<EntryTree v-if="selectedEntries.length !== 0" :entries="selectedEntries"
 											:labels="props.labels" :can-edit="true"
 											@remove-entry="(filePath) => changeSelectedPath(filePath, false)"
-											@remove-function="(filePath, functionId) => changeSelectedFunctionIds(filePath, [functionId], false)" />
+											@remove-function="(filePath, functionId) => changeSelectedFunctionIds(filePath, [functionId], false)"
+											@remove-file-level-change="(filePath, changeId) => changeSelectedFileLevelChangeIds(filePath, [changeId], false)" />
 										<div v-else class="mt-1 text-xs review-text-muted">{{
 											props.labels.selectSymbolHint }}</div>
 									</div>
@@ -499,7 +556,8 @@ function exportReport(darkMode: boolean): void {
 										<EntryTree v-else :entries="item.entries" :can-edit="true"
 											:labels="props.labels"
 											@remove-entry="(filePath) => changeSelectedPath(filePath, false)"
-											@remove-function="(filePath, functionId) => changeSelectedFunctionIds(filePath, [functionId], false)" />
+											@remove-function="(filePath, functionId) => changeSelectedFunctionIds(filePath, [functionId], false)"
+											@remove-file-level-change="(filePath, changeId) => changeSelectedFileLevelChangeIds(filePath, [changeId], false)" />
 									</div>
 								</template>
 								<template v-else>

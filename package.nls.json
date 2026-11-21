@@ -107,6 +107,7 @@
     "diff2html-report.webview.changeitems.selectAllSymbolsInFile": "Select all symbols in file: {0}",
     "diff2html-report.webview.changeitems.selectFile": "Select file: {0}",
     "diff2html-report.webview.changeitems.selectSymbol": "Select symbol: {0}",
+    "diff2html-report.webview.changeitems.selectFileLevelChange": "Select file-level change at line {0}",
     "diff2html-report.webview.changeitems.fileIsBinary": "Binary files do not have document symbols.",
     "diff2html-report.webview.changeitems.fileTooBig": "File is too large to analyze.",
     "diff2html-report.webview.changeitems.fileWithoutChanges": "File without changes",

@@ -2,12 +2,11 @@
 import { computed } from 'vue';
 import { getFileIcon } from 'diff2html/lib/render-utils';
 import '@vscode/codicons/dist/codicon.css';
-import { LineType } from 'diff2html/lib/types';
 import type { DiffBlock } from 'diff2html/lib/types';
 import type { ChangedFileFunctions, ChangedFunction } from '../../../src/documentSymbols';
 import { alignDiffLines } from '../../../src/diffUtils';
 import DiffLineByLine from './DiffLineByLine.vue';
-import { getChangedFunctionId, getRangeStartLine } from './types';
+import { getChangedFunctionId, getFileBlockLine, getFileLevelChangeId, getRangeStartLine } from './types';
 import type { ChangeEntry, DiffReviewLabels } from './types';
 import DiffSideBySide from './DiffSideBySide.vue';
 import { formatLabel } from '../shared';
@@ -21,6 +20,7 @@ const props = defineProps<{
 }>();
 const emit = defineEmits<{
     'update:selectedFunctionIds': [ids: string[], selected: boolean];
+    'update:selectedFileLevelChangeIds': [ids: string[], selected: boolean];
     'update:selectedPath': [selected: boolean];
 }>();
 const tag = computed(() => getFileIcon(props.item.diffInfo));
@@ -29,21 +29,11 @@ const nonFunctionDiffBlocks = computed(() => props.item.nonFunctionDiffBlocks ??
 
 type DisplayItem =
     | { type: 'function'; key: string; line: number; fn: ChangedFunction; functionIndex: number }
-    | { type: 'file'; key: string; line: number; block: DiffBlock };
+    | { type: 'file'; key: string; line: number; block: DiffBlock; blockId: string };
 
-function getFileBlockLine(block: DiffBlock): number {
-    const newLines = block.lines.flatMap(line =>
-        line.type === LineType.INSERT && line.newNumber !== undefined ? [line.newNumber] : []
-    );
-    const oldLines = block.lines.flatMap(line =>
-        line.type === LineType.DELETE && line.oldNumber !== undefined ? [line.oldNumber] : []
-    );
-    return newLines.length > 0
-        ? Math.min(...newLines)
-        : oldLines.length > 0
-            ? Math.min(...oldLines)
-            : Math.min(block.oldStartLine, block.newStartLine);
-}
+const fileLevelChangeIds = computed(() =>
+    nonFunctionDiffBlocks.value.map((block, index) => getFileLevelChangeId(props.item.path, block, index)),
+);
 
 function getFunctionBadge(kind: 'added' | 'deleted' | 'modified') {
     switch (kind) {
@@ -91,12 +81,16 @@ function getCodiconClass(kind: number): string {
 }
 
 const displayItems = computed<DisplayItem[]>(() => [
-    ...nonFunctionDiffBlocks.value.map((block, index) => ({
-        type: 'file' as const,
-        key: `file:${index}:${getFileBlockLine(block)}`,
-        line: getFileBlockLine(block),
-        block,
-    })),
+    ...nonFunctionDiffBlocks.value.map((block, index) => {
+        const blockId = getFileLevelChangeId(props.item.path, block, index);
+        return {
+            type: 'file' as const,
+            key: blockId,
+            line: getFileBlockLine(block),
+            block,
+            blockId,
+        };
+    }),
     ...functions.value.map((fn, index) => ({
         type: 'function' as const,
         key: `function:${getChangedFunctionId(props.item.path, fn, index)}`,
@@ -106,26 +100,37 @@ const displayItems = computed<DisplayItem[]>(() => [
     })),
 ].sort((left, right) => left.line - right.line));
 
-const allFunctionsSelected = computed(() =>
-    functions.value.length > 0 &&
-    functions.value.every((fn, index) => props.entry?.functions?.has(getChangedFunctionId(props.item.path, fn, index))),
+const allItemsSelected = computed(() =>
+    (functions.value.length > 0 || fileLevelChangeIds.value.length > 0) &&
+    functions.value.every((fn, index) => props.entry?.functions?.has(getChangedFunctionId(props.item.path, fn, index))) &&
+    fileLevelChangeIds.value.every(id => props.entry?.fileLevelChanges?.has(id)),
 );
-const someFunctionsSelected = computed(() =>
-    functions.value.some((fn, index) => props.entry?.functions?.has(getChangedFunctionId(props.item.path, fn, index))),
+const someItemsSelected = computed(() =>
+    functions.value.some((fn, index) => props.entry?.functions?.has(getChangedFunctionId(props.item.path, fn, index))) ||
+    fileLevelChangeIds.value.some(id => props.entry?.fileLevelChanges?.has(id)),
 );
 
 function toggleFileSelection(selected: boolean): void {
-    if (functions.value.length === 0) {
+    const functionIds = functions.value.map((fn, index) => getChangedFunctionId(props.item.path, fn, index));
+    if (functionIds.length === 0 && fileLevelChangeIds.value.length === 0) {
         emit('update:selectedPath', selected);
         return;
     }
-    const fileFunctionIds = functions.value.map((fn, index) => getChangedFunctionId(props.item.path, fn, index));
-    emit('update:selectedFunctionIds', fileFunctionIds, selected);
+    if (functionIds.length > 0) {
+        emit('update:selectedFunctionIds', functionIds, selected);
+    }
+    if (fileLevelChangeIds.value.length > 0) {
+        emit('update:selectedFileLevelChangeIds', [...fileLevelChangeIds.value], selected);
+    }
 }
 
 function toggleFunctionSelection(fn: ChangedFunction, functionIndex: number, selected: boolean): void {
     const id = getChangedFunctionId(props.item.path, fn, functionIndex);
     emit('update:selectedFunctionIds', [id], selected);
+}
+
+function toggleFileLevelChangeSelection(blockId: string, selected: boolean): void {
+    emit('update:selectedFileLevelChangeIds', [blockId], selected);
 }
 
 </script>
@@ -148,8 +153,8 @@ function toggleFunctionSelection(fn: ChangedFunction, functionIndex: number, sel
                 </span>
                 <span class="ml-auto shrink-0 review-text-added font-medium">+{{ props.item.diffInfo.addedLines }}</span>
                 <span class="ml-3 shrink-0 review-text-deleted font-medium">-{{ props.item.diffInfo.deletedLines }}</span>
-                <el-checkbox v-if="!props.displayOnly && functions.length > 0" class="ml-3 shrink-0" :model-value="allFunctionsSelected"
-                    :indeterminate="someFunctionsSelected && !allFunctionsSelected"
+                <el-checkbox v-if="!props.displayOnly && (functions.length > 0 || nonFunctionDiffBlocks.length > 0)" class="ml-3 shrink-0" :model-value="allItemsSelected"
+                    :indeterminate="someItemsSelected && !allItemsSelected"
                     :aria-label="formatLabel(props.labels.selectAllSymbolsInFile, props.item.path)" @change="toggleFileSelection($event === true)" />
                <el-checkbox v-else-if="!props.displayOnly" class="ml-3 shrink-0" :model-value="props.entry?.filePath == props.item.path"
                     :title="formatLabel(props.labels.selectFile, props.item.path)"
@@ -199,6 +204,11 @@ function toggleFunctionSelection(fn: ChangedFunction, functionIndex: number, sel
                                     class="flex h-5 w-5 shrink-0 items-center justify-center rounded review-surface-raised font-mono text-xs font-bold review-text-muted"
                                     aria-hidden="true">#</span>
                                 <span>{{ props.labels.fileLevelChanges }}</span>
+                                <el-checkbox v-if="!props.displayOnly" class="ml-auto shrink-0"
+                                    :model-value="props.entry?.fileLevelChanges?.has(displayItem.blockId)"
+                                    :title="formatLabel(props.labels.selectFileLevelChange, String(displayItem.line))"
+                                    :aria-label="formatLabel(props.labels.selectFileLevelChange, String(displayItem.line))"
+                                    @change="toggleFileLevelChangeSelection(displayItem.blockId, $event === true)" />
                             </div>
                             <DiffLineByLine v-if="props.viewType === 'line-by-line'" :item="alignDiffLines([displayItem.block])" />
                             <DiffSideBySide v-else :item="alignDiffLines([displayItem.block])" />
