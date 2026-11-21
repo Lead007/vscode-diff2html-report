@@ -1,6 +1,6 @@
 {
-    "diff2html-report.displayName": "Git Diff Report — Share as HTML",
-    "diff2html-report.description": "Turn any git diff into a shareable HTML report for review, delivery docs and release notes. Fully local, works offline.",
+    "displayName": "Git Diff Report — Share as HTML",
+    "description": "Turn any git diff into a shareable HTML report for review, delivery docs and release notes. Fully local, works offline.",
     "diff2html-report.configuration.title": "Configuration for Git Diff Report",
     "diff2html-report.configuration.defaultDiffOptions": "Default git diff options when generating the diff report.\nSupported options: \n* -b: Ignore trailing whitespace\n* -w: Ignore all whitespace\n* -M: Detect renames\n* -C: Detect copies",
     "diff2html-report.configuration.filter": "Extra arguments appended verbatim, in order, to `git diff <base> <current>` after the options selected in the picker. Add a separate `--` item before pathspec items (e.g. `--` followed by `src/` or `*.cpp`); other git diff options such as `--diff-filter=M` are passed through as well.",
