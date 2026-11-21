@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { Back, Download, View } from '@element-plus/icons-vue';
+import { Back, Download, View, Top } from '@element-plus/icons-vue';
 import type { ChangedFileFunctions } from '../../../src/functionSymbols';
 import DiffFile from './DiffFile.vue';
-import type { ChangeItem, DiffReviewLabels } from './types';
+import type { ChangeItem, DiffReviewConfigs, DiffReviewLabels } from './types';
 import { formatLabel } from '../shared';
 import DiffFileList from './DiffFileList.vue';
+import MyFooter from '../MyFooter.vue';
 
 const props = defineProps<{
 	items: ChangeItem[];
@@ -14,7 +15,7 @@ const props = defineProps<{
 	totalAdded: number,
 	totalDeleted: number,
 	initialDarkMode: boolean;
-    viewType: 'line-by-line' | 'side-by-side';
+    configs: DiffReviewConfigs;
 }>();
 
 const emit = defineEmits<{
@@ -151,7 +152,7 @@ onBeforeUnmount(() => {
 					class="mb-4 text-sm leading-normal whitespace-pre-wrap [overflow-wrap:anywhere]">{{ item.description }}</p>
 
 				<template v-for="entry in item.entries" :key="entry.filePath">
-					<DiffFile v-if="entry.file" :item="entry.file" :labels="props.labels" :view-type="props.viewType" display-only />
+					<DiffFile v-if="entry.file" :item="entry.file" :labels="props.labels" :view-type="props.configs.viewType" display-only />
 					<el-card v-else class="mb-4" shadow="never">
 						<template #header>
 							<strong class="text-sm [overflow-wrap:anywhere]">{{ entry.filePath }}</strong>
@@ -160,6 +161,14 @@ onBeforeUnmount(() => {
 					</el-card>
 				</template>
 			</el-card>
+
+			<MyFooter v-if="props.configs.showFooter" :labels="props.labels"/>
 		</main>
+
+		<el-backtop :right="50" :bottom="100" class="review-backtop">
+			<el-icon class="text-2xl">
+				<Top />
+			</el-icon>
+		</el-backtop>
 	</div>
 </template>

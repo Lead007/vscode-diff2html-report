@@ -143,7 +143,6 @@ export async function selectDiffOptions(extensionConfig: vscode.WorkspaceConfigu
         { label: '-w', description: localize('diff2html-report.commandOption.w'), picked: defaultDiffOptions['-w'] },
         { label: '-M', description: localize('diff2html-report.commandOption.M'), picked: defaultDiffOptions['-M'] },
         { label: '-C', description: localize('diff2html-report.commandOption.C'), picked: defaultDiffOptions['-C'] },
-        { label: '--submodule', description: localize('diff2html-report.commandOption.--submodule'), picked: defaultDiffOptions['--submodule'] },
     ];
 
     const enabledOptions = await vscode.window.showQuickPick(options, {

@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { Download, View } from '@element-plus/icons-vue';
+import { Download, Top, View } from '@element-plus/icons-vue';
 import type { LegacyDiffPreviewData } from './types';
 import { formatLabel, getExportStyles } from '../shared';
 import { ElMessage } from 'element-plus';
 import { ExportContent } from '../../../src/htmlTemplate';
+import MyFooter from '../MyFooter.vue';
 
 const props = defineProps<LegacyDiffPreviewData>();
-const statusMessage = ref('');
 const vscodeApi = window.acquireVsCodeApi?.();
 
 let initialDarkMode = document.body.classList.contains('vscode-dark');
@@ -43,7 +43,7 @@ function exportHtml(): void {
 	}
 
 	const exportContent: ExportContent = {
-		title: props.labels.reportTitle,
+		title: props.labels.header,
 		styles: styles,
 		htmlContent: reportContent.outerHTML,
 		darkMode: darkMode.value
@@ -88,6 +88,15 @@ function exportHtml(): void {
 			</div>
 
 			<div v-html="props.htmlContent"></div>
+
+			<MyFooter v-if="props.showFooter" :labels="props.labels"/>
 		</main>
+
+		<el-backtop :right="50" :bottom="100" class="review-backtop">
+			<el-icon class="text-2xl">
+				<Top />
+			</el-icon>
+		</el-backtop>
+
 	</div>
 </template>

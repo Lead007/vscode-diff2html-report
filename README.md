@@ -1,28 +1,77 @@
-English Introduction | [中文介绍](#Git-Diff差异报告)
+English | [简体中文](README.zh-cn.md)
 
-# Diff2html Report Generator For VS Code
+# Git Diff Report — Share as HTML
 
-Generate and export a `git diff` report as an HTML page.
+**Turn `git diff` into a shareable HTML report — no screenshots, no pasting diffs into chat.**
 
-## Features
+Generate a diff report or a structured change-item report from any two Git revisions, preview it inside VS Code, and export it as a single standalone HTML file.
 
-This extension adds two commands to the Git repository's title menu in VS Code's **Source Control** view.
+Everything runs on your machine: your own Git installation produces the diff, the extension renders it, and the report opens in any browser. No account, no upload, no network required.
 
-**Generate Diff Report** lets you compare Git revisions and preview or export the result as an HTML report.
+[![Marketplace](https://vsmarketplacebadges.dev/version-short/Lead007.diff2html-report.svg)](https://marketplace.visualstudio.com/items?itemName=Lead007.diff2html-report)
+[![Installs](https://vsmarketplacebadges.dev/installs-short/Lead007.diff2html-report.svg)](https://marketplace.visualstudio.com/items?itemName=Lead007.diff2html-report)
+[![Rating](https://vsmarketplacebadges.dev/rating-star/Lead007.diff2html-report.svg)](https://marketplace.visualstudio.com/items?itemName=Lead007.diff2html-report)
+[![License](https://img.shields.io/github/license/Lead007/vscode-diff2html-report)](https://github.com/Lead007/vscode-diff2html-report/blob/main/LICENSE)
 
-**Generate Change Item Report** analyzes differences between the selected Git revisions. You can select changed symbols, add change notes, preview the report in a Webview, and export it as a standalone HTML file.
+## Why this extension
+
+`git diff` is great for reading on your own screen and bad at everything else. This extension
+turns it into an artifact you can actually hand to someone:
+
+- **30-second start** — open a repository → click the icon in the **Source Control** title bar → pick a base and a current revision → preview → **Export HTML**.
+- **Code review** — a PR is too large to read in the browser tab? Export the diff as one page and review it offline, or attach it to the review. Select the **merge base** as the base revision so the report shows only the branch's changes.
+- **Delivery & handover** — give the client or the next team a readable list of what changed, with notes, instead of a wall of `+`/`-` lines.
+- **Release notes & audit** — keep a per-release HTML record of the changes, with symbol-level grouping and written explanations.
+- **Offline and restricted networks** — no CDN, no telemetry, no outbound requests. Preview and export work with the network cable unplugged, which makes the extension usable on air-gapped machines, behind corporate proxies, and in finance, government and enterprise environments.
+
+## Quick start (30 seconds)
+
+1. Install the extension and open a Git repository in VS Code.
+2. Open **Source Control**, then use the **title menu of the repository** (the `...` button).
+3. Run **Generate Diff Report** → pick a base and a current revision → review the preview → **Export HTML**.
+
+That's it. The exported file opens in any browser, needs no extension installed, and can be
+sent by email, attached to a ticket, or committed to a `docs/` folder.
+
+## Two commands, two kinds of report
+
+| | **Generate Diff Report** | **Generate Change Item Report** |
+|---|---|---|
+| Output | Full rendered diff of the selected revisions | Diff grouped into change items you describe |
+| Best for | Reviewing or archiving a diff as-is | Explaining *what* changed and *why* |
+| Symbol analysis | — | Groups changes by class / function / method (via VS Code document symbols) |
+| Notes | — | Title + description per change item |
+| Export | Standalone HTML | Standalone HTML |
+
+Both commands can also be launched from the picker menu opened by **Generate report (HTML)** in the Source Control title bar (the icon and its menu).
+
+## What's in the report
+
+- File list with total added / deleted line counts
+- Side-by-side or line-by-line view
+- Light and dark theme, switchable before export
+- A single self-contained HTML file — no plugin, no server, no build step
+- Symbol-level grouping so a 40-file diff becomes a handful of named changes (Change Item Report)
 
 ## Requirements
 
 * VS Code 1.68.0 or higher.
 * VS Code's built-in Git plugin.
-* A VS Code language extension that provides document symbols for each language you want to analyze with the **Generate Change Item Report** command. Symbol detection depends on the language extension and current VS Code configuration; missing headers or other unresolved dependencies may affect the symbols it returns.
+* For **Generate Change Item Report**: a language extension that provides document symbols for
+the languages you want analyzed. Symbol detection depends on that language extension and your
+current VS Code configuration; missing headers or other unresolved dependencies may affect the
+symbols it returns.
+
+## Installation
+
+- **Marketplace**: search for `Git Diff Report — Share as HTML` or the extension ID `Lead007.diff2html-report`, or install from [the extension page](https://marketplace.visualstudio.com/items?itemName=Lead007.diff2html-report).
+- **VSIX**: download the `.vsix` from [Releases](https://github.com/Lead007/vscode-diff2html-report/releases), then `Extensions → ... → Install from VSIX...`.
 
 ## Usage
 
 Open a Git repository in VS Code. Both report commands are available from the Git repository's title menu in the **Source Control** view.
 
-For either command, select a base revision and a current revision from the available branches or tags. You can also enter a branch name, tag, or commit hash manually. The current revision can be **Staged** to compare the base revision with staged changes. Then choose any `git diff` options to apply.
+For either command, select a base revision and a current revision from the available branches or tags. You can also enter a branch name, tag, or commit hash manually. The current revision can be **Staged** to compare the base revision with staged changes. Then choose any `git diff` options to apply. Reports compare the two revisions directly with `git diff <base> <current>` (two-dot), not their merge base; for a branch review, choose the merge base as the base revision.
 
 ### Generate Diff Report
 
@@ -38,22 +87,23 @@ For either command, select a base revision and a current revision from the avail
 3. In the review view, select the changed symbols or file-level changes that belong to a change item. Add a title and description, then create the item. You can edit or delete items, adjust their selections, or clear all items.
 4. Select **Preview HTML** to review the report, switch its light/dark theme if desired, and use **Export HTML** to save it as a standalone file.
 
-Symbol-level analysis requires an installed and enabled language extension that provides document symbols for the file type. If symbols are unavailable or no symbols of selected type are identified, changes may appear at file level instead. Diff of Binary and oversized files are not parsed and displayed.
+*Note: Symbol-level analysis requires an installed and enabled language extension that provides document symbols for the file type. If symbols are unavailable or no symbols of selected type are identified, changes may appear at file level instead. Diffs of binary and oversized files are not parsed or displayed.*
 
-## Extension Settings
+## Settings
 
-This extension contributes the following settings:
-
-* `diff2html-report.defaultDiffOptions`: Set a group of default `git diff` options when generating the diff report.
-* `diff2html-report.filter`: Set a group of filter strings to include only specific files in the diff report.
-* `diff2html-report.encoding`: The character set encoding used when retrieving a specific version of repository files (e.g. in the Diff View). A list of all supported encodings can be found [here](https://github.com/ashtuchkin/iconv-lite/wiki/Supported-Encodings).
-* `diff2html-report.recentCommitCount`: Number of recent commits to display in the commit selection dropdown. The default value is 5.
-* `diff2html-report.maxGitDiffFileSize`: Maximum file size (in bytes) for the git diff output. The default value is 64MB.
-* `diff2html-report.symbolDiffLineThreshold`: Show the full symbol content when its length is at or below this line count. The default is 30.
-* `diff2html-report.symbolDiffChangePercentage`: Show the full symbol content for a larger change when changed lines reach this percentage of the symbol content length. The default is 30.
-* `diff2html-report.symbolDiffContextLines`: Number of unchanged lines shown around changes in long symbol contents with a small change percentage. The default is 3.
-* `diff2html-report.symbolDiffSymbolKinds`: Select which VS Code document symbol kinds are included in symbol-level change analysis. The default is `Class`, `Function`, `Method`, `Constructor`, `Operator`, and `Struct`.
-* `diff2html-report.defaultViewType`: Set the default view type to show diff lines for exported page, including Git Diff Report and Change Items Report. The default setting is side-by-side.
+| Setting | Default | Description |
+|---|---|---|
+| `diff2html-report.defaultDiffOptions` | — | Default `git diff` options pre-selected when generating a report. Supported: `-b`, `-w`, `-M`, `-C`. |
+| `diff2html-report.filter` | — | Extra arguments appended verbatim, in order, to `git diff <base> <current>` after the options selected in the picker. Put `--` before pathspecs, e.g. `["--", "src/"]` or `["--", "*.cpp"]`; other `git diff` options are passed through as well, e.g. `["--diff-filter=M"]`. |
+| `diff2html-report.encoding` | `utf8` | Charset used when reading a specific version of repository files. Supported list: [iconv-lite](https://github.com/ashtuchkin/iconv-lite/wiki/Supported-Encodings). |
+| `diff2html-report.recentCommitCount` | 5 | Number of recent commits to display in the commit selection dropdown. |
+| `diff2html-report.maxGitDiffFileSize` | `67108864` (64 MiB) | Maximum output size (in bytes) of a single Git command (`diff`, `log`, `for-each-ref`, `show`). If a command exceeds it, that command fails and report generation stops; raise the value if needed. |
+| `diff2html-report.symbolDiffLineThreshold` | `30` | Symbols at or below this line count are shown in full in symbol-level diffs. |
+| `diff2html-report.symbolDiffChangePercentage` | `30` | Long symbols are shown in full when changed lines reach this percentage of their length. |
+| `diff2html-report.symbolDiffContextLines` | `3` | Unchanged context lines around changes in long symbols with a small change percentage. |
+| `diff2html-report.symbolDiffSymbolKinds` | `Class`, `Function`, `Method`, `Constructor`, `Operator`, `Struct` | VS Code document symbol kinds included in symbol-level analysis. |
+| `diff2html-report.defaultViewType` | `side-by-side` | View type used by the Diff preview and exported reports. The change-item review page always uses `line-by-line`. |
+| `diff2html-report.showFooter` | `true` | Whether to show the footer in the Diff preview, the change-item report preview, and their exported reports. The change-item review page has no footer. |
 
 ## Q&A
 
@@ -61,21 +111,56 @@ This extension contributes the following settings:
 
 Set `diff2html-report.encoding` in VS Code settings to match the encoding of your repository files. The default is `utf8`; for example, use `gbk` for GBK-encoded files.
 
-### How can I limit the report to specific folders or file types?
+### How can I limit the report or pass extra `git diff` arguments?
 
-Set `diff2html-report.filter` to an array of `git diff` pathspec arguments. For example, use `["--", "src/"]` to include a folder or `["--", "*.cpp"]` to include files matching a pattern.
+Set `diff2html-report.filter` to an array of arguments. Every item is appended verbatim, in order, to `git diff <base> <current>` after the options selected in the picker. Use `--` before pathspecs, for example `["--", "src/"]` to include a folder or `["--", "*.cpp"]` to include files matching a pattern; other `git diff` options such as `["--diff-filter=M"]` are passed through as well.
 
 ### What if I can't find the base or current revision in the list?
 
-Find the commit in Git history or a Git Graph extension, copy its commit hash, and enter the hash manually when selecting the base or current revision.
+Find the commit in Git history, or in a Git Graph or similar extension, copy its commit hash, and enter the hash manually when selecting the base or current revision.
 
-### Why are some files uncorrectly missing symbol-level analysis results?
+### Why do some files lack symbol-level analysis results?
 
 The language extension that provides document symbols may not have finished loading, especially immediately after opening a workspace. Wait for the language extension to finish loading, then run **Generate Change Item Report** again.
 
 ### Why are code diffs always shown in `line-by-line` view on the Diff Review page, even when my setting is `side-by-side`?
 
 On the Diff Review page, the code diff and the change item form are displayed side by side. Since there is limited horizontal space for the diff, it always uses the `line-by-line` view.
+
+### Which languages support symbol-level analysis?
+
+Any language whose VS Code extension provides document symbols. JavaScript/TypeScript, C/C++,
+Java, C#, Go, Python, Rust and others generally work, but coverage depends on the language
+extension's symbol support.
+
+## Limitations
+
+- **Two-dot comparison** — reports run `git diff <base> <current>` (two-dot), comparing the two trees directly rather than their merge base. For a PR-style review, choose the merge base as the base revision; otherwise changes made on the target branch after divergence appear as reverse differences.
+- **Binary files** — binary files keep their file entries, but their contents are not shown.
+- **Diff size** — if the output of any Git command (`diff`, `log`, `for-each-ref`, `show`) exceeds `diff2html-report.maxGitDiffFileSize` (bytes), that command fails and the entire report generation stops; raise the setting if needed.
+- **Heuristic symbol pairing** — symbol-level changes are matched heuristically, so renamed or heavily modified symbols may be grouped incorrectly.
+- **Session-only change items** — change items exist only in the current webview session; anything not exported is lost when the panel is closed.
+- **Review layout** — the Diff Review page always uses the line-by-line view, even when `diff2html-report.defaultViewType` is set to `side-by-side`.
+- **Export format** — reports are exported as standalone HTML only.
+
+## Privacy
+
+- `git diff` runs locally through your own Git installation. **Your code never leaves your machine** — the extension makes no outbound network requests and collects no telemetry or usage data.
+- The rendering library is bundled into the extension, so the preview works offline. There is no CDN dependency for a proxy to block.
+- The exported HTML file is written only to the location you choose on your local disk.
+
+## Feedback & support
+
+- Bugs and feature requests: [Issues](https://github.com/Lead007/vscode-diff2html-report/issues)
+- Questions and ideas: [Discussions](https://github.com/Lead007/vscode-diff2html-report/discussions)
+- Please read [SUPPORT.md](https://github.com/Lead007/vscode-diff2html-report/blob/main/SUPPORT.md) before opening an issue.
+- Reporting a problem? Open **View → Output**, select the `diff2html-report` channel in the Output panel, and include the copied log with your report.
+
+## Contributing
+
+Pull requests are welcome. See [CONTRIBUTING.md](https://github.com/Lead007/vscode-diff2html-report/blob/main/CONTRIBUTING.md).
+
+If this extension saves you time, a Marketplace review helps other developers find it.
 
 ## License
 
@@ -90,89 +175,3 @@ See [CHANGELOG](https://github.com/Lead007/vscode-diff2html-report/blob/main/CHA
 ---
 
 **Enjoy!**
-
-# Git Diff差异报告
-
-在 VS Code 中生成并导出 HTML 格式的 Git 差异报告。
-
-## 功能
-
-本扩展在 VS Code **源代码管理**视图中 Git 仓库的标题菜单提供两个命令：
-
-* **生成差异报告**：比较 Git 版本，在预览中查看差异，并可导出为 HTML 文件。
-* **生成更改项报告**：分析所选 Git 版本之间的差异。你可以选择变更的符号、添加更改说明，在 Webview 中预览报告，并导出为独立 HTML 文件。
-
-## 环境要求
-
-* VS Code 1.68.0 或更高版本。
-* VS Code 内置的 Git 扩展。
-* 如果要使用**生成更改项报告**进行符号级分析，需要为相应语言安装能够提供文档符号的 VS Code 语言扩展。符号识别也受语言扩展和当前 VS Code 项目配置影响；缺少头文件或其他未解决的依赖可能影响返回的符号。
-
-## 使用方法
-
-在 VS Code 中打开 Git 仓库。两个报告命令都可以从**源代码管理**视图中该仓库的标题菜单启动。
-
-运行任一命令时，先选择基准版本和当前版本（可选分支或标签），也可以手动输入分支名、标签名或提交哈希。当前版本还可以选择**暂存区**，以比较基准版本与已暂存的更改。之后可选择要应用的 `git diff` 选项。
-
-### 生成差异报告
-
-1. 在源代码管理视图的仓库标题菜单中选择**生成差异报告**。
-2. 选择基准版本和当前版本，然后选择 `git diff` 选项。
-3. 在预览中查看差异。报告包含文件列表；启用行数统计时，还会显示新增和删除的总行数。
-4. 如需保存独立 HTML 报告，选择**导出 HTML**，可以切换浅色/深色主题，选择保存位置。导出后可以打开文件或其所在文件夹。
-
-### 生成更改项报告
-
-1. 在源代码管理视图的仓库标题菜单中选择**生成更改项报告**。
-2. 选择基准版本和当前版本，然后选择 `git diff` 选项。扩展会分析变更文件，并使用 VS Code 文档符号识别变更符号。
-3. 在评审界面中，选择要关联到更改项的变更符号或文件级变更，填写标题和说明并创建更改项。你还可以编辑或删除更改项、调整关联项，或清空所有更改项。
-4. 选择**预览 HTML**检查报告；可以切换浅色/深色主题，然后选择**导出 HTML**将报告保存为独立文件。
-
-符号级分析需要已安装并启用、且能为相应文件类型提供文档符号的语言扩展。如果符号不可用或未识别到符号，相关变更可能以文件级变更显示。二进制文件和超大文件的差异不会被解析和显示。
-
-## 扩展设置
-
-本扩展提供以下设置：
-
-* `diff2html-report.defaultDiffOptions`：生成差异报告时默认选中的 `git diff` 选项。
-* `diff2html-report.filter`：设置文件筛选参数，仅在差异报告中包含指定文件。可使用 Git pathspec，例如 `["--", "src/"]`。
-* `diff2html-report.encoding`：读取仓库文件特定版本时使用的字符编码（例如获取差异内容时）。默认值为 `utf8`。支持的编码列表见 [iconv-lite 文档](https://github.com/ashtuchkin/iconv-lite/wiki/Supported-Encodings)。
-* `diff2html-report.configuration.recentCommitCount`: 在提交选择下拉列表中显示的最近提交数。默认值为5。
-* `diff2html-report.maxGitDiffFileSize`：`git diff` 输出的最大大小，单位为字节，默认值为 64 MB。
-* `diff2html-report.symbolDiffLineThreshold`：符号行数小于或等于该值时，在符号级差异中显示完整内容，默认值为 30。
-* `diff2html-report.symbolDiffChangePercentage`：较长内容的符号的变更行数达到此比例时，显示完整符号内容，默认值为 30%。
-* `diff2html-report.symbolDiffContextLines`：内容长的符号仅有少量变更时，在变更周围显示的未修改上下文行数，默认值为 3。
-* `diff2html-report.symbolDiffSymbolKinds`：符号级分析包含的 VS Code 文档符号类型，默认值为 `Class`、`Function`、`Method`、`Constructor`、`Operator` 和 `Struct`。
-* `diff2html-report.defaultViewType`：导出报告中显示差异行的默认视图类型，包括 Git Diff 报告和更改项报告。默认值为并排视图（`side-by-side`）。
-
-## 常见问题
-
-### 报告中的代码出现乱码怎么办？
-
-在 VS Code 设置中将 `diff2html-report.encoding` 改为与仓库文件相符的编码。默认值为 `utf8`；例如，GBK 编码的文件可以设置为 `gbk`。
-
-### 如何只报告指定文件夹或文件类型？
-
-将 `diff2html-report.filter` 设置为 Git `diff` 的 pathspec 参数数组。例如，`["--", "src/"]` 可筛选 `src` 文件夹，`["--", "*.cpp"]` 可筛选匹配该模式的文件。
-
-### 如果在列表中找不到基准版本或当前版本怎么办？
-
-可以在 Git 历史记录或 Git Graph 等扩展中找到相应的提交，复制其提交哈希，然后在选择基准版本或当前版本时手动输入该哈希。
-
-### 为什么有些文件没有正确显示符号级分析结果？
-
-尤其是在刚打开工作区时，提供文档符号的语言扩展可能尚未完成加载。等待语言扩展加载完成后，再次运行**生成更改项报告**。
-
-### 为什么编写更改项的页面中，代码行差异始终是`line-by-line`视图类型，即使我的设置是`side-by side`？
-
-因为编写更改项的页面中代码差异和填写更改项的表单是水平方向并排的，考虑到给代码差异能留的宽度有限，所以视图类型始终是`line-by-line`。
-
-## 许可证
-
-本项目由 [@Lead007](https://github.com/Lead007) 基于 [MIT 许可证](https://github.com/Lead007/vscode-diff2html-report/blob/main/LICENSE)发布。
-
-符号图标使用 Microsoft 的 [Codicons](https://github.com/microsoft/vscode-codicons)，基于 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) 许可。
-
-## 发布说明
-
-请参阅[更新日志](https://github.com/Lead007/vscode-diff2html-report/blob/main/CHANGELOG.md)。

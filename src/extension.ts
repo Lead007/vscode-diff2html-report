@@ -52,6 +52,39 @@ export function activate(context: vscode.ExtensionContext) {
 	const git = gitExtension.exports.getAPI(1);
 
 	context.subscriptions.push(logger);
+	context.subscriptions.push(
+		vscode.commands.registerCommand('diff2html-report.showMenu', async (uri?) => {
+			const items = [
+				{
+					id: 'diff',
+					label: '$(git-compare) ' + localize('diff2html-report.command.generateDiffReport'),
+					description: localize('diff2html-report.showMenu.diff.description'),
+					detail: localize('diff2html-report.showMenu.diff.detail'),
+				},
+				{
+					id: 'changeItem',
+					label: '$(checklist) ' + localize('diff2html-report.command.generateChangeItemReport'),
+					description: localize('diff2html-report.showMenu.changeItems.description'),
+					detail: localize('diff2html-report.showMenu.changeItems.detail'),
+				},
+			];
+
+			const picked = await vscode.window.showQuickPick(items, {
+				title: localize('diff2html-report.showMenu.title'),
+				placeHolder: localize('diff2html-report.showMenu.placeHolder'),
+				ignoreFocusOut: true,
+			});
+
+			if (!picked) { return; }
+
+			const command =
+				picked.id === 'diff'
+					? 'diff2html-report.generateDiffReport'
+					: 'diff2html-report.generateChangeItemReport';
+
+			await vscode.commands.executeCommand(command);
+		})
+	);
 	// 在 SCM 提供者上注册命令
 	context.subscriptions.push(
 		vscode.commands.registerCommand('diff2html-report.generateDiffReport', async (uri?) => {
@@ -75,7 +108,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 			const htmlContent = await vscode.window.withProgress({
 				location: vscode.ProgressLocation.Notification,
-				cancellable: false
+				cancellable: true
 			}, async (progress) => {
 				progress.report({ message: localize('diff2html-report.progress.executingDiff') });
 
@@ -109,6 +142,7 @@ export function activate(context: vscode.ExtensionContext) {
 				totalAdded,
 				totalDeleted,
 				labels: await getl18nWithPrefix(context.extensionUri, [WEBVIEW_PREFIX, DIFFVIEW_PREFIX]),
+				showFooter: extensionConfig.get<boolean>('showFooter')
 			};
 			showVuePage(context, 'legacy-diff-preview.html', localize('diff2html-report.webview.diffview.title'),
 				webViewContext, '__LEGACY_DIFF_PREVIEW_DATA__',
@@ -153,7 +187,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 			const webViewContext = await vscode.window.withProgress({
 				location: vscode.ProgressLocation.Notification,
-				cancellable: false
+				cancellable: true
 			}, async (progress) => {
 				progress.report({ message: localize('diff2html-report.progress.executingDiff') });
 
@@ -190,6 +224,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 				const configs = {
 					viewType: extensionConfig.get<string>('defaultViewType'),
+					showFooter: extensionConfig.get<boolean>('showFooter')
 				};
 				return { diffInfo, changedFunctions, labels, configs, totalAdded, totalDeleted };
 			});
@@ -224,7 +259,7 @@ async function selectTwoCommits(repoPath: string): Promise<{ base: vscode.QuickP
 	// 显示进度窗口并获取引用
 	const commits = await vscode.window.withProgress({
 		location: vscode.ProgressLocation.Notification,
-		cancellable: false
+		cancellable: true
 	}, async (progress) => {
 		progress.report({ message: localize('diff2html-report.progress.loadingRefs') });
 		const refs = await getGitRefs(repoPath);

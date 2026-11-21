@@ -4,7 +4,7 @@ All notable changes to the "diff2html-report" extension will be documented in th
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
-## [0.7.2] - 2026-11-15
+## [0.7.3] - 2026-11-21
 
 ### Added
 
@@ -12,11 +12,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 - Display some recent commits in the commit selection dropdown. The max count is set by configuration `diff2html-report.recentCommitCount`.
 
+- Add a "Generate report (HTML)" button to the navigation bar of the SCM title. It opens a menu to choose between the Diff Report and the Change Item Report, and both commands are also available in the overflow menu of the SCM title.
+
+- Show a footer in the Diff preview, the change item report preview and their exported HTML reports, linking to the Marketplace page and the GitHub repository. It can be turned off with the configuration `diff2html-report.showFooter` (enabled by default).
+
+- Add a back-to-top button to the change items page, the report preview page and the Diff preview page.
+
+- Progress notifications shown while loading refs and generating reports can now be cancelled.
+
 ### Changed
 
 - Refined several fields in `package.json` so the extension's metadata is clearer and more accurate.
 
 - Reduced the packaged extension size from about 10.3 MB to about 1.7 MB. `vue` is now a development dependency, since the webview ships prebuilt and self-contained assets, and the optional `highlight.js` files pulled in by `diff2html` are no longer packaged.
+
+- Removed `--submodule` from the supported diff options, since it is rarely used and may produce incorrect results. Specify submodule content through the configuration `diff2html-report.filter` if needed.
+
+- Rewrote the README, added the Chinese README, CONTRIBUTING, SECURITY, SUPPORT documents and GitHub issue templates, and aligned the configuration descriptions with the actual behavior.
+
+### Fixed
+
+- Fixed the document title of HTML reports exported from the Diff preview page, which did not match the report header.
 
 ## [0.7.1] - 2026-11-12
 
@@ -137,6 +153,7 @@ Fix the bug that on the Diff Review page, the old and new line numbers may be ar
 
 Initial release.
 
+[0.7.3]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.7.3
 [0.7.1]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.7.1
 [0.6.2]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.6.2
 [0.6.0]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.6.0
