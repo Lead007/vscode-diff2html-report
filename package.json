@@ -1,13 +1,13 @@
 {
   "name": "diff2html-report",
-  "displayName": "%diff2html-report.displayName%",
+  "displayName": "%displayName%",
   "icon": "assets/icon.png",
   "galleryBanner": {
     "color": "#1F2430",
     "theme": "dark"
   },
-  "description": "%diff2html-report.description%",
-  "version": "0.7.3",
+  "description": "%description%",
+  "version": "0.7.3-patch",
   "license": "MIT",
   "publisher": "Lead007",
   "engines": {
