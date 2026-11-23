@@ -152,8 +152,10 @@ export function activate(context: vscode.ExtensionContext) {
 					}
 
 					try {
-						await exportHtml(context.extensionUri, 'diff-report', message.content);
-						appendLog(`Diff report exported to '${uri.fsPath}'.`);
+						const exportPath = await exportHtml(context.extensionUri, 'diff-report', message.content);
+						if (exportPath) {
+							appendLog(`Diff report exported to '${exportPath}'.`);
+						}
 					} catch (error) {
 						appendLog(`Failed to export diff report: ${String(error)}`);
 						vscode.window.showErrorMessage(localize('diff2html-report.commandErrorText', String(error)));
@@ -241,8 +243,10 @@ export function activate(context: vscode.ExtensionContext) {
 					}
 
 					try {
-						await exportHtml(context.extensionUri, 'change-items-report', message.content);
-						appendLog(`Change items report exported to '${uri.fsPath}'.`);
+						const exportPath = await exportHtml(context.extensionUri, 'change-items-report', message.content);
+						if (exportPath) {
+							appendLog(`Change items report exported to '${exportPath}'.`);
+						}
 					} catch (error) {
 						appendLog(`Failed to export change items report: ${String(error)}`);
 						vscode.window.showErrorMessage(localize('diff2html-report.commandErrorText', String(error)));

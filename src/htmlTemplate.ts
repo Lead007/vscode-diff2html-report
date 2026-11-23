@@ -14,6 +14,13 @@ export interface ExportData {
     content: ExportContent
 }
 
+/**
+ *
+ * @param extensionUri 插件Uri（来自activate）
+ * @param defaultFileName 默认文件名
+ * @param data 导出内容（不包含模板）
+ * @returns 导出路径（未导出成功返回undefined）
+ */
 export async function exportHtml(extensionUri: vscode.Uri, defaultFileName: string, data: ExportContent) {
     // 保存文件对话框
     const fileName = `${defaultFileName}-${new Date().toLocaleDateString().replace(/\//g, '-')}.html`;
@@ -46,10 +53,11 @@ export async function exportHtml(extensionUri: vscode.Uri, defaultFileName: stri
         );
         if (action === localize('diff2html-report.export.openFile')) {
             const open = (await import('open')).default;
-            await open(uri.fsPath);
+            open(uri.fsPath);
         } else if (action === localize('diff2html-report.export.openFolder')) {
             vscode.commands.executeCommand('revealFileInOS', uri);
         }
 
+        return uri.fsPath;
     }
 }
