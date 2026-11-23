@@ -8,15 +8,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Changed
 
-- Merged the English and Chinese READMEs into a single `README.md` with in-page language links, so the Chinese introduction is available directly on the Marketplace page and in the VS Code extension details page instead of opening GitHub. The README is now English first, followed by 简体中文.
-
-- Updated `CONTRIBUTING.md`, `CONTRIBUTING.zh-cn.md`, and `SUPPORT.zh-cn.md` to reference the merged README.
-
-- Excluded the local `.trae/` planning directory from the packaged extension.
+- Merged the English and Chinese READMEs into a single `README.md` with in-page language links, so the Chinese introduction is available directly on the Marketplace page and in the VS Code extension details page instead of opening GitHub. The README is now English first, followed by 简体中文. By the way, Updated `CONTRIBUTING.md`, `CONTRIBUTING.zh-cn.md`, and `SUPPORT.zh-cn.md` to reference the merged README.
 
 ### Removed
 
 - Removed `README.zh-cn.md`; its content is now part of `README.md`.
+
+### Fixed
+
+- Fixed an exception thrown after exporting a report, caused by reading`fsPath` from an undefined`uri` (`Cannot read properties of undefined (reading 'fsPath')` ). The export handler now uses the path returned by the export helper and skips logging when the save dialog is cancelled.
 
 ## [0.8.0] - 2026-11-22
 
