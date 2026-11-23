@@ -4,6 +4,20 @@ All notable changes to the "diff2html-report" extension will be documented in th
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.8.1] - 2026-11-23
+
+### Changed
+
+- Merged the English and Chinese READMEs into a single `README.md` with in-page language links, so the Chinese introduction is available directly on the Marketplace page and in the VS Code extension details page instead of opening GitHub. The README is now English first, followed by 简体中文.
+
+- Updated `CONTRIBUTING.md`, `CONTRIBUTING.zh-cn.md`, and `SUPPORT.zh-cn.md` to reference the merged README.
+
+- Excluded the local `.trae/` planning directory from the packaged extension.
+
+### Removed
+
+- Removed `README.zh-cn.md`; its content is now part of `README.md`.
+
 ## [0.8.0] - 2026-11-22
 
 ### Added
@@ -167,6 +181,7 @@ Fix the bug that on the Diff Review page, the old and new line numbers may be ar
 
 Initial release.
 
+[0.8.1]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.8.1
 [0.8.0]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.8.0
 [0.7.3]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.7.3
 [0.7.1]: https://github.com/Lead007/vscode-diff2html-report/releases/tag/0.7.1

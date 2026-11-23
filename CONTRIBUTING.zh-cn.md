@@ -77,7 +77,7 @@ npm run build:debug
 1. 在 `package.json` 的 `contributes.commands` / `contributes.configuration` 中注册。
 2. 在 `package.nls.json` **和** `package.nls.zh-cn.json` 中加入 `%key%` 占位符。
 3. 如果该命令需要能从源代码管理标题栏启动，请添加 `menus.scm/title` 条目 **并** 配置 `icon`（例如 `$(git-compare)` 这样的 [codicon](https://code.visualstudio.com/api/references/icons-in-labels) id），否则它会以内联分组中的纯文本形式显示。
-4. 更新 `README.md` 和 `README.zh-cn.md` 中的设置表和用法章节。
+4. 更新 `README.md` 中英文和中文两个章节的设置表与用法章节。
 5. 在 `CHANGELOG.md` 中新增条目。
 
 ## 提交与 PR
