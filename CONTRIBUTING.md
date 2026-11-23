@@ -78,7 +78,7 @@ If a path above differs from what you see, trust the repository and send a docs 
 1. Register it under `contributes.commands` / `contributes.configuration` in `package.json`.
 2. Add the `%key%` placeholder to `package.nls.json` **and** `package.nls.zh-cn.json`.
 3. If the command should be reachable from the Source Control title bar, add a `menus.scm/title` entry **and** an `icon` (a [codicon](https://code.visualstudio.com/api/references/icons-in-labels) id such as `$(git-compare)`), otherwise it renders as text in the inline group.
-4. Update the settings table and the usage section in `README.md` and `README.zh-cn.md`.
+4. Update the settings table and the usage section in both the English and Chinese sections of `README.md`.
 5. Add an entry to `CHANGELOG.md`.
 
 ## Commits and pull requests

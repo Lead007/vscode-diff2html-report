@@ -5,7 +5,7 @@
 ## 提交 Issue 之前
 
 1. 将扩展更新到最新版本（在 **扩展** 视图中检查更新）。
-2. 查看 [README 的常见问题](https://github.com/Lead007/vscode-diff2html-report/blob/main/README.zh-cn.md#常见问题) —— 编码乱码、符号列表为空、找不到版本等问题都有说明。
+2. 查看 [README 的常见问题](https://github.com/Lead007/vscode-diff2html-report/blob/main/README.md#常见问题) —— 编码乱码、符号列表为空、找不到版本等问题都有说明。
 3. 搜索[已有 Issue](https://github.com/Lead007/vscode-diff2html-report/issues) —— 可能已经有人遇到同样的问题。
 
 ## 提交 Issue
